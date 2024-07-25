@@ -102,7 +102,7 @@ const QcaRwb = () => {
         }
     ];
     return (
-        <div className='mt-4 w-[400px] overflow-auto md:w-[800px] bg-accent rounded-md px-4 py-4 text-white'>
+        <div className='mt-4 w-[400px] overflow-auto md:w-[1200px] bg-accent rounded-md px-4 py-4 text-white'>
             <div className='w-full flex items-center gap-4'>
                 <div className='w-3/5'>
                     <div className='flex gap-4 items-end'>

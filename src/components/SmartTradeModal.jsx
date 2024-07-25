@@ -7,7 +7,7 @@ const SmartTradeModal = ({ closeModal, confirmModal }) => {
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center'>
             <div className='modal-wrapper fixed inset-0 bg-black opacity-70'></div>
-            <div className='w-full md:w-1/2 lg:w-2/3 bg-accent  z-10 rounded-md shadow-lg flex relative overflow-hidden'>
+            <div className='w-full md:w-1/2 lg:w-4/5 bg-accent  z-10 rounded-md shadow-lg flex relative overflow-hidden'>
                 <div className='w-full h-full bg-accent p-4'>
                     <div className='w-full flex justify-between items-center text-white'>
                         <h1 className='text-lg w-full text-center'>Welcome to Smart Trade</h1>
@@ -16,7 +16,7 @@ const SmartTradeModal = ({ closeModal, confirmModal }) => {
                         </button>
                     </div>
                     <div className='w-full gap-3 mt-4'>
-                        <div className='info flex flex-col justify-around items-center w-full text-white mt-12 h-[400px] overflow-auto'>
+                        <div className='info flex flex-col justify-around w-full text-white mt-12 h-[400px] overflow-auto'>
                             <h1 className='font-montserrat text-lg font-bold mb-5'>Invest in Proven Success
                                 Secure and Flexible Trading with Quantum Metal Gold Tokens
                             </h1>
@@ -24,7 +24,7 @@ const SmartTradeModal = ({ closeModal, confirmModal }) => {
                                 Welcome to <strong>Smart Trade</strong>, your secure and flexible trading solution. Convert your QMGT to Smart Trade Tokens and enjoy peace of mind in every trade. With Smart Trade, you don't have to worry about market fluctuations – you have the flexibility to manage your assets in a way that suits you best.
                             </p>
                             <h2 className='font-montserrat text-md font-bold mb-3 mt-2'>Why Choose Smart Trade?</h2>
-                            <ul>
+                            <ul className='list-disc list-inside'>
                                 <li>
                                     <strong>Secure Your Trades:</strong> Convert your QMGT to Smart Trade Tokens to protect your trades from market volatility.
                                 </li>
@@ -39,7 +39,7 @@ const SmartTradeModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ul>
                             <h2 className='font-montserrat text-md font-bold mb-3 mt-2'>How It Works:</h2>
-                            <ol>
+                            <ol className='list-decimal list-inside'>
                                 <li>
                                     <strong>Convert Your QMGT:</strong> Easily convert your Quantum Metal Gold Tokens into Smart Trade Tokens.
                                 </li>
@@ -57,7 +57,7 @@ const SmartTradeModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ol>
                         </div>
-                        <div className='text-primary mt-2 mb-2'>
+                        <div className='text-primary mt-2 mb-2 text-center'>
                         Join Smart Trade today and secure your trades with the confidence and flexibility provided by Quantum Metal Gold Tokens
 
 

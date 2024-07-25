@@ -12,7 +12,7 @@ const QcaUsdt = () => {
         setToUSDTModal(false);
     }
     return (
-        <div className='mt-4 w-full md:w-[500px]'>
+        <div className='mt-4 w-full md:w-[1200px]'>
             <div className='w-full bg-accent rounded-md px-4 py-4 text-white flex items-center'>
                 <div className='w-full'>
                     <div className='flex gap-4 items-end'>
@@ -27,7 +27,7 @@ const QcaUsdt = () => {
                 <div className='w-full'>
                     <div className='flex gap-4 items-end'>
                         <input type='text' value={100} className='w-full bg-transparent border-0 border-b outline-none text-3xl' />
-                        {/* <button className='text-secondary text-sm'>MAX</button> */}
+                        <button className='text-secondary text-sm'>USDT</button>
                     </div>
                     {/* <div className='mt-2 text-secondary text-xs'>Recieved USDT: $99.29</div> */}
                 </div>

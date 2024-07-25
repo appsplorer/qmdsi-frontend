@@ -7,7 +7,7 @@ const ToUsdtModal = ({ closeModal, confirmModal }) => {
     return (
         <div className='fixed inset-0 top-[9%] md:top-0 z-50 flex items-center justify-center'>
             <div className='modal-wrapper fixed inset-0 bg-black opacity-70'></div>
-            <div className='w-full md:w-1/2 lg:w-2/3 bg-accent  z-10 rounded-md shadow-lg flex relative overflow-hidden'>
+            <div className='w-full md:w-1/2 lg:w-4/5 bg-accent  z-10 rounded-md shadow-lg flex relative overflow-hidden'>
                 <div className='w-full h-full bg-accent p-4'>
                     <div className='w-full flex justify-between items-center text-white'>
                         <h1 className='text-lg w-full text-center'>Welcome to QMGT Convert to USDT (QCU)</h1>
@@ -16,13 +16,13 @@ const ToUsdtModal = ({ closeModal, confirmModal }) => {
                         </button>
                     </div>
                     <div className='w-full gap-3 mt-4'>
-                        <div className='info flex flex-col justify-around items-center w-full text-white mt-12 h-[400px] overflow-auto'>
+                        <div className='info flex flex-col justify-around  w-full text-white mt-12 h-[400px] overflow-auto'>
                             <h1 className='font-montserrat text-lg font-bold mb-5'>Unlock the Potential of Your Quantum Metal Gold Tokens</h1>
                             <p>
                                 Welcome to <strong>QMGT Convert to USDT (QCU)</strong>, where you can leverage up to 85% of your QMGT as collateral with an incredibly low APR ​of just 3.5%. Enjoy the flexibility to pay anytime while your $QMGT remains securely locked until the completion of your payment.
                             </p>
                             <h2  className='font-montserrat text-md font-bold mb-3 mt-2'>Why Choose QCU?</h2>
-                            <ul>
+                            <ul className='list-disc list-inside'>
                                 <li>
                                     <strong>Flexible Collateral Use:</strong> Utilize up to 85% of your QMGT for immediate liquidity.
                                 </li>
@@ -34,7 +34,7 @@ const ToUsdtModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ul>
                             <h2 className='font-montserrat text-md font-bold mb-3 mt-2'>How It Works:</h2>
-                            <ol>
+                            <ol className='list-decimal list-inside'>
                                 <li>
                                     <strong>Collateralize Your QMGT:</strong> Convert a portion of your QMGT into USDT up to 85% of its value.
                                 </li>
@@ -49,7 +49,7 @@ const ToUsdtModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ol>
                         </div>
-                        <div className='text-primary mt-2 mb-2'>
+                        <div className='text-primary mt-2 mb-2 text-center'>
                         Join the QCU program today and experience the freedom and security of converting your QMGT into usable funds while maintaining ​control over your assets.
                         </div>
 

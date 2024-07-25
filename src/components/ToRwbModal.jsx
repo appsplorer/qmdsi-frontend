@@ -7,7 +7,7 @@ const ToRwbModal = ({ closeModal, confirmModal }) => {
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center'>
             <div className='modal-wrapper fixed inset-0 bg-black opacity-70'></div>
-            <div className='w-full md:w-1/2 lg:w-2/3 bg-accent  z-10 rounded-md shadow-lg flex relative overflow-hidden'>
+            <div className='w-full md:w-1/2 lg:w-4/5 bg-accent  z-10 rounded-md shadow-lg flex relative overflow-hidden'>
                 <div className='w-full h-full bg-accent p-4'>
                     <div className='w-full flex justify-between items-center text-white'>
                         <h1 className='text-lg w-full text-center'>Welcome to QMGT Convert to Real World Business (QCR)</h1>
@@ -16,13 +16,13 @@ const ToRwbModal = ({ closeModal, confirmModal }) => {
                         </button>
                     </div>
                     <div className='w-full gap-3 mt-4'>
-                        <div className='info flex flex-col justify-around items-center w-full text-white mt-12 h-[400px] overflow-auto'>
+                        <div className='info flex flex-col justify-around  w-full text-white mt-12 h-[400px] overflow-auto'>
                             <h1 className='font-montserrat text-lg font-bold mb-5'>Invest in Proven Success</h1>
                             <p>
                                 Welcome to <strong>QMGT Convert to Real World Business (QCR)</strong>, where your Quantum Metal Gold Tokens (QMGT) can be converted into RWB Tokens of established and audited businesses with a strong track record. Discover a new avenue for investment, leveraging the stability and potential of real-world enterprises.
                             </p>
                             <h2 className='font-montserrat text-md font-bold mb-3 mt-2'>Why Choose QCR?</h2>
-                            <ul>
+                            <ul className='list-disc list-inside'>
                                 <li>
                                     <strong>Invest in Success:</strong> Convert your QMGT into RWB Tokens of businesses with a proven history of success, each with over 3 years of solid performance.
                                 </li>
@@ -40,7 +40,7 @@ const ToRwbModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ul>
                             <h2 className='font-montserrat text-md font-bold mb-3 mt-2'>How It Works:</h2>
-                            <ol>
+                            <ol className='list-decimal list-inside'>
                                 <li>
                                     <strong>Select a Business:</strong> Choose from a selection of established businesses that have been carefully vetted for their track record and reliability.
                                 </li>
@@ -61,7 +61,7 @@ const ToRwbModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ol>
                             <h2 className='font-montserrat text-md font-bold mb-3 mt-2'>Why Convert to Real World Businesses?</h2>
-                            <ul>
+                            <ul  className='list-disc list-inside'>
                                 <li>
                                     <strong>Proven Track Record:</strong> Each business has been operating successfully for over 3 years, providing a solid foundation for your investment.
                                 </li>
@@ -76,7 +76,7 @@ const ToRwbModal = ({ closeModal, confirmModal }) => {
                                 </li>
                             </ul>
                         </div>
-                        <div className='text-primary mt-2 mb-2'>
+                        <div className='text-primary mt-2 mb-2 text-center'>
                         Join the QCR program today and become a part of the real deal in the business world. Stake your QMGT in ventures with a track record of success ​and watch your investment grow in a stable and secure environment.
                         </div>
 

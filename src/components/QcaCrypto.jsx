@@ -92,18 +92,20 @@ const QcaCrypto = () => {
             "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png",
             "symbol": "$BTC",
             "price": "$53,000",
-            "amount": 0
+            "amount": 0,
+            "expected" : "$52,000"
         },
         {
             "token": "Ethereum",
             "icon": "https://cryptologos.cc/logos/ethereum-eth-logo.png",
             "symbol": "$ETH",
             "price": "$3,000",
-            "amount": 0
+            "amount": 0,
+            "expected" : "$2,800"
         }
     ];
     return (
-        <div className='mt-4 w-[400px]  overflow-auto md:w-[800px] bg-accent rounded-md px-4 py-4 text-white'>
+        <div className='mt-4 w-[400px]  overflow-auto md:w-[1200px] bg-accent rounded-md px-4 py-4 text-white'>
             <div className='w-full flex items-center gap-4'>
                 <div className='w-3/5'>
                     <div className='flex gap-4 items-end'>
@@ -128,6 +130,7 @@ const QcaCrypto = () => {
                             <th>Token</th>
                             <th>Price</th>
                             <th>Amount</th>
+                            <th>Expected Value</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -145,6 +148,7 @@ const QcaCrypto = () => {
                                 <td>
                                     <input type='text' value={data.amount} className='h-[50px] rounded p-2 mx-5 bg-transparent border outline-none' />
                                 </td>
+                                <td>{data.expected}</td>
                                 <td>                                    <button className=' h-[50px] px-4 bg-primary rounded mt-4 hover:bg-secondary'  onClick={()=>setConfirmModal(true)}>
                                     Convert
                                 </button>
