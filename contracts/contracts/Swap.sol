@@ -55,13 +55,17 @@ contract QMGTSwap {
 
     
     function sellQmgt(uint tokenAmount) external returns (uint tokens) {
-        uint256 goldPrice = getLatestGoldPrice(); // Gold price in USD with 8 decimals
-        uint256 tokenDecimals = 10 ** 18; // 10^18 for token decimals
-        uint256 priceDecimals = 10 ** 8; // 10^8 for price decimals
-
-        uint256 usdAmount = (tokenAmount * goldPrice * priceDecimals) / (tokenDecimals * tokenDecimals);
+        
+        uint256 usdAmount = getUsdAmount(tokenAmount);
         IERC20(token).transferFrom(msg.sender, address(this), tokenAmount);
         IERC20(usdt).transfer(msg.sender, usdAmount);
         return usdAmount;
+    }
+
+    function getUsdAmount (uint tokenAmount) public view returns (uint usdAmount) {
+        uint256 goldPrice = getLatestGoldPrice(); // Gold price in USD with 8 decimals
+        uint256 tokenDecimals = 10 ** 18; // 10^18 for token decimals
+        uint256 priceDecimals = 10 ** 8; // 10^8 for price decimals
+        usdAmount = (tokenAmount * goldPrice * priceDecimals) / (tokenDecimals * tokenDecimals);
     }
 }

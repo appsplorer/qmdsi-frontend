@@ -2,11 +2,20 @@ import { Cross, Ellipsis, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import LoginModal from './LoginModal';
+import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
+
+
+const shortenAddress = (address) => {
+    return `${address.slice(0,4)}...${address.slice(-4)}`
+}
 
 const Navigation = () => {
     const [showModal, setShowModal] = useState(false);
     const [navShow, setNavShow] = useState(false);
-    console.log(navShow);
+    const { open } = useWeb3Modal()
+    const {address} = useWeb3ModalAccount()
+    
+
     const closeModal = () => {
         console.log();
         setShowModal(false);
@@ -29,7 +38,7 @@ const Navigation = () => {
                 </div>
             </div>
             <div className="nav-right text-sm flex gap-2">
-                <button className='bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary' onClick={() => { setShowModal(true) }}>Connect to Wallet</button>
+                <button className='bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary' onClick={open}>{address ? shortenAddress(address) : "Connect Wallet"}</button>
                 <button className='bg-accent py-1 px-3 rounded hover:bg-black h-[35px]' onClick={() => { setNavShow(true) }}><Ellipsis /></button>
             </div>
         </div>
