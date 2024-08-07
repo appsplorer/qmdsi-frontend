@@ -147,7 +147,7 @@ const TokenSwap = () => {
             setAmountIn("")
             return     
         } 
-
+        console.log(amountOut)
         getAmountOut(tokenOut.toLowerCase(), amountOut).then((res) => {
             if(res) setAmountIn(res)
         })
