@@ -5,10 +5,15 @@ import { Link } from 'react-router-dom';
 import TransactionModal from './TransactionModal';
 import TransactionCompleteModal from './TransactionCompleteModal';
 import { swapAbi } from '../abis/swapAbi';
-import { useWeb3ModalProvider } from '@web3modal/ethers/react';
+import { useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react';
 import { BrowserProvider, formatEther, parseEther } from 'ethers';
 import { Contract } from 'ethers';
+import { erc20Abi } from '../abis/erc20Abi';
 
+const tokens = {
+    "USDT" : "0xcc1b1fb1b260cd86f871c66227d2f813db26b756",
+    "QMGT" : "0xb822d4ec2a0b3960457649166fa5fe69673a86d8"
+}
  // Custom single value component
  const CustomSingleValue = (props) => {
     const { data } = props;
@@ -92,7 +97,18 @@ const TokenSwap = () => {
     const [amountIn, setAmountIn] = useState("")
     const [amountOut, setAmountOut] = useState("")
     const [changeData, setChangeData] = useState("")
+    const {address} = useWeb3ModalAccount()
+    const {open} = useWeb3Modal()
+    const [insufficientBalance, setInsufficientBalance] = useState(false)
     const { walletProvider } = useWeb3ModalProvider()
+
+
+    const checkBalance = async (token, owner) => {
+        const provider = new BrowserProvider(walletProvider)
+        const tokenContract = new Contract(token, erc20Abi, provider)
+        const balance = await tokenContract.balanceOf(owner) 
+        return  balance
+    }
 
     const closeModal = () => {
         setTransactionModal(false);
@@ -154,10 +170,25 @@ const TokenSwap = () => {
 
     }, [tokenOut, amountOut ])
 
+    useEffect(() => {
+        if(!tokenIn || !amountIn || !address) {
+            setInsufficientBalance(false)
+            return
+        } 
+        const token = tokens[tokenIn]
+        
+        checkBalance(token, address).then((balance) => {
+            if(parseEther(amountIn) > balance) {
+                setInsufficientBalance(true)
+            }else{
+                setInsufficientBalance(false)
+            }
+            // console.log(balance)
+        })
+
+
+    }, [tokenIn, amountIn])
     
-    const handleBuy = async () => {
-        console.log(tokenIn, amountIn)
-    }
 
     return (
         <div className='mt-4'>
@@ -210,15 +241,22 @@ const TokenSwap = () => {
                         placeholder="Select an option"
                     />
                 </div>
+                            
             </div>
+            {insufficientBalance && <p className='flex justify-between text-red-500'><span>Insufficient Balance</span></p>}
             <div className='mt-4 bg-accent opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs'>
+            
                 <p className='flex justify-between'><span>Gold Price</span><span className='text-white'>1.002g per 1 QMGT</span></p>
                 <p className='flex justify-between mt-2'><span>Minimum Recieved</span><span className='text-white'>100 QMGT</span></p>
                 <p className='flex justify-between mt-2'><span>Price Impact</span><span className='text-white'>0.001</span></p>
                 <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p>
             </div>
             <div>
-                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary' onClick={()=>{setTransactionModal(true)}}>Swap</button>
+                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary ' disabled={insufficientBalance} 
+                onClick={()=>{
+                    !address ? open() : setTransactionModal(true) }
+                }
+                    >{`${!address ? "Connect Wallet" : insufficientBalance ? "Insufficient Balance" : "Swap"}`}</button>
             </div>
              
     {transactionModal && <TransactionModal 
