@@ -10,7 +10,7 @@ import QCA from './pages/QCA.jsx'
 import SmartTrade from './pages/SmartTrade.jsx'
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
 import { ContractContextProvider } from './contexts/ContractContext.jsx'
-const projectId = 'YOUR_PROJECT_ID'
+const projectId = '61f529aa30c77838f2502740d05202ad'
 
 const mainnet = {
   chainId: 1,

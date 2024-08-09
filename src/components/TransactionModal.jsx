@@ -4,14 +4,9 @@ import { BrowserProvider } from 'ethers';
 import { CircleDivideIcon, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
-import Loader from './Loader';
-
-const TransactionModal = ({ closeModal, transactionComplete }) => {
-    const [tab, setTab] = useState('Details'); // Correctly defining the state and setState function
-=======
 import {erc20Abi} from "../abis/erc20Abi"
 import { swapAbi } from '../abis/swapAbi';
+import Loader from './Loader';
 
 const tokens = {
     "USDT" : "0xcc1b1fb1b260cd86f871c66227d2f813db26b756",
@@ -42,7 +37,6 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
     useEffect(() => {
         const token = tokens[tokenIn]
         checkAllowanceAndBalance(token, address).then(({allowance, balance}) => {
-            console.log(allowance, balance)
             setNeedApproval(allowance < balance)
         })
         
@@ -62,7 +56,7 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                 res = await contract.sellQmgt(parseEther(amountIn))
             }
         }catch(e){
-
+            console.log(e)
         }
         setLoading(false)
         setLoadingMsg("")
@@ -89,10 +83,6 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
         setLoadingMsg("")
         
     }
->>>>>>> dab4539c27e75e5fcfc57117b096ead8be2ccc39
-
-    const [loading, setLoading] = useState(false);
-
     const handleTransaction = () => {
 
         setLoading(true);
@@ -117,19 +107,13 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                         </button>
                     </div>
                     <div className='w-full gap-3 mt-4'>
-<<<<<<< HEAD
-                        <div className='flex flex-col justify-around items-center w-full text-white mt-4'>
-                            <h1 className='text-3xl font-medium'>100 USDT</h1>
-                            {/* <p className='text-sm text-gray-400'>Balance: $99.43</p> */}
-=======
                         <div className='flex flex-col justify-around items-center w-full text-white mt-12'>
                             <h1 className='text-3xl font-medium'>{`${amountIn} ${tokenIn}`}</h1>
                             <p className='text-sm text-gray-400'>Balance: $99.43</p>
->>>>>>> dab4539c27e75e5fcfc57117b096ead8be2ccc39
                         </div>
                         <div className='flex flex-col justify-around items-center w-full text-white '>
                             <p className='text-sm text-gray-400 text-yellow-300'>to</p>
-                            <h1 className='text-3xl font-medium'>99 QMGT</h1>
+                            <h1 className='text-3xl font-medium'>{`${parseFloat(amountOut).toPrecision(4)} ${tokenOut}`}</h1>
                         </div>
                         <div className='flex text-white w-full justify-center gap-4 text-xl font-thin mt-6'>
                             <button
@@ -183,17 +167,12 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                             </div>
                         )}
                         <div className='w-full gap-4 flex mt-12'>
-<<<<<<< HEAD
-                            <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black' onClick={closeModal}>Reject</button>
-                            <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' onClick={handleTransaction}>Confirm</button>
-=======
                             <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black'  onClick={closeModal}>Reject</button>
                             {needApproval && <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 
                             onClick={handleApproval} disabled={loading}>{`${loading ? loadingMsg : `Approve ${tokenIn}`}`}</button>
                             }
                             {!needApproval && <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 
                             onClick={handleBuy} disabled={loading}>{`${loading ? loadingMsg : "Confirm"}`}</button>}
->>>>>>> dab4539c27e75e5fcfc57117b096ead8be2ccc39
                         </div>
                     </div>
                 </div>
