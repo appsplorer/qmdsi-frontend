@@ -130,7 +130,7 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                             </button>
                         </div>
                         <hr className='border-gray-400'></hr>
-                        {tab === 'Details' && (
+                        {/* {tab === 'Details' && (
                             <div className='w-full text-white mt-4 text-sm px-4'>
                                 <div className='flex justify-between mb-4'>
                                     <p>Gas Fee</p>
@@ -147,8 +147,8 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                                     </div>
                                 </div>
                             </div>
-                        )}
-                        {tab === 'Data' && (
+                        )} */}
+                        {/* {tab === 'Data' && (
                             <div className='w-full text-white mt-4 text-sm px-4'>
                                 <div className='flex justify-between mb-4'>
                                     <p>Data Value 1</p>
@@ -165,7 +165,7 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        )} */}
                         <div className='w-full gap-4 flex mt-12'>
                             <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black'  onClick={closeModal}>Reject</button>
                             {needApproval && <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 

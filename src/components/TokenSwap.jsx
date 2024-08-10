@@ -133,7 +133,9 @@ const TokenSwap = () => {
             return formatEther(res)
         }
         else{
+            console.log(amountIn)
             const res = await contract.getUsdAmount(parseEther(amountIn))
+            console.log(res)
             return formatEther(res)
         }
     }
@@ -202,7 +204,7 @@ const TokenSwap = () => {
                             }}/>
                         <button className='text-secondary text-sm'>MAX</button>
                     </div>
-                    <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div>
+                    {/* <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div> */}
                 </div>
                 <div className='w-1/2 '>
                     <Select
@@ -228,7 +230,7 @@ const TokenSwap = () => {
                         />
                         <button className='text-secondary text-sm'>MAX</button>
                     </div>
-                    <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div>
+                    {/* <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div> */}
                 </div>
                 <div className='w-1/2 '>
                     <Select
@@ -247,9 +249,9 @@ const TokenSwap = () => {
             <div className='mt-4 bg-accent opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs'>
             
                 <p className='flex justify-between'><span>Gold Price</span><span className='text-white'>1.002g per 1 QMGT</span></p>
-                <p className='flex justify-between mt-2'><span>Minimum Recieved</span><span className='text-white'>100 QMGT</span></p>
+                {/* <p className='flex justify-between mt-2'><span>Minimum Recieved</span><span className='text-white'>100 QMGT</span></p>
                 <p className='flex justify-between mt-2'><span>Price Impact</span><span className='text-white'>0.001</span></p>
-                <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p>
+                <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p> */}
             </div>
             <div>
                 <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary ' disabled={insufficientBalance} 

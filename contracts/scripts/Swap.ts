@@ -16,9 +16,15 @@ const main = async  () => {
     // console.log(await publicClient.getBalance({address: signer.account.address}))
     // console.log(signer.account.address)
     // const swap  = await viem.deployContract("QMGTSwap", [sepoliaOracle, usdt, token])
-    const swap = await viem.getContractAt("QMGTSwap", swapContract)
-    console.log(await swap.read.getQmgtAmount([parseEther("1")]))
-
+    const tokenContract  = await  viem.getContractAt("Token", usdt)
+    await tokenContract.write.transfer([swapContract, parseEther("100000")])
+    // console.log(await tokenContract.read.balanceOf([signer.account.address]))
+    // const swap = await viem.getContractAt("QMGTSwap", swapContract)
+    // const qmgtAMount = await swap.read.getQmgtAmount([parseEther("1")])
+    // console.log(qmgtAMount)
+    // const usdAmount = await swap.read.getUsdAmount([qmgtAMount])
+  
+    // console.log(usdAmount)
     // console.log(swap.address)
 }
 
