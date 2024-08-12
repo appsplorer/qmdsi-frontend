@@ -2,7 +2,7 @@ import { CircleArrowOutUpLeft, CircleArrowOutUpRight, CircleDivideIcon, X } from
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const TransactionCompleteModal = ({ closeModal }) => {
+const TransactionCompleteModal = ({ closeModal, data }) => {
     const [tab, setTab] = useState('Details'); // Correctly defining the state and setState function
     
 
@@ -22,11 +22,14 @@ const TransactionCompleteModal = ({ closeModal }) => {
                         <div className='flex flex-col justify-around items-center w-full text-white mt-12'>
                             <CircleArrowOutUpRight className='w-12 h-12 mb-12 text-primary'/>
                             <h1 className='text-3xl font-medium'>Transaction Completed</h1>
-                            <p className=' text-gray-400'>Swapping  100 USDT for 100 QMGT</p>
+                            <p className=' text-gray-400'>Swapped  {`${data.amountIn} ${data.tokenIn}`} for {`${data.amountOut} ${data.tokenOut}`}</p>
                         </div>
                         
                         <div className='w-full gap-4 flex mt-12 justify-center'>
-                            <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black'>View on Etherscan</button>
+                            <a href={`https://testnet.bscscan.com/tx/${data.hash}`} target='_blank'>
+                            <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black' 
+                            >View on Bscscan</button>
+                            </a>
                         </div>
                     </div>
                 </div>

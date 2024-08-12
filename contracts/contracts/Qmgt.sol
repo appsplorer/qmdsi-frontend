@@ -23,7 +23,7 @@ contract QMGTToken is ERC20 {
         _mint(msg.sender, initialSupply);
     }
 
-    function mint(address _to, uint _amount) external onlyOwner() {
+    function mint(address _to, uint _amount) external onlyOwner {
         _mint(_to, _amount);
     }
 

@@ -9,10 +9,12 @@ import { useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3mo
 import { BrowserProvider, formatEther, parseEther } from 'ethers';
 import { Contract } from 'ethers';
 import { erc20Abi } from '../abis/erc20Abi';
+import {TOKENAddress, USDTAddress, swapAddress} from "../addresses.js"
+import { formatUnits } from 'ethers';
 
 const tokens = {
-    "USDT" : "0xcc1b1fb1b260cd86f871c66227d2f813db26b756",
-    "QMGT" : "0xb822d4ec2a0b3960457649166fa5fe69673a86d8"
+    "USDT" : USDTAddress,
+    "QMGT" : TOKENAddress
 }
  // Custom single value component
  const CustomSingleValue = (props) => {
@@ -91,12 +93,16 @@ const TokenSwap = () => {
     };
 
     const [transactionModal, setTransactionModal] = useState(false);
-    const [transactionCompleteModal, setTransactionCompleteModal] = useState(false);
+    const [transactionCompleteModal, setTransactionCompleteModal] = useState(true);
+    const [transactionData, setTransactionData] = useState({})
     const [tokenIn, setTokenIn] = useState("")
     const [tokenOut, setTokenOut] = useState("")
     const [amountIn, setAmountIn] = useState("")
     const [amountOut, setAmountOut] = useState("")
     const [changeData, setChangeData] = useState("")
+    const [tokenInBal, setTokenInBal] = useState("0")
+    const [tokenOutBal, setTokenOutBal] = useState("0")
+
     const {address} = useWeb3ModalAccount()
     const {open} = useWeb3Modal()
     const [insufficientBalance, setInsufficientBalance] = useState(false)
@@ -126,7 +132,7 @@ const TokenSwap = () => {
 
     const getAmountOut = async (tokenIn, amountIn) => {
         const provider = new BrowserProvider(walletProvider)
-        const contract = new Contract("0x01f168114364c0c4ce688217cd17251ee7fdd646", swapAbi, provider)
+        const contract = new Contract(swapAddress, swapAbi, provider)
         
         if (tokenIn == "usdt") {
             const res = await contract.getQmgtAmount(parseEther(amountIn))
@@ -192,6 +198,42 @@ const TokenSwap = () => {
     }, [tokenIn, amountIn])
     
 
+    
+    useEffect(() => {
+        if(!tokenIn || !address) return 
+        
+        const provider = new BrowserProvider(walletProvider)
+        
+        const tokenAddress = tokens[tokenIn]
+        const tokenContract = new Contract(tokenAddress, erc20Abi, provider)
+    
+        const interValId = setInterval(async () => {
+            const [balance, decimals] = await Promise.all([tokenContract.balanceOf(address), tokenContract.decimals()]) 
+            setTokenInBal(formatUnits(balance, decimals))
+        }, 5000)
+    
+        return () => clearInterval(interValId) 
+    
+    }, [tokenIn, walletProvider, address])
+
+    useEffect(() => {
+        if(!tokenOut || !address) return 
+        
+        const provider = new BrowserProvider(walletProvider)
+        
+        const tokenAddress = tokens[tokenOut]
+        const tokenContract = new Contract(tokenAddress, erc20Abi, provider)
+    
+        const interValId = setInterval(async () => {
+            const [balance, decimals] = await Promise.all([tokenContract.balanceOf(address), tokenContract.decimals()]) 
+            setTokenOutBal(formatUnits(balance, decimals))
+        }, 3000)
+    
+        return () => clearInterval(interValId) 
+    
+    }, [tokenOut, walletProvider, address])
+
+
     return (
         <div className='mt-4'>
             <div className='w-full bg-accent rounded-md px-4 py-4 text-white flex items-center'>
@@ -204,7 +246,7 @@ const TokenSwap = () => {
                             }}/>
                         <button className='text-secondary text-sm'>MAX</button>
                     </div>
-                    {/* <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div> */}
+                    <div className='mt-2 text-secondary text-xs'>Balance: {`${tokenInBal}`}</div>
                 </div>
                 <div className='w-1/2 '>
                     <Select
@@ -230,7 +272,7 @@ const TokenSwap = () => {
                         />
                         <button className='text-secondary text-sm'>MAX</button>
                     </div>
-                    {/* <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div> */}
+                    <div className='mt-2 text-secondary text-xs'>Balance:{`${tokenOutBal}`}</div>
                 </div>
                 <div className='w-1/2 '>
                     <Select
@@ -254,7 +296,7 @@ const TokenSwap = () => {
                 <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p> */}
             </div>
             <div>
-                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary ' disabled={insufficientBalance} 
+                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary ' disabled={insufficientBalance || !tokenIn || !amountIn} 
                 onClick={()=>{
                     !address ? open() : setTransactionModal(true) }
                 }
@@ -268,10 +310,12 @@ const TokenSwap = () => {
                 amountIn={amountIn}
                 tokenOut={tokenOut}
                 amountOut={amountOut}
+                setTransactionData={setTransactionData}
+                setTransactionCompleteModal={setTransactionCompleteModal}
                 />
                 
                 }
-    {transactionCompleteModal && <TransactionCompleteModal closeModal={closeTransactionCompleteModal} />}
+    {transactionCompleteModal && <TransactionCompleteModal closeModal={closeTransactionCompleteModal} data={transactionData}/>}
         </div>
     );
 };

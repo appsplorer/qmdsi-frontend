@@ -28,6 +28,14 @@ const sepolia = {
   rpcUrl: 'https://ethereum-sepolia-rpc.publicnode.com'
 }
 
+const bscTestnet = {
+  chainId : 97,
+  currency : "tBNB",
+  name : "BNB Smart Chain Testnet",
+  explorerUrl: "https://testnet.bscscan.com",
+  rpcUrl : "https://bsc-testnet-rpc.publicnode.com"
+}
+
 
 // 3. Create a metadata object
 const metadata = {
@@ -53,7 +61,7 @@ const ethersConfig = defaultConfig({
 // 5. Create a Web3Modal instance
 createWeb3Modal({
   ethersConfig,
-  chains: [mainnet, sepolia],
+  chains: [bscTestnet],
   projectId,
   enableAnalytics: false // Optional - defaults to your Cloud configuration
 })

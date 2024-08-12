@@ -11,7 +11,7 @@ const initSwap = parseEther("10000000")
 const main = async  () => {
 
     const token = await viem.deployContract("Token", [initSupply, name, symbol])
-    console.log(await token.address)
+    console.log(token.address)
     //   const [signer] = await viem.getWalletClients()
   // const publicClient = await viem.getPublicClient()
   // console.log(await publicClient.getBalance({address: signer.account.address}))

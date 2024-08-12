@@ -7,19 +7,25 @@ import { Link } from 'react-router-dom';
 import {erc20Abi} from "../abis/erc20Abi"
 import { swapAbi } from '../abis/swapAbi';
 import Loader from './Loader';
+import { TOKENAddress, USDTAddress, swapAddress } from '../addresses';
+import Countdown from 'react-countdown';
+
 
 const tokens = {
-    "USDT" : "0xcc1b1fb1b260cd86f871c66227d2f813db26b756",
-    "QMGT" : "0xb822d4ec2a0b3960457649166fa5fe69673a86d8"
+    "USDT" : USDTAddress,
+    "QMGT" : TOKENAddress
 }
 
-const spender = "0x01f168114364c0c4ce688217cd17251ee7fdd646"
+const spender = swapAddress
 
-const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, amountOut, tokenOut}) => {
+const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, amountOut, tokenOut, setTransactionCompleteModal, setTransactionData}) => {
+   
     const [tab, setTab] = useState('Details'); // Correctly defining the state and setState function
     const [needApproval, setNeedApproval] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [key, setKey] = useState(1)
     const [loadingMsg, setLoadingMsg] = useState("")
+    const [amtOut, setAmtOut] = useState(amountOut)
     const { walletProvider } = useWeb3ModalProvider()
     const {address} = useWeb3ModalAccount()
 
@@ -47,17 +53,23 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
         setLoadingMsg(`Swapping ${tokenIn} for ${tokenOut}`)
         const provider = new BrowserProvider(walletProvider)
         const signer = await provider.getSigner()
-        const contract = new Contract(spender, swapAbi, signer)
+        const contract = new Contract(swapAddress, swapAbi, signer)
         try{
             let res 
             if(tokenIn == "USDT"){
+                console.log("Buying")
                 res = await contract.buyQmgt(parseEther(amountIn))
             }else{
                 res = await contract.sellQmgt(parseEther(amountIn))
             }
+        await provider.waitForTransaction(res.hash)
+        
+        setTransactionData({hash : res.hash, tokenIn, amountIn, tokenOut, amountOut })
+        setTransactionCompleteModal(true)
         }catch(e){
-            console.log(e)
+            console.log(e) 
         }
+        
         setLoading(false)
         setLoadingMsg("")
         // const {allowance, balance} = await checkAllowanceAndBalance(token, address)
@@ -74,25 +86,41 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
             const signer = await provider.getSigner()
             const tokenContract = new Contract(token, erc20Abi, signer)
             const res = await tokenContract.approve(spender, MaxUint256)
+            await provider.waitForTransaction(res.hash)
             console.log(res)
             setNeedApproval(false)
+            setLoading(false)
+            setLoadingMsg("")
         }catch(e){
-        
+            console.log(e)
+            setLoading(false)
         }
-        setLoading(false)
-        setLoadingMsg("")
+        
         
     }
-    const handleTransaction = () => {
+    
+    const refreshPrice = async () => {
+        const provider = new BrowserProvider(walletProvider)
+        const contract = new Contract(swapAddress , swapAbi, provider)
+        if(tokenIn.toLowerCase() == "usdt"){
 
-        setLoading(true);
-        // Simulating a network request or transaction delay
-        setTimeout(() => {
-            setLoading(false);
+        }else{
 
-            transactionComplete();
-        }, 2000);
+        }
+
+
     }
+    
+    // const handleTransaction = () => {
+
+    //     setLoading(true);
+    //     // Simulating a network request or transaction delay
+    //     setTimeout(() => {
+    //         setLoading(false);
+
+    //         transactionComplete();
+    //     }, 2000);
+    // }
 
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center'>
@@ -109,11 +137,11 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                     <div className='w-full gap-3 mt-4'>
                         <div className='flex flex-col justify-around items-center w-full text-white mt-12'>
                             <h1 className='text-3xl font-medium'>{`${amountIn} ${tokenIn}`}</h1>
-                            <p className='text-sm text-gray-400'>Balance: $99.43</p>
+                            {/* <p className='text-sm text-gray-400'>Balance: $99.43</p> */}
                         </div>
                         <div className='flex flex-col justify-around items-center w-full text-white '>
                             <p className='text-sm text-gray-400 text-yellow-300'>to</p>
-                            <h1 className='text-3xl font-medium'>{`${parseFloat(amountOut).toPrecision(4)} ${tokenOut}`}</h1>
+                            <h1 className='text-3xl font-medium'>{`${parseFloat(amtOut).toPrecision(4)} ${tokenOut}`}</h1>
                         </div>
                         <div className='flex text-white w-full justify-center gap-4 text-xl font-thin mt-6'>
                             <button
@@ -174,6 +202,13 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                             {!needApproval && <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 
                             onClick={handleBuy} disabled={loading}>{`${loading ? loadingMsg : "Confirm"}`}</button>}
                         </div>
+                        
+                        <div className='flex items-center justify-center text-red-500 '>
+                            <Countdown key={key} date={Date.now() + 3 * 60 *1000} onComplete={(e) => {
+
+                                setKey((prev) => prev + 1)
+
+                        }}/> </div>
                     </div>
                 </div>
             </div>
