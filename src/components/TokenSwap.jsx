@@ -1,5 +1,5 @@
 import { ArrowUpDown } from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { Link } from 'react-router-dom';
 import TransactionModal from './TransactionModal';
@@ -9,15 +9,14 @@ import { useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3mo
 import { BrowserProvider, formatEther, parseEther } from 'ethers';
 import { Contract } from 'ethers';
 import { erc20Abi } from '../abis/erc20Abi';
-import {TOKENAddress, USDTAddress, swapAddress} from "../addresses.js"
-import { formatUnits } from 'ethers';
 
 const tokens = {
-    "USDT" : USDTAddress,
-    "QMGT" : TOKENAddress
+    "USDT": "0xcc1b1fb1b260cd86f871c66227d2f813db26b756",
+    "QMGT": "0xb822d4ec2a0b3960457649166fa5fe69673a86d8"
 }
- // Custom single value component
- const CustomSingleValue = (props) => {
+
+// Custom single value component
+const CustomSingleValue = (props) => {
     const { data } = props;
     return (
         <div className="custom-single-value">
@@ -26,7 +25,6 @@ const tokens = {
         </div>
     );
 };
-
 
 const TokenSwap = () => {
     const CustomOption = (props) => {
@@ -39,12 +37,9 @@ const TokenSwap = () => {
         );
     };
 
-   
-
     const options = [
         { value: 'USDT', label: 'USDT', image: 'https://w7.pngwing.com/pngs/113/18/png-transparent-tether-hd-logo-thumbnail.png' },
         { value: 'QMGT', label: 'QMGT', image: 'https://via.placeholder.com/20' },
-        // { value: 'ETHEREUM', label: 'ETHEREUM', image: 'https://via.placeholder.com/20' },
     ];
 
     const customStyles = {
@@ -93,146 +88,97 @@ const TokenSwap = () => {
     };
 
     const [transactionModal, setTransactionModal] = useState(false);
-    const [transactionCompleteModal, setTransactionCompleteModal] = useState(true);
-    const [transactionData, setTransactionData] = useState({})
-    const [tokenIn, setTokenIn] = useState("")
-    const [tokenOut, setTokenOut] = useState("")
-    const [amountIn, setAmountIn] = useState("")
-    const [amountOut, setAmountOut] = useState("")
-    const [changeData, setChangeData] = useState("")
-    const [tokenInBal, setTokenInBal] = useState("0")
-    const [tokenOutBal, setTokenOutBal] = useState("0")
-
-    const {address} = useWeb3ModalAccount()
-    const {open} = useWeb3Modal()
-    const [insufficientBalance, setInsufficientBalance] = useState(false)
-    const { walletProvider } = useWeb3ModalProvider()
-
+    const [transactionCompleteModal, setTransactionCompleteModal] = useState(false);
+    const [tokenIn, setTokenIn] = useState("");
+    const [tokenOut, setTokenOut] = useState("");
+    const [amountIn, setAmountIn] = useState("");
+    const [amountOut, setAmountOut] = useState("");
+    const [changeData, setChangeData] = useState("");
+    const { address } = useWeb3ModalAccount();
+    const { open } = useWeb3Modal();
+    const [insufficientBalance, setInsufficientBalance] = useState(false);
+    const { walletProvider } = useWeb3ModalProvider();
 
     const checkBalance = async (token, owner) => {
-        const provider = new BrowserProvider(walletProvider)
-        const tokenContract = new Contract(token, erc20Abi, provider)
-        const balance = await tokenContract.balanceOf(owner) 
-        return  balance
-    }
+        const provider = new BrowserProvider(walletProvider);
+        const tokenContract = new Contract(token, erc20Abi, provider);
+        const balance = await tokenContract.balanceOf(owner);
+        return balance;
+    };
 
     const closeModal = () => {
         setTransactionModal(false);
     };
+
     const closeTransactionCompleteModal = () => {
         setTransactionCompleteModal(false);
     };
 
-    const transactionSubmit = ()=>{
+    const transactionSubmit = () => {
         setTransactionModal(false);
         // transaction Completion Code Here
 
         setTransactionCompleteModal(true);
-    }
+    };
 
     const getAmountOut = async (tokenIn, amountIn) => {
-        const provider = new BrowserProvider(walletProvider)
-        const contract = new Contract(swapAddress, swapAbi, provider)
-        
-        if (tokenIn == "usdt") {
-            const res = await contract.getQmgtAmount(parseEther(amountIn))
-            return formatEther(res)
+        const provider = new BrowserProvider(walletProvider);
+        const contract = new Contract("0x01f168114364c0c4ce688217cd17251ee7fdd646", swapAbi, provider);
+
+        if (tokenIn === "usdt") {
+            const res = await contract.getQmgtAmount(parseEther(amountIn));
+            return formatEther(res);
+        } else {
+            const res = await contract.getUsdAmount(parseEther(amountIn));
+            return formatEther(res);
         }
-        else{
-            console.log(amountIn)
-            const res = await contract.getUsdAmount(parseEther(amountIn))
-            console.log(res)
-            return formatEther(res)
-        }
-    }
-    
-    
+    };
+
+    const handleSwap = () => {
+        setTokenIn(tokenOut);
+        setTokenOut(tokenIn);
+        setAmountIn(amountOut);
+        setAmountOut(amountIn);
+        setChangeData("input");
+    };
 
     useEffect(() => {
-        // console.log()
-        if(changeData != "input") return 
-        if(!amountIn || !tokenIn) {
-            setAmountOut("")
-            return     
-        } 
-        if(!tokenIn) return 
+        if (changeData !== "input") return;
+        if (!amountIn || !tokenIn) {
+            setAmountOut("");
+            return;
+        }
         getAmountOut(tokenIn.toLowerCase(), amountIn).then((res) => {
-            if(res) setAmountOut(res)
-        })
+            if (res) setAmountOut(res);
+        });
+    }, [tokenIn, amountIn]);
 
-
-    }, [tokenIn, amountIn])
-
-
-
-    useEffect(() =>{
-        if(changeData != 'output') return 
-        if(!tokenOut || !amountOut) {
-            setAmountIn("")
-            return     
-        } 
-        console.log(amountOut)
+    useEffect(() => {
+        if (changeData !== 'output') return;
+        if (!tokenOut || !amountOut) {
+            setAmountIn("");
+            return;
+        }
         getAmountOut(tokenOut.toLowerCase(), amountOut).then((res) => {
-            if(res) setAmountIn(res)
-        })
-
-    }, [tokenOut, amountOut ])
+            if (res) setAmountIn(res);
+        });
+    }, [tokenOut, amountOut]);
 
     useEffect(() => {
-        if(!tokenIn || !amountIn || !address) {
-            setInsufficientBalance(false)
-            return
-        } 
-        const token = tokens[tokenIn]
-        
+        if (!tokenIn || !amountIn || !address) {
+            setInsufficientBalance(false);
+            return;
+        }
+        const token = tokens[tokenIn];
+
         checkBalance(token, address).then((balance) => {
-            if(parseEther(amountIn) > balance) {
-                setInsufficientBalance(true)
-            }else{
-                setInsufficientBalance(false)
+            if (parseEther(amountIn) > balance) {
+                setInsufficientBalance(true);
+            } else {
+                setInsufficientBalance(false);
             }
-            // console.log(balance)
-        })
-
-
-    }, [tokenIn, amountIn])
-    
-
-    
-    useEffect(() => {
-        if(!tokenIn || !address) return 
-        
-        const provider = new BrowserProvider(walletProvider)
-        
-        const tokenAddress = tokens[tokenIn]
-        const tokenContract = new Contract(tokenAddress, erc20Abi, provider)
-    
-        const interValId = setInterval(async () => {
-            const [balance, decimals] = await Promise.all([tokenContract.balanceOf(address), tokenContract.decimals()]) 
-            setTokenInBal(formatUnits(balance, decimals))
-        }, 5000)
-    
-        return () => clearInterval(interValId) 
-    
-    }, [tokenIn, walletProvider, address])
-
-    useEffect(() => {
-        if(!tokenOut || !address) return 
-        
-        const provider = new BrowserProvider(walletProvider)
-        
-        const tokenAddress = tokens[tokenOut]
-        const tokenContract = new Contract(tokenAddress, erc20Abi, provider)
-    
-        const interValId = setInterval(async () => {
-            const [balance, decimals] = await Promise.all([tokenContract.balanceOf(address), tokenContract.decimals()]) 
-            setTokenOutBal(formatUnits(balance, decimals))
-        }, 3000)
-    
-        return () => clearInterval(interValId) 
-    
-    }, [tokenOut, walletProvider, address])
-
+        });
+    }, [tokenIn, amountIn]);
 
     return (
         <div className='mt-4'>
@@ -240,82 +186,84 @@ const TokenSwap = () => {
                 <div className='w-1/2'>
                     <div className='flex gap-4 items-end'>
                         <input type='text' value={amountIn} className='w-[80px] bg-transparent border-0 outline-none text-3xl'
-                         onChange={(e) => {
-                            setChangeData("input")
-                            setAmountIn(e.target.value)
-                            }}/>
+                            onChange={(e) => {
+                                setChangeData("input");
+                                setAmountIn(e.target.value);
+                            }} />
                         <button className='text-secondary text-sm'>MAX</button>
                     </div>
-                    <div className='mt-2 text-secondary text-xs'>Balance: {`${tokenInBal}`}</div>
+                    <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div>
                 </div>
                 <div className='w-1/2 '>
                     <Select
                         options={options}
+                        value={options.find(option => option.value === tokenIn)} // Set value for select
                         components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
                         styles={customStyles}
                         placeholder="Select an option"
                         onChange={(e) => {
-                            setChangeData("input")
-                            setTokenIn(e.value)
+                            setChangeData("input");
+                            setTokenIn(e.value);
                         }}
                     />
                 </div>
             </div>
-            <button className='p-1 -mt-2 m-auto border-primary border-2 rounded-full text-primary flex justify-between items-center  absolute left-[50%] translate-x-[-50%]'><ArrowUpDown /></button>
+            <button className='p-1 -mt-2 m-auto border-primary border-2 rounded-full text-primary flex justify-between items-center absolute left-[50%] translate-x-[-50%]' id="swaping-value"
+                onClick={handleSwap}>
+                <ArrowUpDown />
+            </button>
             <div className='w-full bg-accent rounded-md px-4 py-4 text-white flex items-center mt-4'>
                 <div className='w-1/2'>
                     <div className='flex gap-4 items-end'>
                         <input type='text' value={amountOut} className='w-[80px] bg-transparent border-0 outline-none text-3xl'
-                        onChange={(e) => {
-                            setChangeData("output")
-                            setAmountOut(e.target.value)}}
-                        />
+                            onChange={(e) => {
+                                setChangeData("output");
+                                setAmountOut(e.target.value);
+                            }} />
                         <button className='text-secondary text-sm'>MAX</button>
                     </div>
-                    <div className='mt-2 text-secondary text-xs'>Balance:{`${tokenOutBal}`}</div>
+                    <div className='mt-2 text-secondary text-xs'>Balance: $99.29</div>
                 </div>
                 <div className='w-1/2 '>
                     <Select
                         options={options}
+                        value={options.find(option => option.value === tokenOut)} // Set value for select
                         components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
                         styles={customStyles}
                         onChange={(e) => {
-                            setChangeData("output")
-                            setTokenOut(e.value)}}
+                            setChangeData("output");
+                            setTokenOut(e.value);
+                        }}
                         placeholder="Select an option"
                     />
                 </div>
-                            
+
             </div>
             {insufficientBalance && <p className='flex justify-between text-red-500'><span>Insufficient Balance</span></p>}
             <div className='mt-4 bg-accent opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs'>
-            
                 <p className='flex justify-between'><span>Gold Price</span><span className='text-white'>1.002g per 1 QMGT</span></p>
-                {/* <p className='flex justify-between mt-2'><span>Minimum Recieved</span><span className='text-white'>100 QMGT</span></p>
+                <p className='flex justify-between mt-2'><span>Minimum Received</span><span className='text-white'>100 QMGT</span></p>
                 <p className='flex justify-between mt-2'><span>Price Impact</span><span className='text-white'>0.001</span></p>
-                <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p> */}
+                <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p>
             </div>
             <div>
-                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary ' disabled={insufficientBalance || !tokenIn || !amountIn} 
-                onClick={()=>{
-                    !address ? open() : setTransactionModal(true) }
-                }
-                    >{`${!address ? "Connect Wallet" : insufficientBalance ? "Insufficient Balance" : "Swap"}`}</button>
+                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary' disabled={insufficientBalance}
+                    onClick={() => {
+                        !address ? open() : setTransactionModal(true)
+                    }}
+                >{`${!address ? "Connect Wallet" : insufficientBalance ? "Insufficient Balance" : "Swap"}`}</button>
             </div>
-             
-    {transactionModal && <TransactionModal 
-                closeModal={closeModal}  
-                transactionComplete={transactionSubmit} 
-                tokenIn= {tokenIn} 
+
+            {transactionModal && <TransactionModal
+                closeModal={closeModal}
+                transactionComplete={transactionSubmit}
+                tokenIn={tokenIn}
                 amountIn={amountIn}
                 tokenOut={tokenOut}
                 amountOut={amountOut}
-                setTransactionData={setTransactionData}
-                setTransactionCompleteModal={setTransactionCompleteModal}
-                />
-                
-                }
-    {transactionCompleteModal && <TransactionCompleteModal closeModal={closeTransactionCompleteModal} data={transactionData}/>}
+            />
+            }
+            {transactionCompleteModal && <TransactionCompleteModal closeModal={closeTransactionCompleteModal} />}
         </div>
     );
 };

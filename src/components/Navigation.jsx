@@ -29,11 +29,7 @@ const Navigation = () => {
                     <div className='absolute right-10 top-10 md:hidden justify-end'> <button onClick={()=>setNavShow(false)}><X /></button></div>
                     <ul className='nav md:flex md:gap-4'>
                         <li><NavLink to="/">Swap</NavLink></li>
-                        <li><NavLink to="/pool">Pool</NavLink></li>
-                        <li><NavLink to="/vote">Vote</NavLink></li>
-                        <li><NavLink to="/qms">QMS</NavLink></li>
-                        <li><NavLink to="/qca">QCA</NavLink></li>
-                        <li><NavLink to="/smart-trade">Smart Trade</NavLink></li>
+                        
                     </ul>
 
                 </div>
