@@ -12,10 +12,10 @@ const Swap = () => {
         <div className='w-[500px] mt-36'>
           <div className='flex justify-between text-white items-center'>
             <div><button onClick={() => { setTokenSwap(true) }}>Token Swap</button> 
-             {/* <button onClick={() => { setTokenSwap(false) }}>Credit Card</button> */}
+             <button onClick={() => { setTokenSwap(false) }}>Buy via Fiat</button>
              </div>
             <div className='flex gap-2'>
-              <button className='text-[14px] flex gap-2 bg-black p-1 px-2 rounded-full items-center '><GitCompare className='w-[14px] text-primary' /> 0.5%</button>
+              <button className='text-[14px] flex gap-2 bg-black p-1 px-2 rounded-full items-center '><GitCompare className='w-[14px] text-primary' /> 0.3%</button>
               <button className='text-[14px] bg-black p-1 px-2 rounded-full'><RefreshCcw className='w-[14px] text-primary' /></button>
             </div>
           </div>
