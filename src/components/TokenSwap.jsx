@@ -6,11 +6,10 @@ import TransactionModal from './TransactionModal';
 import TransactionCompleteModal from './TransactionCompleteModal';
 import { swapAbi } from '../abis/swapAbi';
 import { useWeb3Modal, useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react';
-import { BrowserProvider, formatEther, parseEther, parseUnits } from 'ethers';
+import { BrowserProvider, formatEther, parseEther } from 'ethers';
 import { Contract } from 'ethers';
 import { erc20Abi } from '../abis/erc20Abi';
-import { oracleAbi} from '../abis/oracleAbi';
-import {TOKENAddress, USDTAddress, oracleAddress, swapAddress} from "../addresses.js"
+import {TOKENAddress, USDTAddress, swapAddress} from "../addresses.js"
 import { formatUnits } from 'ethers';
 
 const tokens = {
@@ -94,7 +93,7 @@ const TokenSwap = () => {
     };
 
     const [transactionModal, setTransactionModal] = useState(false);
-    const [transactionCompleteModal, setTransactionCompleteModal] = useState(false);
+    const [transactionCompleteModal, setTransactionCompleteModal] = useState(true);
     const [transactionData, setTransactionData] = useState({})
     const [tokenIn, setTokenIn] = useState("")
     const [tokenOut, setTokenOut] = useState("")
@@ -103,7 +102,7 @@ const TokenSwap = () => {
     const [changeData, setChangeData] = useState("")
     const [tokenInBal, setTokenInBal] = useState("0")
     const [tokenOutBal, setTokenOutBal] = useState("0")
-    const [goldPriceUsd, setGoldPriceUsd] = useState("0")
+
     const {address} = useWeb3ModalAccount()
     const {open} = useWeb3Modal()
     const [insufficientBalance, setInsufficientBalance] = useState(false)
@@ -148,16 +147,6 @@ const TokenSwap = () => {
     }
     
     
-    useEffect(() => {
-        if(!walletProvider) return 
-        const provider = new BrowserProvider(walletProvider)
-        const priceFeedContract = new Contract(oracleAddress, oracleAbi, provider)
-        priceFeedContract.latestRoundData().then((res) => {
-            const goldPrice = formatUnits(res[1]  / 31n, 18)
-            setGoldPriceUsd(goldPrice)
-        })
-
-    }, [walletProvider])
 
     useEffect(() => {
         // console.log()
@@ -262,7 +251,6 @@ const TokenSwap = () => {
                 <div className='w-1/2 '>
                     <Select
                         options={options}
-                        value={options.find(option => option.value === tokenIn)}
                         components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
                         styles={customStyles}
                         placeholder="Select an option"
@@ -289,7 +277,6 @@ const TokenSwap = () => {
                 <div className='w-1/2 '>
                     <Select
                         options={options}
-                        value={options.find(option => option.value === tokenOut)}
                         components={{ Option: CustomOption, SingleValue: CustomSingleValue }}
                         styles={customStyles}
                         onChange={(e) => {
@@ -303,7 +290,7 @@ const TokenSwap = () => {
             {insufficientBalance && <p className='flex justify-between text-red-500'><span>Insufficient Balance</span></p>}
             <div className='mt-4 bg-accent opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs'>
             
-                <p className='flex justify-between'><span>Gold Price</span><span className='text-white'>1.002g per {Number(goldPriceUsd).toPrecision(4)}  USDT</span></p>
+                <p className='flex justify-between'><span>Gold Price</span><span className='text-white'>1.002g per 1 QMGT</span></p>
                 {/* <p className='flex justify-between mt-2'><span>Minimum Recieved</span><span className='text-white'>100 QMGT</span></p>
                 <p className='flex justify-between mt-2'><span>Price Impact</span><span className='text-white'>0.001</span></p>
                 <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p> */}
