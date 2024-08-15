@@ -140,7 +140,7 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                             {/* <p className='text-sm text-gray-400'>Balance: $99.43</p> */}
                         </div>
                         <div className='flex flex-col justify-around items-center w-full text-white '>
-                            <p className='text-sm text-gray-400 text-yellow-300'>to</p>
+                            <p className='text-sm  text-yellow-300'>to</p>
                             <h1 className='text-3xl font-medium'>{`${parseFloat(amtOut).toPrecision(4)} ${tokenOut}`}</h1>
                         </div>
                         <div className='flex text-white w-full justify-center gap-4 text-xl font-thin mt-6'>
