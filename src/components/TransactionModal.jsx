@@ -66,6 +66,7 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
         
         setTransactionData({hash : res.hash, tokenIn, amountIn, tokenOut, amountOut })
         setTransactionCompleteModal(true)
+        closeModal()
         }catch(e){
             console.log(e) 
         }
@@ -136,7 +137,7 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                     </div>
                     <div className='w-full gap-3 mt-4'>
                         <div className='flex flex-col justify-around items-center w-full text-white mt-12'>
-                            <h1 className='text-3xl font-medium'>{`${amountIn} ${tokenIn}`}</h1>
+                            <h1 className='text-3xl font-medium'>{`${parseFloat(amountIn).toPrecision(5)} ${tokenIn}`}</h1>
                             {/* <p className='text-sm text-gray-400'>Balance: $99.43</p> */}
                         </div>
                         <div className='flex flex-col justify-around items-center w-full text-white '>
