@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import LoginModal from './LoginModal';
 import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
-import {Logo} from '../assets/au-logo.png'
+import Logo from '../assets/au-logo.jpg'
 
 
 const shortenAddress = (address) => {
