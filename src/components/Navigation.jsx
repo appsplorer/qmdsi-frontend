@@ -24,16 +24,12 @@ const Navigation = () => {
     return (
         <div><div className='px-4 md:px-24 py-4 text-white flex justify-between items-center'>
             <div className="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-8">
-                <a href=''><img src={Logo} /></a>
+                <a href=''><img src={Logo} className="h-[50px]"/></a>
                 <div className={`nav-links duration-500 md:static bg-background absolute  md:min-h-fit min-h-[60vh] left-0 top-[-100%] md:w-auto  w-full flex items-center px-5 z-1000 md:z-0 ${navShow ? 'top-0' : ''}` }>
                     <div className='absolute right-10 top-10 md:hidden justify-end'> <button onClick={()=>setNavShow(false)}><X /></button></div>
                     <ul className='nav md:flex md:gap-4'>
                         <li><NavLink to="/">Swap</NavLink></li>
-                        <li><NavLink to="/pool">Pool</NavLink></li>
-                        <li><NavLink to="/vote">Vote</NavLink></li>
-                        <li><NavLink to="/qms">QMS</NavLink></li>
-                        <li><NavLink to="/qca">QCA</NavLink></li>
-                        <li><NavLink to="/smart-trade">Smart Trade</NavLink></li>
+                        
                     </ul>
 
                 </div>
