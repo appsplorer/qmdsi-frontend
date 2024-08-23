@@ -10,6 +10,8 @@ import QCA from './pages/QCA.jsx'
 import SmartTrade from './pages/SmartTrade.jsx'
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
 import { ContractContextProvider } from './contexts/ContractContext.jsx'
+import KYC from './pages/KYC.jsx'
+import Profile from './pages/Profile.jsx'
 const projectId = '61f529aa30c77838f2502740d05202ad'
 
 const mainnet = {
@@ -96,6 +98,14 @@ const router = createBrowserRouter([
       {
         path : "/smart-trade",
         element : <SmartTrade />,
+      },
+      {
+        path : "/kyc",
+        element : <KYC />,
+      },
+      {
+        path : "/profile",
+        element : <Profile />,
       }
     ]
   }
