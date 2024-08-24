@@ -36,7 +36,7 @@ const Nominee = () => {
     const customStyles = {
         control: (provided) => ({
             ...provided,
-            backgroundColor: '#fff',
+            backgroundColor: 'rgb(30 30 32 / var(--tw-bg-opacity))',
             borderColor: '#1E1E20',
             minHeight: '50px',
             height: '50px',
@@ -84,7 +84,7 @@ const Nominee = () => {
             onSubmit={handleSubmit(onSubmit)}
         >
             <div className="">
-                <h1 className='text-xl block'>Personal Information:</h1>
+                <h1 className='text-3xl block text-center'>Personal Information</h1>
 
                 {/* Name , Employer, Income  */}
                 <div className='flex gap-3 mb-3 mt-3'>
@@ -97,7 +97,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your Name"
                                     {...field}
@@ -114,7 +114,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your Employers Name"
                                     {...field}
@@ -131,7 +131,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="₱200,001 - ₱500,000"
                                     {...field}
@@ -152,7 +152,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="date"
                                     {...field}
                                 />
@@ -168,7 +168,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <textarea
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your Address"
                                     rows={3}
@@ -190,7 +190,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your City Name"
                                     {...field}
@@ -207,7 +207,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your Zip Code"
                                     {...field}
@@ -292,7 +292,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your Mother's Name"
                                     {...field}
@@ -309,7 +309,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Income Tax No"
                                     {...field}
@@ -349,7 +349,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter ID Number"
                                     {...field}
@@ -370,7 +370,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Industry"
                                     {...field}
@@ -387,7 +387,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Occupation"
                                     {...field}
@@ -404,7 +404,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Source Of Income"
                                     {...field}
@@ -425,7 +425,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Email"
                                     {...field}
@@ -442,7 +442,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Email 2"
                                     {...field}
@@ -463,7 +463,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Mobile Phone"
                                     {...field}
@@ -480,7 +480,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Phone 2"
                                     {...field}
@@ -497,7 +497,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Fax Number"
                                     {...field}
@@ -549,20 +549,35 @@ const Nominee = () => {
                     </div>
                 </div>
                 {/* Profile Picture  */}
-                <div className='mb-3'>
-                    <label className="block text-sm mb-2" htmlFor="idFile">
-                        Upload Profile Picture
-                    </label>
-                    <input
-                        type="file"
-                        name="profilePic"
-                        onChange={(e) => setValue('idFile', e.target.files[0])}
-                        className="bg-dark p-3 rounded border-0 outline-none text-primary"
-                    />
+                <div className='flex gap-3 mb-3 mt-3'>
+
+                <div className='mb-3 w-1/2'>
+                        <label className="block text-sm mb-2" htmlFor="idFile">
+                            Upload Profile Picture
+                        </label>
+                        <input
+                            type="file"
+                            name="profilePic"
+                            onChange={(e) => setValue('idFile', e.target.files[0])}
+                            className="bg-background p-3 rounded border-0 outline-none text-primary w-full"
+                        />
+                    </div>
+
+                    <div className='mb-3 w-1/2'>
+                        <label className="block text-sm mb-2" htmlFor="idFile">
+                            Upload ID
+                        </label>
+                        <input
+                            type="file"
+                            name="personalId"
+                            onChange={(e) => setValue('idFile', e.target.files[0])}
+                            className="bg-background p-3 rounded border-0 outline-none text-primary w-full"
+                        />
+                    </div>
                 </div>
 
 
-                <h1 className='text-xl block'>Nominee Information:</h1>
+                <h1 className='text-3xl block mt-12 text-center'>Nominee Information</h1>
 
                 {/* First Name Middle, Last  */}
                 <div className='flex gap-3 mb-3 mt-3'>
@@ -575,7 +590,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's First Name"
                                     {...field}
@@ -592,7 +607,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's Middle Name"
                                     {...field}
@@ -609,7 +624,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's Last Name"
                                     {...field}
@@ -631,7 +646,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="date"
                                     {...field}
                                 />
@@ -647,7 +662,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <textarea
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Your Address"
                                     rows={2}
@@ -658,7 +673,7 @@ const Nominee = () => {
                     </div>
                 </div>
 
-                
+
                 {/* City , Postal Code, Country  */}
                 <div className='flex gap-3 mb-3 mt-3'>
                     <div className='w-1/3'>
@@ -670,7 +685,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's City Name"
                                     {...field}
@@ -687,7 +702,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's Zip Code"
                                     {...field}
@@ -723,14 +738,14 @@ const Nominee = () => {
 
                     <div className='w-1/2'>
                         <label className="block text-sm mb-2" htmlFor="contactInfo">
-                        Relationship to the Testator
+                            Relationship to the Testator
                         </label>
                         <Controller
                             name="relation"
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's Relation"
                                     {...field}
@@ -747,7 +762,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter Nominee's Contact Info"
                                     {...field}
@@ -788,7 +803,7 @@ const Nominee = () => {
                             control={control}
                             render={({ field }) => (
                                 <input
-                                    className="w-full bg-dark p-3 rounded border-0 outline-none text-primary"
+                                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                                     type="text"
                                     placeholder="Enter ID Number"
                                     {...field}
@@ -806,7 +821,7 @@ const Nominee = () => {
                         type="file"
                         name="idFile"
                         onChange={(e) => setValue('idFile', e.target.files[0])}
-                        className="bg-dark p-3 rounded border-0 outline-none text-primary"
+                        className="bg-background p-3 rounded border-0 outline-none text-primary"
                     />
                 </div>
 
