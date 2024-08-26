@@ -91,7 +91,7 @@ contract QMGTSwap {
     }
 
 
-    function getUsdAmount (uint tokenAmount) public view returns (uint usdAmount) {
+    function getUsdAmount(uint tokenAmount) public view returns (uint usdAmount) {
         uint256 goldPrice = getLatestGoldPrice() / 31;
         goldPrice = goldPrice - ((goldPrice * 7) / 100);
 
@@ -107,6 +107,12 @@ contract QMGTSwap {
         ERC20(_token).transfer(msg.sender, amount);
     }
 
+    function getUsdtAddress () external view returns(address){
+        return usdt;
+    }
 
+    function getTokenAddress() external view returns(address) {
+        return token;
+    }
    
 }

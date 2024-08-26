@@ -31,7 +31,7 @@ const Navigation = () => {
                         <li><NavLink to="/">Swap</NavLink></li>
                         
                     </ul>
-
+                    
                 </div>
             </div>
             <div className="nav-right text-sm flex gap-2">
