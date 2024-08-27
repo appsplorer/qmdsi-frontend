@@ -82,3 +82,10 @@ class SwapSchema(BaseModel):
 class Tokens(str, Enum):
     qmgt = "qmgt"
     usdt = "usdt"
+
+
+class DebitSchema(BaseModel):
+    token : Tokens
+    address : str 
+    amount : float
+    

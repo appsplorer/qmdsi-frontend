@@ -1,6 +1,12 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Header
 from eth_typing import ChecksumAddress
-from schemas import PersonalInformation, Nominee, BaseUser, Tokens
+from schemas import (
+    PersonalInformation, 
+    Nominee, 
+    BaseUser, 
+    Tokens,
+    DebitSchema
+)
 import core, db, w3
 import constants
 import exceptions
@@ -76,12 +82,6 @@ def bind_account(
     return core.bind_user_account(address) 
 
 
-@app.post("/trade")
-def place_tade(
-    
-):
-    
-    pass
 
 @app.get("/balance")
 def get_balance(
@@ -95,11 +95,20 @@ def get_balance(
     return balance
 
 
+
 @app.post("/debit")
-def debit_user():
-    raise NotImplementedError("Not fully implemented")
+def debit_user(
+    data : DebitSchema,
+    x_token: str = Header(...)  
+):
+    hash = core.debit_user(x_token, data)
+    return {"hash" : hash}
 
 
 @app.post("/deposit")
-def deposit_to_user():
-    raise NotImplementedError("Not fully implemented")
+def deposit_to_user(
+    info : DebitSchema,
+    x_token: str = Header(...)
+):
+    hash = core.deposit_to_user(x_token, info)
+    return {"hash" : hash}
