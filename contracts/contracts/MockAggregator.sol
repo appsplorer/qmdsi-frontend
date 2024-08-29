@@ -13,5 +13,7 @@ contract AggregatorV3 {
         return (0, 2441 * 10**8, 0, 0, 0);
     }
 
-
+    function decimals() external view returns(uint8) {
+        return 8;
+    }
 }

@@ -10,6 +10,8 @@ const initSupply = parseEther("1000000")
 const name = "QMGTToken"
 const symbol = "$QMGT"
 const initSwap = parseEther("10000000")
+const treasury = getAddress("0x594C03Bc75C0dA7f38EEb88640691442EDfaF16C")
+
 describe("Token", () => {
 
     async function deployContracts() {
@@ -18,7 +20,7 @@ describe("Token", () => {
         const mockAggregator = await hre.viem.deployContract("AggregatorV3")
         
         const swap = await hre.viem.deployContract("QMGTSwap",  [mockAggregator.address, usdt.address,
-                                             token.address])
+                                             token.address, treasury])
         return {usdt, token, swap}
     }
     
