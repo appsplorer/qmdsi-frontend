@@ -1,7 +1,5 @@
-/* eslint-disable react/prop-types */
 import { useState, useContext } from "react";
-import { useForm, Controller } from "react-hook-form";
-import Select from "react-select";
+import { useForm } from "react-hook-form";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
 import { countryOptions, nationalityOptions } from "../data/countries";
 import {
@@ -16,82 +14,9 @@ import {
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
-import { customStyles } from "../styles";
-
-const FormField = ({
-  label,
-  name,
-  control,
-  type = "text",
-  placeholder,
-  rules,
-}) => (
-  <div className="w-full mb-4">
-    <label className="block text-sm mb-2" htmlFor={name}>
-      {label}
-    </label>
-    <Controller
-      name={name}
-      control={control}
-      rules={rules}
-      render={({ field, fieldState: { error } }) => (
-        <>
-          <input
-            className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-            type={type}
-            placeholder={placeholder}
-            {...field}
-          />
-          {error && (
-            <span className="text-red-500 text-sm">{error.message}</span>
-          )}
-        </>
-      )}
-    />
-  </div>
-);
-
-const SelectField = ({ label, name, control, options, placeholder, rules }) => (
-  <div className="w-full mb-4">
-    <label className="block text-sm mb-2" htmlFor={name}>
-      {label}
-    </label>
-    <Controller
-      name={name}
-      control={control}
-      rules={rules}
-      render={({ field, fieldState: { error } }) => (
-        <>
-          <Select
-            {...field}
-            options={options}
-            styles={customStyles}
-            onChange={(selectedOption) => field.onChange(selectedOption.value)}
-            placeholder={placeholder}
-            value={options.find((option) => option.value === field.value)}
-          />
-          {error && (
-            <span className="text-red-500 text-sm">{error.message}</span>
-          )}
-        </>
-      )}
-    />
-  </div>
-);
-
-const FileUploadField = ({ label, name, setValue }) => (
-  <div className="w-full mb-4">
-    <label className="block text-sm mb-2" htmlFor={name}>
-      {label}
-    </label>
-    <input
-      type="file"
-      name={name}
-      onChange={(e) => setValue(name, e.target.files[0])}
-      className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-    />
-  </div>
-);
+import FormField from "./FormField";
+import SelectField from "./SelectField";
+import FileUploadField from "./FileUploadField";
 
 const KycForm = () => {
   const {
@@ -148,8 +73,9 @@ const KycForm = () => {
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated successfully!");
     } catch (error) {
+      console.log(error);
       console.error("Error updating personal info:", error);
-      toast.error("Failed to update personal information. Please try again.");
+      toast.error(error?.detail);
     } finally {
       setIsPersonalInfoLoading(false);
     }
