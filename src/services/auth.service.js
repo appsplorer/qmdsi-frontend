@@ -16,9 +16,6 @@ export const authLogin = async (data) => {
     formData.append("grant_type", "password");
     formData.append("username", data.username);
     formData.append("password", data.password);
-    // formData.append('scope', '');
-    // formData.append('client_id', '');
-    // formData.append('client_secret', '');
 
     const response = await api.post("/login", formData, {
       headers: {

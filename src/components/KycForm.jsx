@@ -32,7 +32,7 @@ const FormField = ({
     <Controller
       name={name}
       control={control}
-      rules={rules} // Add rules here
+      rules={rules}
       render={({ field, fieldState: { error } }) => (
         <>
           <input
@@ -58,7 +58,7 @@ const SelectField = ({ label, name, control, options, placeholder, rules }) => (
     <Controller
       name={name}
       control={control}
-      rules={rules} // Add rules here
+      rules={rules}
       render={({ field, fieldState: { error } }) => (
         <>
           <Select
