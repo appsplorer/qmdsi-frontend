@@ -15,17 +15,16 @@ const Nominee = () => {
   const {
     control,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm();
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useContext(AuthContext);
+  const { auth } = useContext(AuthContext);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
       if (data.idFile) {
-        await updateNomineeImages(user.accessToken, data.idFile);
+        await updateNomineeImages(auth.accessToken, data.idFile);
       }
 
       const nomineeData = {
@@ -43,7 +42,7 @@ const Nominee = () => {
         idNumber: parseInt(data.idNumber, 10),
       };
 
-      await updateNomineeInfo(user.accessToken, nomineeData);
+      await updateNomineeInfo(auth.accessToken, nomineeData);
 
       toast.success("KYC submitted successfully!");
     } catch (error) {
@@ -396,9 +395,10 @@ const Nominee = () => {
                   <Select
                     {...field}
                     options={nationalIdTypeOptions}
-                    onChange={(option) => setValue("idType", option.value)}
+                    onChange={(option) => field.onChange(option)}
                     styles={customStyles}
                     placeholder="Select ID Type"
+                    value={field.value} // Ensure the selected value is controlled
                   />
                   {errors.idType && (
                     <p className="text-red-500 text-xs mt-1">

@@ -3,6 +3,7 @@ import { getUser } from "../services/users.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
@@ -33,7 +34,7 @@ const Profile = () => {
 
   const handleCopyReferralLink = () => {
     navigator.clipboard.writeText(profileData.referralLink);
-    alert("Referral link copied to clipboard!");
+    toast.info("Referral link copied to clipboard!");
   };
 
   if (!profileData) {

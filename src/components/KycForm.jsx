@@ -101,14 +101,14 @@ const KycForm = () => {
   } = useForm({
     mode: "onChange",
   });
-  const { user } = useContext(AuthContext);
+  const { auth } = useContext(AuthContext);
   const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
       await updateProfileImages(
-        user.accessToken,
+        auth.accessToken,
         data.profilePic,
         data.personalId
       );
@@ -140,7 +140,7 @@ const KycForm = () => {
         gender: data.gender,
       };
 
-      await updatePersonalInfo(user.accessToken, personalInfoData);
+      await updatePersonalInfo(auth.accessToken, personalInfoData);
 
       toast.success("Profile updated successfully!");
     } catch (error) {

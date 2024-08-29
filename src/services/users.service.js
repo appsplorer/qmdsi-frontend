@@ -52,3 +52,18 @@ export const getUser = async (accessToken) => {
     throw error;
   }
 };
+
+export const getUserRefs = async (accessToken) => {
+  try {
+    const response = await api.get("/refs", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw error;
+  }
+};
