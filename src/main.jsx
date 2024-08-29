@@ -1,51 +1,21 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Swap from './pages/Swap.jsx'
-import ErorrPage from './components/404.jsx'
-import QMS from './pages/QMS.jsx'
-import QCA from './pages/QCA.jsx'
-import SmartTrade from './pages/SmartTrade.jsx'
-import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
-import { ContractContextProvider } from './contexts/ContractContext.jsx'
-import KYC from './pages/KYC.jsx'
-import Profile from './pages/Profile.jsx'
-const projectId = '61f529aa30c77838f2502740d05202ad'
-
-const mainnet = {
-  chainId: 1,
-  name: 'Ethereum',
-  currency: 'ETH',
-  explorerUrl: 'https://etherscan.io',
-  rpcUrl: 'https://cloudflare-eth.com'
-}
-
-const sepolia = {
-  chainId: 11155111,
-  name: 'Sepolia',
-  currency: 'ETH',
-  explorerUrl: 'https://sepolia.etherscan.io',
-  rpcUrl: 'https://ethereum-sepolia-rpc.publicnode.com'
-}
-
-const bscTestnet = {
-  chainId : 97,
-  currency : "tBNB",
-  name : "BNB Smart Chain Testnet",
-  explorerUrl: "https://testnet.bscscan.com",
-  rpcUrl : "https://bsc-testnet-rpc.publicnode.com"
-}
-
-
-// 3. Create a metadata object
-const metadata = {
-  name: 'My Website',
-  description: 'My Website description',
-  url: 'https://mywebsite.com', // origin must match your domain & subdomain
-  icons: ['https://avatars.mywebsite.com/']
-}
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Swap from "./pages/Swap.jsx";
+import ErorrPage from "./components/404.jsx";
+import QMS from "./pages/QMS.jsx";
+import QCA from "./pages/QCA.jsx";
+import SmartTrade from "./pages/SmartTrade.jsx";
+import { createWeb3Modal, defaultConfig } from "@web3modal/ethers/react";
+import { ContractContextProvider } from "./contexts/ContractContext.jsx";
+import KYC from "./pages/KYC.jsx";
+import Profile from "./pages/Profile.jsx";
+const projectId = "61f529aa30c77838f2502740d05202ad";
+import { metadata, bscTestnet } from "./constants/crypto.js";
+import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
 
 // 4. Create Ethers config
 const ethersConfig = defaultConfig({
@@ -56,64 +26,70 @@ const ethersConfig = defaultConfig({
   enableEIP6963: true, // true by default
   enableInjected: true, // true by default
   enableCoinbase: true, // true by default
-  rpcUrl: '...', // used for the Coinbase SDK
-  defaultChainId: 1 // used for the Coinbase SDK
-})
+  rpcUrl: "...", // used for the Coinbase SDK
+  defaultChainId: 1, // used for the Coinbase SDK
+});
 
 // 5. Create a Web3Modal instance
 createWeb3Modal({
   ethersConfig,
   chains: [bscTestnet],
   projectId,
-  enableAnalytics: false // Optional - defaults to your Cloud configuration
-})
-
-
+  enableAnalytics: false, // Optional - defaults to your Cloud configuration
+});
 
 const router = createBrowserRouter([
   {
-    element : <App />,
-    errorElement : <ErorrPage />,
-    children : [
+    element: <App />,
+    errorElement: <ErorrPage />,
+    children: [
       {
-        path : "/",
-        element : <Swap />,
+        path: "/",
+        element: <Swap />,
       },
       {
-        path : "/pool",
-        element : <Swap />,
+        path: "/signin",
+        element: <Login />,
       },
       {
-        path : "/vote",
-        element : <Swap />,
+        path: "/signup",
+        element: <Register />,
       },
       {
-        path : "/qms",
-        element : <QMS />,
+        path: "/pool",
+        element: <Swap />,
       },
       {
-        path : "/qca",
-        element : <QCA />,
+        path: "/vote",
+        element: <Swap />,
       },
       {
-        path : "/smart-trade",
-        element : <SmartTrade />,
+        path: "/qms",
+        element: <QMS />,
       },
       {
-        path : "/kyc",
-        element : <KYC />,
+        path: "/qca",
+        element: <QCA />,
       },
       {
-        path : "/profile",
-        element : <Profile />,
-      }
-    ]
-  }
+        path: "/smart-trade",
+        element: <SmartTrade />,
+      },
+      {
+        path: "/kyc",
+        element: <KYC />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
+      },
+    ],
+  },
 ]);
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ContractContextProvider>
       <RouterProvider router={router} />
     </ContractContextProvider>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

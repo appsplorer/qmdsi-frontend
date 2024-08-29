@@ -1,14 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import Navigation from './components/Navigation'
-import { Outlet } from 'react-router'
+import Navigation from "./components/Navigation";
+import { Outlet } from "react-router";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export default function App() {
   return (
-    <div className='bg-blue'>
+    <div className="bg-blue">
       <Navigation />
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
-  )
+  );
 }

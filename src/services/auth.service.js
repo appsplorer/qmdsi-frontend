@@ -1,0 +1,33 @@
+import api from "./api.service";
+
+export const authSignup = async (data) => {
+  try {
+    const response = await api.post("/signup", data);
+
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const authLogin = async (data) => {
+  try {
+    const formData = new URLSearchParams();
+    formData.append("grant_type", "password");
+    formData.append("username", data.username);
+    formData.append("password", data.password);
+    // formData.append('scope', '');
+    // formData.append('client_id', '');
+    // formData.append('client_secret', '');
+
+    const response = await api.post("/login", formData, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
