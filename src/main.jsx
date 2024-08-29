@@ -4,7 +4,7 @@ import App from "./App.jsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Swap from "./pages/Swap.jsx";
-import ErorrPage from "./components/404.jsx";
+import ErrorPage from "./components/404.jsx";
 import QMS from "./pages/QMS.jsx";
 import QCA from "./pages/QCA.jsx";
 import SmartTrade from "./pages/SmartTrade.jsx";
@@ -12,10 +12,12 @@ import { createWeb3Modal, defaultConfig } from "@web3modal/ethers/react";
 import { ContractContextProvider } from "./contexts/ContractContext.jsx";
 import KYC from "./pages/KYC.jsx";
 import Profile from "./pages/Profile.jsx";
-const projectId = "61f529aa30c77838f2502740d05202ad";
-import { metadata, bscTestnet } from "./constants/crypto.js";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
+import PrivateRoute from "./components/PrivateRoute.jsx";
+
+const projectId = "61f529aa30c77838f2502740d05202ad";
+import { metadata, bscTestnet } from "./constants/crypto.js";
 
 // 4. Create Ethers config
 const ethersConfig = defaultConfig({
@@ -41,7 +43,7 @@ createWeb3Modal({
 const router = createBrowserRouter([
   {
     element: <App />,
-    errorElement: <ErorrPage />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
@@ -76,16 +78,22 @@ const router = createBrowserRouter([
         element: <SmartTrade />,
       },
       {
-        path: "/kyc",
-        element: <KYC />,
-      },
-      {
-        path: "/profile",
-        element: <Profile />,
+        element: <PrivateRoute />,
+        children: [
+          {
+            path: "/profile",
+            element: <Profile />,
+          },
+          {
+            path: "/kyc",
+            element: <KYC />,
+          },
+        ],
       },
     ],
   },
 ]);
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ContractContextProvider>

@@ -1,18 +1,57 @@
+import { useState, useContext } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
-import { countryOptions, nationalityOptions } from "../data/countries";
+import { countryOptions } from "../data/countries";
+import { nationalIdTypeOptions } from "../constants/KYC";
 import {
-  genderOptions,
-  maritalStatusOptions,
-  nationalIdTypeOptions,
-} from "../constants/KYC";
+  updateNomineeInfo,
+  updateNomineeImages,
+} from "../services/nominee.service";
+import { toast } from "react-toastify";
+import { FaSpinner } from "react-icons/fa";
+import { AuthContext } from "../contexts/AuthContext";
 
 const Nominee = () => {
-  const { control, handleSubmit, setValue, watch } = useForm();
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useContext(AuthContext);
 
-  const onSubmit = (data) => {
-    // Add form submission logic here
-    console.log(data);
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    try {
+      if (data.idFile) {
+        await updateNomineeImages(user.accessToken, data.idFile);
+      }
+
+      const nomineeData = {
+        firstName: data.firstName,
+        middleName: data.middleName,
+        lastName: data.lastName,
+        dateOfBirth: data.dateOfBirth,
+        address: data.address,
+        city: data.city,
+        postalCode: data.zipCode,
+        country: data.country,
+        relationshipToTestator: data.relation,
+        contactInfo: data.contactInfo,
+        idType: data.idType,
+        idNumber: parseInt(data.idNumber, 10),
+      };
+
+      await updateNomineeInfo(user.accessToken, nomineeData);
+
+      toast.success("KYC submitted successfully!");
+    } catch (error) {
+      console.error("Error updating nominee information:", error);
+      toast.error("Failed to submit KYC. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const customStyles = {
@@ -66,786 +105,375 @@ const Nominee = () => {
 
   return (
     <form
-      className="w-full max-w-[1200px] bg-accent rounded-md p-8 text-white"
+      className="w-full max-w-[1200px] bg-accent rounded-md p-4 md:p-8 text-white"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <div className="">
-        <h1 className="text-3xl block text-center">Personal Information</h1>
-
-        {/* Name , Employer, Income  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="firstName">
-              Name
-            </label>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your Name"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="lastName">
-              Employer's Name
-            </label>
-            <Controller
-              name="employerName"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your Employers Name"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="middleName">
-              Income Per Annum
-            </label>
-            <Controller
-              name="income"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="₱200,001 - ₱500,000"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* DOB , Address  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="dateOfBirth">
-              Date Of Birth
-            </label>
-            <Controller
-              name="dateOfBirth"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="date"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-2/3">
-            <label className="block text-sm mb-2" htmlFor="address">
-              Address
-            </label>
-            <Controller
-              name="address"
-              control={control}
-              render={({ field }) => (
-                <textarea
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your Address"
-                  rows={3}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* City , Postal Code  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="firstName">
-              City
-            </label>
-            <Controller
-              name="city"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your City Name"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="lastName">
-              Postal Code / Zip Code
-            </label>
-            <Controller
-              name="zipCode"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your Zip Code"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Country, Citizenship , Currency  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="country">
-              Country
-            </label>
-            <Controller
-              name="country"
-              control={control}
-              defaultValue={"Philippine"}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={countryOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("country", selectedOption.value)
-                  }
-                  placeholder="Select Country"
-                  value={countryOptions.find(
-                    (option) => option.value === watch("country")
-                  )}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="country">
-              Citizenship
-            </label>
-            <Controller
-              name="citizenship"
-              control={control}
-              defaultValue={"Filipino"}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={nationalityOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("country", selectedOption.value)
-                  }
-                  placeholder="Select Citizenship"
-                  value={nationalityOptions.find(
-                    (option) => option.value === watch("country")
-                  )}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="country">
-              Currency
-            </label>
-            <Controller
-              name="currency"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={countryOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("country", selectedOption.value)
-                  }
-                  placeholder="Select Currency"
-                  value={countryOptions.find(
-                    (option) => option.value === watch("country")
-                  )}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Mother Name , Income Tax No  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="contactInfo">
-              Mother's Name
-            </label>
-            <Controller
-              name="motherName"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your Mother's Name"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="contactInfo">
-              Income Tax No
-            </label>
-            <Controller
-              name="incomeTaxNo"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Income Tax No"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Id Type , Id No  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="idType">
-              ID Type
-            </label>
-            <Controller
-              name="idType"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={nationalIdTypeOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("idType", selectedOption.value)
-                  }
-                  placeholder="Select ID Type"
-                  value={nationalIdTypeOptions.find(
-                    (option) => option.value === watch("idType")
-                  )}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="idNumber">
-              ID Number
-            </label>
-            <Controller
-              name="idNumber"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter ID Number"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Name , Employer, Income  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="firstName">
-              Industry
-            </label>
-            <Controller
-              name="industry"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Industry"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="lastName">
-              Occupation
-            </label>
-            <Controller
-              name="occupation"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Occupation"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="middleName">
-              Source of Income
-            </label>
-            <Controller
-              name="income"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Source Of Income"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Email , Email 2  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="firstName">
-              Email
-            </label>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Email"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="lastName">
-              Email 2
-            </label>
-            <Controller
-              name="email2"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Email 2"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Mobile Phone , Phone 2 Fax No */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="firstName">
-              Mobile Phone
-            </label>
-            <Controller
-              name="mobilePhone"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Mobile Phone"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="lastName">
-              Phone 2
-            </label>
-            <Controller
-              name="phone2"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Phone 2"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="lastName">
-              Fax No
-            </label>
-            <Controller
-              name="faxNumber"
-              control={control}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Fax Number"
-                  {...field}
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Marital Status, Gender  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="country">
-              Marital Status
-            </label>
-            <Controller
-              name="marital"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={maritalStatusOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("country", selectedOption.value)
-                  }
-                  placeholder="Select Marital Status"
-                  value={maritalStatusOptions.find(
-                    (option) => option.value === watch("country")
-                  )}
-                />
-              )}
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="country">
-              Gender
-            </label>
-            <Controller
-              name="gender"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={genderOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("country", selectedOption.value)
-                  }
-                  placeholder="Select Gender"
-                  value={genderOptions.find(
-                    (option) => option.value === watch("country")
-                  )}
-                />
-              )}
-            />
-          </div>
-        </div>
-        {/* Profile Picture  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="mb-3 w-1/2">
-            <label className="block text-sm mb-2" htmlFor="idFile">
-              Upload Profile Picture
-            </label>
-            <input
-              type="file"
-              name="profilePic"
-              onChange={(e) => setValue("idFile", e.target.files[0])}
-              className="bg-background p-3 rounded border-0 outline-none text-primary w-full"
-            />
-          </div>
-
-          <div className="mb-3 w-1/2">
-            <label className="block text-sm mb-2" htmlFor="idFile">
-              Upload ID
-            </label>
-            <input
-              type="file"
-              name="personalId"
-              onChange={(e) => setValue("idFile", e.target.files[0])}
-              className="bg-background p-3 rounded border-0 outline-none text-primary w-full"
-            />
-          </div>
-        </div>
-
-        <h1 className="text-3xl block mt-12 text-center">
+      <div className="space-y-6">
+        <h1 className="text-2xl md:text-3xl mt-6 md:mt-12 text-center">
           Nominee Information
         </h1>
 
-        {/* First Name Middle, Last  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
+        {/* First Name, Middle, Last */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="w-full md:w-1/3">
             <label className="block text-sm mb-2" htmlFor="firstName">
               First Name
             </label>
             <Controller
               name="firstName"
               control={control}
+              rules={{ required: "First Name is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's First Name"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Nominee's First Name"
+                    {...field}
+                  />
+                  {errors.firstName && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.firstName.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="w-1/3">
+          <div className="w-full md:w-1/3 mt-3 md:mt-0">
             <label className="block text-sm mb-2" htmlFor="middleName">
               Middle Name
             </label>
             <Controller
               name="middleName"
               control={control}
+              rules={{ required: "Middle Name is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's Middle Name"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Nominee's Middle Name"
+                    {...field}
+                  />
+                  {errors.middleName && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.middleName.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="w-1/3">
+          <div className="w-full md:w-1/3 mt-3 md:mt-0">
             <label className="block text-sm mb-2" htmlFor="lastName">
               Last Name
             </label>
             <Controller
               name="lastName"
               control={control}
+              rules={{ required: "Last Name is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's Last Name"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Nominee's Last Name"
+                    {...field}
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.lastName.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
         </div>
 
-        {/* DOB , Address  */}
-
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
+        {/* DOB, Address */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="w-full md:w-1/3">
             <label className="block text-sm mb-2" htmlFor="dateOfBirth">
               Date Of Birth
             </label>
             <Controller
               name="dateOfBirth"
               control={control}
+              rules={{ required: "Date of Birth is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="date"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="date"
+                    {...field}
+                  />
+                  {errors.dateOfBirth && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.dateOfBirth.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="w-2/3">
+          <div className="w-full md:w-2/3 mt-3 md:mt-0">
             <label className="block text-sm mb-2" htmlFor="address">
               Address
             </label>
             <Controller
               name="address"
               control={control}
+              rules={{ required: "Address is required" }}
               render={({ field }) => (
-                <textarea
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Your Address"
-                  rows={2}
-                  {...field}
-                />
+                <>
+                  <textarea
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Your Address"
+                    rows={2}
+                    {...field}
+                  />
+                  {errors.address && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.address.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
         </div>
 
-        {/* City , Postal Code, Country  */}
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="firstName">
+        {/* City, Postal Code, Country */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="w-full md:w-1/3">
+            <label className="block text-sm mb-2" htmlFor="city">
               City
             </label>
             <Controller
               name="city"
               control={control}
+              rules={{ required: "City is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's City Name"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Nominee's City Name"
+                    {...field}
+                  />
+                  {errors.city && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.city.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="w-1/3">
-            <label className="block text-sm mb-2" htmlFor="lastName">
+          <div className="w-full md:w-1/3 mt-3 md:mt-0">
+            <label className="block text-sm mb-2" htmlFor="zipCode">
               Postal Code / Zip Code
             </label>
             <Controller
               name="zipCode"
               control={control}
+              rules={{ required: "Postal Code/Zip Code is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's Zip Code"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Postal/Zip Code"
+                    {...field}
+                  />
+                  {errors.zipCode && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.zipCode.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="w-1/3">
+          <div className="w-full md:w-1/3 mt-3 md:mt-0">
             <label className="block text-sm mb-2" htmlFor="country">
               Country
             </label>
             <Controller
               name="country"
               control={control}
-              defaultValue={"Philippine"}
+              rules={{ required: "Country is required" }}
               render={({ field }) => (
-                <Select
-                  {...field}
-                  options={countryOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("country", selectedOption.value)
-                  }
-                  placeholder="Select Country"
-                  value={countryOptions.find(
-                    (option) => option.value === watch("country")
+                <>
+                  <Select
+                    {...field}
+                    options={countryOptions}
+                    onChange={(option) => field.onChange(option)}
+                    styles={customStyles}
+                    placeholder="Select Country"
+                    value={field.value}
+                  />
+                  {errors.country && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.country.message}
+                    </p>
                   )}
-                />
+                </>
               )}
             />
           </div>
         </div>
 
-        {/* Relation, COntact Infor  */}
-
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
-            <label className="block text-sm mb-2" htmlFor="contactInfo">
-              Relationship to the Testator
+        {/* Relationship, Contact Info */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="w-full md:w-1/2">
+            <label className="block text-sm mb-2" htmlFor="relation">
+              Relationship to Testator
             </label>
             <Controller
               name="relation"
               control={control}
+              rules={{ required: "Relationship is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's Relation"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Relationship to Testator"
+                    {...field}
+                  />
+                  {errors.relation && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.relation.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2 mt-3 md:mt-0">
             <label className="block text-sm mb-2" htmlFor="contactInfo">
               Contact Info
             </label>
             <Controller
               name="contactInfo"
               control={control}
+              rules={{ required: "Contact Info is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter Nominee's Contact Info"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter Contact Information"
+                    {...field}
+                  />
+                  {errors.contactInfo && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.contactInfo.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
         </div>
 
-        {/* ID No, Id Type  */}
-
-        <div className="flex gap-3 mb-3 mt-3">
-          <div className="w-1/2">
+        {/* ID Type, ID Number */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="w-full md:w-1/2">
             <label className="block text-sm mb-2" htmlFor="idType">
               ID Type
             </label>
             <Controller
               name="idType"
               control={control}
+              rules={{ required: "ID Type is required" }}
               render={({ field }) => (
-                <Select
-                  {...field}
-                  options={nationalIdTypeOptions}
-                  styles={customStyles}
-                  onChange={(selectedOption) =>
-                    setValue("idType", selectedOption.value)
-                  }
-                  placeholder="Select ID Type"
-                  value={nationalIdTypeOptions.find(
-                    (option) => option.value === watch("idType")
+                <>
+                  <Select
+                    {...field}
+                    options={nationalIdTypeOptions}
+                    onChange={(option) => setValue("idType", option.value)}
+                    styles={customStyles}
+                    placeholder="Select ID Type"
+                  />
+                  {errors.idType && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.idType.message}
+                    </p>
                   )}
-                />
+                </>
               )}
             />
           </div>
-          <div className="w-1/2">
+          <div className="w-full md:w-1/2 mt-3 md:mt-0">
             <label className="block text-sm mb-2" htmlFor="idNumber">
               ID Number
             </label>
             <Controller
               name="idNumber"
               control={control}
+              rules={{ required: "ID Number is required" }}
               render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="text"
-                  placeholder="Enter ID Number"
-                  {...field}
-                />
+                <>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    placeholder="Enter ID Number"
+                    {...field}
+                  />
+                  {errors.idNumber && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.idNumber.message}
+                    </p>
+                  )}
+                </>
               )}
             />
           </div>
         </div>
 
-        <div className="mb-3">
+        {/* ID File */}
+        <div>
           <label className="block text-sm mb-2" htmlFor="idFile">
-            Upload ID File
+            ID File
           </label>
-          <input
-            type="file"
+          <Controller
             name="idFile"
-            onChange={(e) => setValue("idFile", e.target.files[0])}
-            className="bg-background p-3 rounded border-0 outline-none text-primary"
+            control={control}
+            render={({ field }) => (
+              <input
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="file"
+                accept="image/*"
+                {...field}
+              />
+            )}
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-primary p-3 rounded text-white hover:bg-secondary"
-        >
-          Submit KYC
-        </button>
+        {/* Submit Button */}
+        <div className="flex justify-center mt-6">
+          <button
+            type="submit"
+            className={`w-full bg-primary p-3 rounded text-white hover:bg-secondary flex items-center justify-center ${
+              isLoading ? "bg-gray-400 cursor-not-allowed" : ""
+            }`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <FaSpinner className="animate-spin mr-2" />
+                Submitting...
+              </>
+            ) : (
+              "Submit KYC"
+            )}
+          </button>
+        </div>
       </div>
     </form>
   );

@@ -26,8 +26,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await authLogin(formData);
-      console.log("Login successful:", response);
-      await login(response.access_token);
+      login(response.access_token);
       toast.success("Login successful!");
       navigate("/profile");
     } catch (error) {

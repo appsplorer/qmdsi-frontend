@@ -12,7 +12,6 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
-        console.log(userData);
         setProfileData({
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
