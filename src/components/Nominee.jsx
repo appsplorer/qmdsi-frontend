@@ -44,7 +44,7 @@ const Nominee = () => {
       toast.success("Nominee information submitted successfully!");
       setActiveTab("image");
     } catch (error) {
-      console.log(Error);
+      console.log(error);
       console.error("Error updating nominee information:", error);
       toast.error(error?.detail);
     } finally {
