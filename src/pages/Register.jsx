@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { authSignup } from "../services/auth.service";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
+import { countryOptions } from "../data/countries";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -73,15 +74,21 @@ const Register = () => {
                   <label className="block mb-2" htmlFor="country">
                     Country
                   </label>
-                  <input
-                    type="text"
+                  <select
                     id="country"
                     name="country"
                     value={formData.country}
                     onChange={handleChange}
                     className="w-full p-2 rounded bg-black text-white"
                     required
-                  />
+                  >
+                    <option value="">Select a country</option>
+                    {countryOptions.map((country) => (
+                      <option key={country.value} value={country.value}>
+                        {country.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex flex-col md:flex-row md:justify-between md:space-x-4">
