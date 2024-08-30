@@ -1,9 +1,10 @@
 import { Ellipsis, X } from "lucide-react";
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useContext, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import { useWeb3Modal, useWeb3ModalAccount } from "@web3modal/ethers/react";
 import Logo from "../assets/au-logo.png";
+import { AuthContext } from "../contexts/AuthContext";
 
 const shortenAddress = (address) => {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -14,7 +15,9 @@ const Navigation = () => {
   const [navShow, setNavShow] = useState(false);
   const { open } = useWeb3Modal();
   const { address } = useWeb3ModalAccount();
-
+  const {auth} = useContext(AuthContext)
+  const navigate = useNavigate()
+  
   const closeModal = () => {
     setShowModal(false);
   };
@@ -46,16 +49,29 @@ const Navigation = () => {
                   Swap
                 </NavLink>
               </li>
+            
+          
             </ul>
           </div>
         </div>
         <div className="nav-right text-sm flex gap-2">
-          <button
+          {
+            auth.isAuthenticated ?
+            <button
             className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary"
-            onClick={open}
+            onClick={() => navigate("/profile")}
           >
-            {address ? shortenAddress(address) : "Connect Wallet"}
-          </button>
+             Profile
+            </button>
+            :
+            <button
+            className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary"
+            onClick={() => navigate("/signin")}
+          >
+             Login
+            </button>
+          }
+          
           <button
             className="bg-accent py-1 px-3 rounded hover:bg-black h-[35px]"
             onClick={() => {

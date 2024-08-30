@@ -13,6 +13,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
+        console.log(userData.referral_sign_ups)
         setProfileData({
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
@@ -20,7 +21,8 @@ const Profile = () => {
           email: userData.email,
           kycStatus: userData.kyc_verified ? "Verified" : "Not Verified",
           referralLink: userData.ref_link,
-          referralSignUps: userData.referral_sign_ups || [],
+          walletAddress : userData.wallet_address,
+          referralSignUps: userData.referral_sign_ups,
         });
       } catch (error) {
         console.error("Error fetching profile data:", error);
@@ -78,6 +80,11 @@ const Profile = () => {
                 </p>
               </div>
             </div>
+            <div>
+                <p>
+                  <strong>Wallet Address:</strong> {profileData.walletAddress}
+                </p>
+              </div>
             <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:text-left text-left">
               <p>
                 <strong>KYC Status:</strong> {profileData.kycStatus}
@@ -107,8 +114,8 @@ const Profile = () => {
             <ul className="space-y-2">
               {profileData.referralSignUps.map((signup, index) => (
                 <li key={index} className="flex justify-between">
-                  <span>{signup.date}</span>
-                  <span>{signup.name}</span>
+                  <span>{signup.created_at}</span>
+                  <span>{signup.email}</span>
                 </li>
               ))}
             </ul>

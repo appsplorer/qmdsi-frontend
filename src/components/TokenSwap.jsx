@@ -1,7 +1,7 @@
 import { ArrowUpDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Select from 'react-select';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import TransactionModal from './TransactionModal';
 import TransactionCompleteModal from './TransactionCompleteModal';
 import { swapAbi } from '../abis/swapAbi';
@@ -12,6 +12,8 @@ import { erc20Abi } from '../abis/erc20Abi';
 import { oracleAbi} from '../abis/oracleAbi';
 import { TOKENAddress, USDTAddress, oracleAddress, swapAddress } from '../addresses';
 import { formatUnits } from 'ethers';
+import { AuthContext } from '../contexts/AuthContext';
+import { getAmountOut, getTokenBalance, getTokenDecimals } from '../services/swap.service';
 
 const tokens = {
     "USDT" : USDTAddress,
@@ -105,13 +107,9 @@ const TokenSwap = () => {
     const { open } = useWeb3Modal();
     const [insufficientBalance, setInsufficientBalance] = useState(false);
     const { walletProvider } = useWeb3ModalProvider();
+    const {profileData, auth} = useContext(AuthContext)
+    const navigator = useNavigate()
 
-    const checkBalance = async (token, owner) => {
-        const provider = new BrowserProvider(walletProvider);
-        const tokenContract = new Contract(token, erc20Abi, provider);
-        const balance = await tokenContract.balanceOf(owner);
-        return balance;
-    };
 
     const closeModal = () => {
         setTransactionModal(false);
@@ -128,18 +126,7 @@ const TokenSwap = () => {
         setTransactionCompleteModal(true);
     };
 
-    const getAmountOut = async (tokenIn, amountIn) => {
-        const provider = new BrowserProvider(walletProvider);
-        const contract = new Contract(swapAddress, swapAbi, provider);
-
-        if (tokenIn === "usdt") {
-            const res = await contract.getQmgtAmount(parseEther(amountIn));
-            return formatEther(res);
-        } else {
-            const res = await contract.getUsdAmount(parseEther(amountIn));
-            return formatEther(res);
-        }
-    };
+    
 
     useEffect(() => {
         if(!walletProvider) return 
@@ -183,14 +170,16 @@ const TokenSwap = () => {
     }, [tokenOut, amountOut]);
 
     useEffect(() => {
-        if (!tokenIn || !amountIn || !address) {
+        if (!tokenIn || !amountIn || !profileData?.walletAddress) {
             setInsufficientBalance(false);
             return;
         }
         const token = tokens[tokenIn];
 
-        checkBalance(token, address).then((balance) => {
+        getTokenBalance(token, profileData.walletAddress).then((balance) => {
+            
             if (parseEther(amountIn) > balance) {
+            
                 setInsufficientBalance(true);
             } else {
                 setInsufficientBalance(false);
@@ -199,38 +188,34 @@ const TokenSwap = () => {
     }, [tokenIn, amountIn]);
 
     useEffect(() => {
-        if(!tokenIn || !address) return 
-        
-        const provider = new BrowserProvider(walletProvider)
-        
+        if(!tokenIn || !profileData?.walletAddress) return 
         const tokenAddress = tokens[tokenIn]
-        const tokenContract = new Contract(tokenAddress, erc20Abi, provider)
-    
+        
         const interValId = setInterval(async () => {
-            const [balance, decimals] = await Promise.all([tokenContract.balanceOf(address), tokenContract.decimals()]) 
+            const [balance, decimals] = await Promise.all([getTokenBalance(tokenAddress, profileData.walletAddress), getTokenDecimals(tokenAddress)]) 
             setTokenInBal(formatUnits(balance, decimals))
         }, 5000)
     
         return () => clearInterval(interValId) 
     
-    }, [tokenIn, walletProvider, address])
+    }, [tokenIn, profileData?.walletAddress])
+
 
     useEffect(() => {
-        if(!tokenOut || !address) return 
+        if(!tokenOut || !profileData?.walletAddress) return 
         
-        const provider = new BrowserProvider(walletProvider)
         
         const tokenAddress = tokens[tokenOut]
-        const tokenContract = new Contract(tokenAddress, erc20Abi, provider)
+        
     
         const interValId = setInterval(async () => {
-            const [balance, decimals] = await Promise.all([tokenContract.balanceOf(address), tokenContract.decimals()]) 
+            const [balance, decimals] = await Promise.all([getTokenBalance(tokenAddress, profileData.walletAddress), getTokenDecimals(tokenAddress)]) 
             setTokenOutBal(formatUnits(balance, decimals))
         }, 3000)
     
         return () => clearInterval(interValId) 
     
-    }, [tokenOut, walletProvider, address])
+    }, [tokenOut, profileData?.walletAddress])
 
     return (
         <div className='mt-4'>
@@ -299,11 +284,11 @@ const TokenSwap = () => {
                 <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p> */}
             </div>
             <div>
-                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary' disabled={insufficientBalance}
+                <button className='w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary' disabled={insufficientBalance || (!parseFloat(amountIn) || !tokenIn)}
                     onClick={() => {
-                        !address ? open() : setTransactionModal(true)
+                        !auth.isAuthenticated ? open() : setTransactionModal(true)
                     }}
-                >{`${!address ? "Connect Wallet" : insufficientBalance ? "Insufficient Balance" : "Swap"}`}</button>
+                >{`${!auth.isAuthenticated ? "Login" : insufficientBalance ? "Insufficient Balance" : "Swap"}`}</button>
             </div>
 
             {transactionModal && <TransactionModal

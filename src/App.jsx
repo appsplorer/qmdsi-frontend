@@ -7,8 +7,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 export default function App() {
   return (
     <div className="bg-blue">
-      <Navigation />
       <AuthProvider>
+      <Navigation />
         <Outlet />
       </AuthProvider>
       <ToastContainer

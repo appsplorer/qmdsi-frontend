@@ -1,13 +1,15 @@
 /* eslint-disable react/prop-types */
 import { createContext, useState, useEffect } from "react";
+import { getUser } from "../services/users.service";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
     isAuthenticated: false,
     accessToken: null,
   });
+  const [profileData, setProfileData] = useState(null)
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -18,6 +20,32 @@ export const AuthProvider = ({ children }) => {
       });
     }
   }, []);
+
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userData = await getUser(auth.accessToken);
+        
+        setProfileData({
+          fullName: userData.full_name,
+          phoneNumber: userData.phone_number,
+          country: userData.country,
+          email: userData.email,
+          kycStatus: userData.kyc_verified ? "Verified" : "Not Verified",
+          referralLink: userData.ref_link,
+          walletAddress : userData.wallet_address,
+          referralSignUps: userData.referral_sign_ups,
+        });
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    if (auth?.accessToken) {
+      fetchUserData();
+    }
+  }, [auth?.accessToken]);
 
   const login = (token) => {
     localStorage.setItem("access_token", token);
@@ -36,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout }}>
+    <AuthContext.Provider value={{ auth, login, logout, profileData }}>
       {children}
     </AuthContext.Provider>
   );

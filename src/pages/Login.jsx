@@ -26,6 +26,7 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await authLogin(formData);
+      console.log(response)
       login(response.access_token);
       toast.success("Login successful!");
       navigate("/profile");

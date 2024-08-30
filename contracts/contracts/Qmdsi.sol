@@ -92,6 +92,14 @@ contract QMDSIAdmin {
         _;
     }
 
+    modifier checkAndDeploy(string calldata user) {
+        address _usr = getUserAccount(user);
+        bool _deployed = isDeployed(_usr);
+        if(!_deployed){
+            setupUserAccount(user);
+        }
+        _;
+    }
 
     constructor(address swapAddress) {
         _owner = msg.sender;
@@ -114,11 +122,10 @@ contract QMDSIAdmin {
     
     }
 
-   
+
     function initAccount (string calldata user) external returns(address accountAddress) {
         accountAddress = setupUserAccount(user);
     }
-
 
     function initUserAccount (string calldata user) internal returns(address addr){
         bytes memory bytecode = type(UserAccount).creationCode;
@@ -130,11 +137,11 @@ contract QMDSIAdmin {
         }
     }
 
-
     function setupUserAccount (string calldata user) internal returns(address accountAddress) {
         accountAddress = initUserAccount(user);
         UserAccount(accountAddress).config(user, _swapAddress);
     }
+
 
     function whitelistAddress (address _address) external onlyOwner {
         whitelisted[_address] = true;
@@ -144,9 +151,28 @@ contract QMDSIAdmin {
     function transferTokens(
     string calldata _from, 
     UserAccount.TransferStruct[] calldata transfers
-    ) external onlyWhitelisted {
+    ) external onlyWhitelisted checkAndDeploy(_from) {
         address accountAddress = getUserAccount(_from);
         UserAccount(accountAddress).transferTokens(transfers);
     } 
+
+    function buyQmgt(string calldata user, uint usdAmount) external onlyWhitelisted checkAndDeploy(user) {
+        address accountAddress = getUserAccount(user);
+        UserAccount(accountAddress).buyQmgt(usdAmount);
+    }
+
+    function sellQmgt(string calldata user, uint tokenAmount) external onlyWhitelisted checkAndDeploy(user) {
+        address accountAddress = getUserAccount(user);
+        UserAccount(accountAddress).sellQmgt(tokenAmount);
+    }
+
+
+    function isDeployed(address _addr) internal view returns (bool) {
+        uint256 codeSize;
+        assembly {
+            codeSize := extcodesize(_addr)
+        }
+        return codeSize > 0;
+    }
 
 }

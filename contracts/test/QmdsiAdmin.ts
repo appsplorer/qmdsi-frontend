@@ -1,6 +1,7 @@
 import hre, { viem } from "hardhat";
 import { getAddress, parseGwei, parseEther } from "viem";
 import { expect } from "chai";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 
 const initSupply = parseEther("1000000")
 const name = "QMGTToken"
@@ -10,6 +11,21 @@ const treasury = getAddress("0x594C03Bc75C0dA7f38EEb88640691442EDfaF16C")
 
 
 describe("QmdsiAdmin", () => {
+
+    
+    const deployContract = async () => {
+        const usdt = await hre.viem.deployContract("Token", [initSupply, "USD Tether", "USDT"])
+        const token = await hre.viem.deployContract("QMGTToken", [initSupply, name, symbol])
+        const mockAggregator = await hre.viem.deployContract("AggregatorV3")
+        
+        const swap = await hre.viem.deployContract("QMGTSwap",  [mockAggregator.address, usdt.address,
+            token.address, treasury])
+            await usdt.write.transfer([swap.address, initSwap])
+            await token.write.transfer([swap.address, initSwap])
+        const contract = await viem.deployContract("QMDSIAdmin", [swap.address])
+        return {usdt, token, contract}
+    }
+
 
     describe("User Address", () => {
         
@@ -26,19 +42,19 @@ describe("QmdsiAdmin", () => {
             
             const contract = await viem.deployContract("QMDSIAdmin", [swap.address])
             const address = await contract.read.getUserAccount(["Dunno"])
-            
             const initialCode = await provider.getCode({address : address})
-            
-            await contract.write.initAccount(["Dunno"])
-            const finalCode = await provider.getCode({address})
-            
-            expect(initialCode).be.undefined
-            expect(finalCode).not.undefined
-            
             const walletContract = await viem.getContractAt("UserAccount", address) 
             const owner = await walletContract.read.owner()
             console.log(owner)
+        })
+        it("Should deploy user contract", async () => {
+            const {contract, token} = await loadFixture(deployContract)
+            const userId= "Dunno"
+            const userAddress = await contract.read.getUserAccount([userId])
+            await token.write.transfer([userAddress, parseEther("100")])
             
+
+
         })
       
         

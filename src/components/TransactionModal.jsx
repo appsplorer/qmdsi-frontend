@@ -41,38 +41,42 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
 
 
     useEffect(() => {
-        const token = tokens[tokenIn]
-        checkAllowanceAndBalance(token, address).then(({allowance, balance}) => {
-            setNeedApproval(allowance < balance)
-        })
+        // const token = tokens[tokenIn]
+        // checkAllowanceAndBalance(token, address).then(({allowance, balance}) => {
+        //     setNeedApproval(allowance < balance)
+        // })
         
     }, [tokenIn, amountIn])
     
     const handleBuy = async () => {
         setLoading(true)
         setLoadingMsg(`Swapping ${tokenIn} for ${tokenOut}`)
-        const provider = new BrowserProvider(walletProvider)
-        const signer = await provider.getSigner()
-        const contract = new Contract(swapAddress, swapAbi, signer)
-        try{
-            let res 
-            if(tokenIn == "USDT"){
-                console.log("Buying")
-                res = await contract.buyQmgt(parseEther(amountIn))
-            }else{
-                res = await contract.sellQmgt(parseEther(amountIn))
-            }
-        await provider.waitForTransaction(res.hash)
         
-        setTransactionData({hash : res.hash, tokenIn, amountIn, tokenOut, amountOut })
-        setTransactionCompleteModal(true)
-        closeModal()
-        }catch(e){
-            console.log(e) 
-        }
+
+
+
+        // const provider = new BrowserProvider(walletProvider)
+        // const signer = await provider.getSigner()
+        // const contract = new Contract(swapAddress, swapAbi, signer)
+        // try{
+        //     let res 
+        //     if(tokenIn == "USDT"){
+        //         console.log("Buying")
+        //         res = await contract.buyQmgt(parseEther(amountIn))
+        //     }else{
+        //         res = await contract.sellQmgt(parseEther(amountIn))
+        //     }
+        // await provider.waitForTransaction(res.hash)
         
-        setLoading(false)
-        setLoadingMsg("")
+        // setTransactionData({hash : res.hash, tokenIn, amountIn, tokenOut, amountOut })
+        // setTransactionCompleteModal(true)
+        // closeModal()
+        // }catch(e){
+        //     console.log(e) 
+        // }
+        
+        // setLoading(false)
+        // setLoadingMsg("")
         // const {allowance, balance} = await checkAllowanceAndBalance(token, address)
         // console.log(allowance, balance)
         // console.log(tokenIn, amountIn)
@@ -108,20 +112,8 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
         }else{
 
         }
-
-
     }
     
-    // const handleTransaction = () => {
-
-    //     setLoading(true);
-    //     // Simulating a network request or transaction delay
-    //     setTimeout(() => {
-    //         setLoading(false);
-
-    //         transactionComplete();
-    //     }, 2000);
-    // }
 
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center'>
