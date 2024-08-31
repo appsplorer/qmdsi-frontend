@@ -1,38 +1,58 @@
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
-import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
+import {useWeb3ModalAccount } from '@web3modal/ethers/react'
+
+
 const Verification = () => {
+const {address} = useWeb3ModalAccount()
   const [isCapturing, setIsCapturing] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [testState, setTestState] = useState(false);
-  const {address} = useWeb3ModalAccount()
   const webcamRef = useRef(null);
   const handleCapture = () => {
-    
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
       if (imageSrc) {
-        const pictureData = new FormData();
-        pictureData.append('image', imageSrc);
-        pictureData.append('walletAddress', address);
-        // pictureData.append('uploaded_id_card_image',uploadedId )  pass the image from the kyc component to this place
-        axios.post("http://127.0.0.1:8000/verify",pictureData,
-            {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            },
-       })
+        // Convert Base64 to Blob
+        const byteString = atob(imageSrc.split(',')[1]);
+        const mimeString = imageSrc.split(',')[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+  
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+  
+        const blob = new Blob([ab], { type: mimeString });
+  
+        // Create FormData and append the Blob
+        const screenShot = new FormData();
+        screenShot.append("image", blob, "screenshot.png"); // Optionally, give the file a name
+        screenShot.append("walletAddress", address)
+        console.log(address)
+        // Send the form data with axios
+        axios.post("http://127.0.0.1:8000/verify", screenShot, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
         .then((response) => {
-          const success = response.data.success; 
-          if (success) {
+            console.log(response.data.status)
+          if (response.data.status === "success") {
             setIsVerified(true);
             setStatusMessage("Verification Successful!");
             setTimeout(() => {
               setIsCapturing(false);
-              setStatusMessage("");
-            }, 3000); 
+            //   setStatusMessage("");
+            }, 1000); 
+
+          }
+          else if(response.data.status === "notFound"){
+            setStatusMessage("Id card image not found. make sure you upload it and try again.");
+            setIsCapturing(false);
+            setTestState(true);
           } else {
             setStatusMessage("Verification Failed. Please try again.");
             setIsCapturing(false);
@@ -41,13 +61,14 @@ const Verification = () => {
         })
         .catch((error) => {
           console.error("Verification failed:", error);
-          setStatusMessage("Verification Failed. Please try again.");
+          setStatusMessage("No face detected in the image. Please try again.");
           setIsCapturing(false);
           setTestState(true);
         });
       }
     }
   };
+  
 
   const handleStartCapture = () => {
     setIsCapturing(true);
@@ -67,7 +88,7 @@ const Verification = () => {
               screenshotFormat="image/jpeg"
               className="w-full rounded-lg"
               videoConstraints={{
-                width: 800,
+                width: 500,
                 height: 600,
                 facingMode: "user",
               }}
@@ -77,7 +98,7 @@ const Verification = () => {
                 isVerified ? "border-green-500" : "border-red-500"
               }`}
               style={{
-                width: '60%',
+                width: '70%',
                 height: '70%',
                 borderRadius: '50%',
                 top: '15%',
@@ -85,26 +106,40 @@ const Verification = () => {
               }}
             />
           </div>
-          <button
+          {isVerified?           <button
             onClick={handleCapture}
-            className="mt-4 bg-blue-500 text-white py-2 px-6 rounded hover:bg-blue-600"
+            className="mt-4 bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600"
+
           >
-            Capture Image
-          </button>
+            Verified
+          </button>: 
+                    <button
+                    onClick={handleCapture}
+                    className="mt-4 bg-blue-500 text-white py-2 px-6 rounded hover:bg-blue-600"
+                  >
+                    Capture Image
+                  </button>
+            }
+
         </>
       ) : (
         <>
+        {
+        isVerified ? "" :
     <button
     onClick={handleStartCapture}
-    className="bg-[#FFD700] text-white py-2 px-6 rounded hover:bg-[#FFC107]"
+    className="bg-yellow-500 text-white py-2 px-6 rounded hover:bg-yellow-600"
     >
+
             {statusMessage ? "Capture Again" : "Start Verification"}
           </button>
+}
           {statusMessage && (
             <p className={`mt-4 text-xl font-semibold ${testState ? "text-red-600" : "text-green-600"}`}>
               {statusMessage}
             </p>
           )}
+          
         </>
       )}
     </div>

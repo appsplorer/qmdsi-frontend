@@ -4,3 +4,5 @@ __pycache__/
 my_database.db
 test.py
 node_modules
+uploads/
+screenshoot/

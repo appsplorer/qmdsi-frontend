@@ -10,9 +10,12 @@ from schemas import (
 import core, db, w3
 from fastapi import FastAPI, Body, Header,HTTPException,Form, UploadFile,File
 import constants
-import face_recognition
+import logging
+from typing import Any
 import cv2
 import exceptions
+import imagehash
+
 import os
 import base64
 from io import BytesIO
@@ -67,11 +70,29 @@ def post_personal_information(
     res = core.create_kyc_information(address, personal_info)
     return res
 
+@app.post("/upload")
+async def upload_file(profilePicture: UploadFile = File(...),
+                      walletAddress: ChecksumAddress = Form(...)):
+    try:
+        print(profilePicture)
+        print("wallet address:",walletAddress)
+        UPLOAD_DIR = 'uploads'
+        file_location = os.path.join(UPLOAD_DIR, walletAddress[:7].lower() + profilePicture.filename)
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        with open(file_location, "wb") as buffer:
+            buffer.write(await profilePicture.read())
+
+        return {"status": "success", "message": "Id uploaded successfull"}
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-def detect_and_crop_face(image_path, output_path="output_img.png"):
+
+def detect_and_crop_face(image_path, resize= False,output_path = None):
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    path = image_path
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
@@ -81,55 +102,69 @@ def detect_and_crop_face(image_path, output_path="output_img.png"):
     x, y, w, h = faces[0]
     face_image = image[y:y+h, x:x+w]
     face_image_pil = Image.fromarray(cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB))
-    face_image_pil.save(output_path, format="PNG")
-    return output_path
+    if resize:
+        face_image_pil = face_image_pil.resize((128, 128), Image.Resampling.LANCZOS)
+    if output_path:
+        path = output_path
+    face_image_pil.save(path, format="PNG")
+    
+    return path
+
+def preprocess_image(image_path):
+    image = Image.open(image_path)
+    image = image.convert('L')  # Convert to grayscale
+    image = image.resize((256, 256), Image.Resampling.LANCZOS)  # Resize to a fixed size
+    return image
+
 
 @app.post("/verify")
-async def upload_image(image: str, 
-                       uploaded_id_card_image: UploadFile = File(...),
-                       walletAddress: ChecksumAddress = Form(...)):
+async def upload_image(image: UploadFile = File(...),
+                       walletAddress:ChecksumAddress = Form(...)):
     try:
+        folder = "screenshoot"
         UPLOAD_DIR = 'uploads'
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        file_location = os.path.join(UPLOAD_DIR, uploaded_id_card_image.filename)
-        with open(file_location, "wb") as buffer:
-            buffer.write(await uploaded_id_card_image.read())
+        print("address", walletAddress)
+        print(image.filename)
+        image_path = os.path.join(folder, image.filename)
+        os.makedirs(folder, exist_ok=True)
+        with open(image_path,"wb") as buffer:
+            buffer.write(await image.read())
         
-        try:
-            crop_img_from_id_card = detect_and_crop_face(file_location)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+        files = os.listdir(UPLOAD_DIR)
+        matching_files = [f for f in files if f.startswith(walletAddress[:7].lower())]
+        print(files)
+        if not matching_files:
+            return {"status": "notFound", "message": "Id card not found"} 
         
-        reference_image = face_recognition.load_image_file(crop_img_from_id_card)
-        reference_encoding = face_recognition.face_encodings(reference_image)
-        if not reference_encoding:
-            raise HTTPException(status_code=400, detail="No face encoding found in ID card image.")
+        id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
+        id_card_image = detect_and_crop_face(id_image_path,resize=True,output_path=f"{walletAddress[:3].lower()}image.jpg")
+        img = detect_and_crop_face(image_path,resize=True)
+        image1 = cv2.imread(id_card_image, cv2.IMREAD_GRAYSCALE)
+        image2 = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+
+        sift = cv2.SIFT_create()
+        kp1, des1 = sift.detectAndCompute(image1, None)
+        kp2, des2 = sift.detectAndCompute(image2, None)
+
+        bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+        matches = bf.match(des1, des2)
+        matches = sorted(matches, key=lambda x: x.distance)
         
-        image_data = base64.b64decode(image.split(",")[1])
-        image = Image.open(BytesIO(image_data))
-        rgb_image = image.convert("RGB")
-        np_image = np.array(rgb_image)
+        similarity_score = len(matches) / min(len(kp1), len(kp2))
+        print(f"Similarity score: {similarity_score}")
 
-        uploaded_image_encodings = face_recognition.face_encodings(np_image)
-        if not uploaded_image_encodings:
-            raise HTTPException(status_code=400, detail="No face found in the uploaded image.")
-
-        # Compare the face encodings
-        match = face_recognition.compare_faces([reference_encoding[0]], uploaded_image_encodings[0], tolerance=0.5)
-
-        if match[0]:
-            try:
-                res = core.insert_user_id_pic(walletAddress, file_location)
-                if os.path.exists(crop_img_from_id_card):
-                       os.remove(crop_img_from_id_card)
-
-                return {"status": "success", "message": "Face verification successful"}
-            except Exception as e:
-                  raise HTTPException(status_code=500, detail=str(e))
+        if similarity_score > 0.5:  # Threshold for similarity
+            print("Images are similar")
+            if os.path.exists(id_card_image):
+              os.remove(id_card_image)
+            #here goes the logic to insert the user id into the database, since the user have being verify successfully
+            return {"status": "success", "message": "Face verification successful"}
         else:
+            print("Images are different")
             return {"status": "failure", "message": "Face verification failed"}
-
+            
     except Exception as e:
+        print(f"Error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
