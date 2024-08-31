@@ -3,3 +3,4 @@ __pycache__/
 .mypy_cache
 my_database.db
 test.py
+node_modules

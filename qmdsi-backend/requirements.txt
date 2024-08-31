@@ -10,6 +10,7 @@ charset-normalizer==3.3.2
 ckzg==2.0.0
 click==8.1.7
 cytoolz==0.12.3
+dlib==19.24.6
 dnspython==2.6.1
 email_validator==2.2.0
 eth-account==0.13.2
@@ -20,13 +21,19 @@ eth-rlp==2.1.0
 eth-typing==5.0.0
 eth-utils==5.0.0
 eth_abi==5.1.0
+face-recognition
+face_recognition_models
 fastapi==0.112.1
 frozenlist==1.4.1
 h11==0.14.0
 hexbytes==1.2.1
 idna==3.8
 multidict==6.0.5
+numpy==2.1.0
+opencv-python==4.10.0.84
+opencv-python-headless==4.10.0.84
 parsimonious==0.10.0
+pillow==10.4.0
 pycryptodome==3.20.0
 pydantic==2.8.2
 pydantic_core==2.20.1

@@ -46,7 +46,8 @@ def create_tables():
                 phone_2 TEXT NOT NULL,
                 fax_no TEXT NOT NULL,
                 marital_status TEXT NOT NULL,
-                gender TEXT NOT NULL
+                gender TEXT NOT NULL,
+                image BLOB DEFAULT NULL
             )            
     ''')
     
@@ -83,6 +84,21 @@ def create_personal_info(wallet_address : str, info : PersonalInformation):
 
     sql = f"INSERT INTO personal_information ({columns}) VALUES ({placeholders})"
     cursor.execute(sql, values)
+    conn.commit()
+    conn.close()
+    return cursor.lastrowid
+
+
+
+def update_image(wallet_address, image_path):
+    conn = sqlite3.connect('my_database.db')
+
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE personal_information
+        SET image = ?
+        WHERE wallet_address = ?
+    """, (image_path, wallet_address))
     conn.commit()
     conn.close()
     return cursor.lastrowid

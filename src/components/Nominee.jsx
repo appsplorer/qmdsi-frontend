@@ -2,13 +2,70 @@ import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import Select from 'react-select';
 import { countryOptions, nationalityOptions } from '../data/countries';
+import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
+import axios from 'axios';
 
 const Nominee = () => {
     const { control, handleSubmit, setValue, watch, formState: { errors } } = useForm();
-
+    const {address} = useWeb3ModalAccount()
     const onSubmit = (data) => {
-        // Add form submission logic here
-        console.log(data);
+
+        const userData = {
+            personal_info : {
+            name:data.name,
+            employeeName:data.employerName,
+            incomePerAnnum:data.income,
+            dateOfBirth:data.dateOfBirth, 
+            address1: data.address,
+            city:data.city,
+            postalCode:data.zipCode,
+            country:data.country,
+            citizenship:data.citizenship,
+            currency:data.currencySym,
+            motherName:"usd",
+            incomeTaxNo:data.incomeTaxNo,
+            idType:data.idType,
+            idNumber: data.idNumber,
+            industry:data.industry,
+            occupation:data.occupation,
+            sourceOfIncome:data.incomeType,
+            email:data.email,
+            email2:data.email2,
+            mobilePhone:data.mobilePhone,
+            phone2:data.phone2,
+            faxNo:data.faxNumber,
+            maritalStatus:data.marital,
+            gender:data.gender
+
+
+        },
+        address: address
+    }
+        const jsonData = JSON.stringify(userData);  // Convert to JSON string
+        console.log(jsonData)
+        axios.post("http://127.0.0.1:8000/personal_information", jsonData, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then((res) => {
+           if (res && res.status === 200){
+            console.log("Personal information created successfully")
+            
+            alert("Personal information created successfully")
+        
+         }
+        })
+        .catch((err) => {
+                if (err.response && err.response.status === 400) {
+                    console.error("User already exists");
+                    alert("user already exist")
+                } else {
+                    console.error("An error occurred", err);
+                }
+            });
+
+        
     };
 
     const nationalIdTypeOptions = [
@@ -264,7 +321,8 @@ const Nominee = () => {
                             Currency
                         </label>
                         <Controller
-                            name="currency"
+                            name="currencySym"
+                            defaultValue={'USD'}
                             control={control}
                             render={({ field }) => (
                                 <Select
@@ -400,7 +458,7 @@ const Nominee = () => {
                             Source of Income
                         </label>
                         <Controller
-                            name="income"
+                            name="incomeType"
                             control={control}
                             render={({ field }) => (
                                 <input

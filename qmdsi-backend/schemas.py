@@ -23,7 +23,7 @@ class PersonalInformation(BaseModel):
     employee_name : str = Field(..., validation_alias= AliasChoices("employeeName", "employee_name")) 
     income_per_annum : float = Field(..., validation_alias= AliasChoices("incomePerAnnum", "income_per_annum"))
     date_of_birth : str = Field(..., validation_alias=AliasChoices("dateOfBirth", "date_of_birth"))
-    address : str  
+    address : str  = Field(..., validation_alias=AliasChoices("address1", "address"))
     city : str
     postal_code : str = Field(..., validation_alias=AliasChoices("postalCode", "postal_code"))
     country : str 

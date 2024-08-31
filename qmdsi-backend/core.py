@@ -12,6 +12,21 @@ from constants import TOKEN
 import org_ids
 from exceptions import BadRequestException
 
+def insert_user_id_pic(wallet: str, img_path: str):
+    if img_path:
+        try:
+            res = db.update_image(wallet, img_path)
+            return res
+
+        except FileNotFoundError:
+            print(f"Error: The file {img_path} was not found.")
+            raise  FileNotFoundError
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            raise FileNotFoundError("An unexpected error occurred.")
+    else:
+        raise FileNotFoundError("No image path provided.")
+
 def create_kyc_information(wallet_address : str, information : PersonalInformation ):
     info = db.get_personal_information(wallet_address)
     
