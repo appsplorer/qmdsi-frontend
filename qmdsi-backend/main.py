@@ -21,6 +21,7 @@ import base64
 from io import BytesIO
 from PIL import Image
 import numpy as np
+from ocr import get_id_no_and_fullname_from_id_card,name_contains,detect_and_crop_face
 import json
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
@@ -60,15 +61,35 @@ def get_user_ref(address : str):
     return db.user_refs(user.ref_link)
 
 
+
 @app.post("/personal_information")
 def post_personal_information(
     personal_info : PersonalInformation,
     address : ChecksumAddress = Body()
 ):
-    print(personal_info)
-    print(address)
-    res = core.create_kyc_information(address, personal_info)
-    return res
+    try:
+        UPLOAD_DIR = 'uploads'
+        files = os.listdir(UPLOAD_DIR)
+        matching_files = [f for f in files if f.startswith(address[:7].lower())]
+        if not matching_files:
+            return {"status": "notFound", "message": "Id card not found"} 
+        
+        id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
+        fullname,id,dob = get_id_no_and_fullname_from_id_card(id_image_path)
+        if not name_contains(personal_info.name,fullname):
+            raise HTTPException(status_code=400, detail="Incorrect name provided.")
+        if id != personal_info.id_number:
+            raise HTTPException(status_code=400, detail="Incorrect id number provided.")
+        if str(dob) != str(personal_info.date_of_birth):
+            raise HTTPException(status_code=400, detail="Incorrect date of birth provided.")
+ 
+        res = core.create_kyc_information(address, personal_info)
+        return res
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
 
 @app.post("/upload")
 async def upload_file(profilePicture: UploadFile = File(...),
@@ -89,32 +110,7 @@ async def upload_file(profilePicture: UploadFile = File(...),
 
 
 
-def detect_and_crop_face(image_path, resize= False,output_path = None):
-    image = cv2.imread(image_path)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    path = image_path
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
-    if len(faces) == 0:
-        raise ValueError("No face detected in the image.")
-    
-    x, y, w, h = faces[0]
-    face_image = image[y:y+h, x:x+w]
-    face_image_pil = Image.fromarray(cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB))
-    if resize:
-        face_image_pil = face_image_pil.resize((128, 128), Image.Resampling.LANCZOS)
-    if output_path:
-        path = output_path
-    face_image_pil.save(path, format="PNG")
-    
-    return path
 
-def preprocess_image(image_path):
-    image = Image.open(image_path)
-    image = image.convert('L')  # Convert to grayscale
-    image = image.resize((256, 256), Image.Resampling.LANCZOS)  # Resize to a fixed size
-    return image
 
 
 @app.post("/verify")
@@ -137,7 +133,7 @@ async def upload_image(image: UploadFile = File(...),
             return {"status": "notFound", "message": "Id card not found"} 
         
         id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
-        id_card_image = detect_and_crop_face(id_image_path,resize=True,output_path=f"{walletAddress[:3].lower()}image.jpg")
+        id_card_image = detect_and_crop_face(id_image_path,resize=True,output_path=f"{walletAddress[:7].lower()}image.jpg")
         img = detect_and_crop_face(image_path,resize=True)
         image1 = cv2.imread(id_card_image, cv2.IMREAD_GRAYSCALE)
         image2 = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
