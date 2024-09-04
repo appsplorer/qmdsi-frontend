@@ -77,11 +77,11 @@ def post_personal_information(
         id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
         fullname,id,dob = get_id_no_and_fullname_from_id_card(id_image_path)
         if not name_contains(personal_info.name,fullname):
-            raise HTTPException(status_code=400, detail="Incorrect name provided.")
+            raise HTTPException(status_code=400, detail="Incorrect name provided.Make sure it match with the uploaded id")
         if id != personal_info.id_number:
-            raise HTTPException(status_code=400, detail="Incorrect id number provided.")
+            raise HTTPException(status_code=400, detail="Incorrect id number provided.Make sure it match with the uploaded id")
         if str(dob) != str(personal_info.date_of_birth):
-            raise HTTPException(status_code=400, detail="Incorrect date of birth provided.")
+            raise HTTPException(status_code=400, detail="Incorrect date of birth provided.Make sure it match with the uploaded id")
  
         res = core.create_kyc_information(address, personal_info)
         return res
