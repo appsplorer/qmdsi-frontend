@@ -7,6 +7,7 @@ import {
   maritalStatusOptions,
   nationalIdTypeOptions,
 } from "../constants/KYC";
+import { useNavigate, Link } from "react-router-dom";
 import {
   updatePersonalInfo,
   updateProfileImages,
@@ -26,7 +27,7 @@ const KycForm = () => {
   } = useForm({
     mode: "onChange",
   });
-
+  const navigate = useNavigate();
   const {
     handleSubmit: handleImageUploadSubmit,
     setValue: setImageUploadValue,
@@ -72,10 +73,16 @@ const KycForm = () => {
 
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated successfully!");
+      navigate("/verify");
     } catch (error) {
       console.log(error);
       console.error("Error updating personal info:", error);
-      toast.error(error?.detail);
+      if (error?.detail ==="400: Personal Information already exists"){
+        toast.success("Personal Information already exists,redirect to verify page");
+        navigate("/verify");
+      }else{
+        toast.error(error?.detail);
+      }
     } finally {
       setIsPersonalInfoLoading(false);
     }

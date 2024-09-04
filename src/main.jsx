@@ -13,9 +13,10 @@ import { ContractContextProvider } from "./contexts/ContractContext.jsx";
 import KYC from "./pages/KYC.jsx";
 import Profile from "./pages/Profile.jsx";
 import Register from "./pages/Register.jsx";
+import Verify from './pages/verify.jsx'
 import Login from "./pages/Login.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
-
+import Verification from './components/verification.jsx'
 const projectId = "61f529aa30c77838f2502740d05202ad";
 import { metadata, bscTestnet } from "./constants/crypto.js";
 
@@ -88,6 +89,10 @@ const router = createBrowserRouter([
             path: "/kyc",
             element: <KYC />,
           },
+          {
+            path : "/verify",
+            element : <Verify />
+          }
         ],
       },
     ],

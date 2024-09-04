@@ -1,10 +1,13 @@
 from pydantic import BaseModel, EmailStr, Field, AliasChoices
 from enum import Enum
+import shortuuid
 
+class Tokens(str, Enum):
+    qmgt = "qmgt"
+    usdt = "usdt"
 
 
 class BaseUser(BaseModel):
-    wallet_address : str =  Field(..., validation_alias= AliasChoices("walletAddress", "wallet_address"))
     full_name : str  =  Field(..., validation_alias= AliasChoices("fullName", "full_name"))
     country : str 
     phone_number : str = Field(..., validation_alias= AliasChoices("phoneNumber", "phone_number"))
@@ -12,9 +15,20 @@ class BaseUser(BaseModel):
     ref_by : str | None = Field(..., validation_alias= AliasChoices("refBy", "ref_by"))
 
 
-class DBUser(BaseUser):
-    ref_link : str
-    kyc_status : str
+class LoginUser(BaseModel):
+    email : str 
+    password :str 
+
+
+class RegUser(BaseUser):
+    password : str
+
+
+class DBUser(RegUser):
+    id: str = Field(..., default_factory = shortuuid.uuid)
+    ref_link : str = Field(..., default_factory = shortuuid.uuid)
+    kyc_verified : bool | None = None 
+    email_verified : bool | None = None
     created_at : str | None = None
 
 
@@ -45,9 +59,10 @@ class PersonalInformation(BaseModel):
     gender : str 
 
 
+
 class Refs(BaseModel):
     created_at : str
-    wallet_address : str
+    email : EmailStr
 
 
 class Nominee(BaseModel):
@@ -69,23 +84,23 @@ class Nominee(BaseModel):
     id_number : int = Field(..., validation_alias= AliasChoices("idNumber", "id_number"))
     
 
+class SwapParams(BaseModel):
+    token_in : Tokens = Field(..., validation_alias= AliasChoices("tokenIn", "token_in"))
+    amount_in : float = Field(..., validation_alias= AliasChoices("amountIn"))
+
+
 class BindResult(BaseModel):
     status : str
     message : str 
     redirectLink : str | None = None
 
 
-class SwapSchema(BaseModel):
-    pass
 
 
-class Tokens(str, Enum):
-    qmgt = "qmgt"
-    usdt = "usdt"
 
 
 class DebitSchema(BaseModel):
     token : Tokens
-    address : str 
+    id : str 
     amount : float
     

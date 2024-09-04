@@ -7,22 +7,27 @@ def create_tables():
     conn = sqlite3.connect('my_database.db')
     cur = conn.cursor()
     cur.execute(''' CREATE TABLE IF NOT EXISTS users (
-            wallet_address TEXT PRIMARY KEY,
+            id TEXT PRIMARY KEY,
+            country TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
+            phone_number TEXT NOT NULL UNIQUE,
+            ref_link TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             full_name TEXT NOT NULL,
             ref_by TEXT,
-            created_at DATE DEFAULT (DATE('now'))
+            created_at DATE DEFAULT (DATE('now')),
+            email_verified BOOLEAN DEFAULT false,
+            kyc_verified BOOLEAN DEFAULT false
         )
     ''')
     cur.execute(''' CREATE TABLE IF NOT EXISTS bind_users (
-        wallet_address TEXT PRIMARY KEY,
+        id TEXT PRIMARY KEY,
         binded BOOLEAN DEFAULT false
     )
     ''')
 
     cur.execute(''' CREATE TABLE IF NOT EXISTS personal_information (
-                wallet_address TEXT PRIMARY KEY,
+                id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,    
                 employee_name  TEXT NOT NULL,
                 income_per_annum REAL NOT NULL,
@@ -51,7 +56,7 @@ def create_tables():
     ''')
     
     cur.execute('''CREATE TABLE IF NOT EXISTS nominee (
-                wallet_address TEXT PRIMARY KEY,
+                id TEXT PRIMARY KEY,
                 first_name TEXT NOT NULL,
                 middle_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
@@ -70,12 +75,12 @@ def create_tables():
     conn.close()
 
 
-def create_personal_info(wallet_address : str, info : PersonalInformation):
+def create_personal_info(_id : str, info : PersonalInformation):
     conn = sqlite3.connect('my_database.db')
 
     cursor = conn.cursor()
     new_record = info.model_dump()
-    new_record['wallet_address'] = wallet_address.lower()
+    new_record['id'] = _id
     
     columns = ', '.join(new_record.keys())
     placeholders = ', '.join(['?'] * len(new_record))
@@ -89,15 +94,15 @@ def create_personal_info(wallet_address : str, info : PersonalInformation):
 
 
 def get_personal_information(
-    address : str
+    _id : str
 ) -> PersonalInformation | None:
     conn = sqlite3.connect('my_database.db')
 
 
-    address = address.lower()
+    
     cur = conn.cursor()
-    info = cur.execute("SELECT * FROM  personal_information where  wallet_address = ?", 
-                       (address, )).fetchone()
+    info = cur.execute("SELECT * FROM  personal_information where  id = ?", 
+                       (_id, )).fetchone()
     columns = [description[0] for description in cur.description]
     if not info:
         return None 
@@ -107,26 +112,35 @@ def get_personal_information(
     return parsed 
 
 
-def update_personal_information(wallet_address: str, info: PersonalInformation):
+def update_personal_information(_id: str, info: PersonalInformation):
     conn = sqlite3.connect('my_database.db')
     cur = conn.cursor()
     update_data = info.model_dump(exclude_unset=True)
     set_clause = ', '.join([f"{key} = ?" for key in update_data.keys()])
-    sql = f"UPDATE personal_information SET {set_clause} WHERE wallet_address = ?"
-    params = list(update_data.values()) + [wallet_address]
+    sql = f"UPDATE personal_information SET {set_clause} WHERE id = ?"
+    params = list(update_data.values()) + [_id]
     
     cur.execute(sql, params)
     conn.commit()
     conn.close()
     return cur.rowcount > 0
 
+def update_user_kyc_data(_id: str):
+    conn = sqlite3.connect("my_database.db")
+    cur = conn.cursor()
+    sql = "UPDATE users SET kyc_verified = TRUE WHERE id = ?"
+    cur.execute(sql, (_id,))  # Pass _id as a tuple
+    conn.commit()
+    conn.close()
+    return cur.rowcount > 0
 
-def create_nominee(wallet_address : str, info : Nominee):
+
+def create_nominee(_id : str, info : Nominee):
     conn = sqlite3.connect('my_database.db')
 
     cursor = conn.cursor()
     new_record = info.model_dump()
-    new_record['wallet_address'] = wallet_address.lower()
+    new_record['_id'] =  _id
     
     columns = ', '.join(new_record.keys())
     placeholders = ', '.join(['?'] * len(new_record))
@@ -139,14 +153,13 @@ def create_nominee(wallet_address : str, info : Nominee):
     return cursor.lastrowid
 
 
-def get_nominee(wallet_address : str) ->Nominee | None:
+def get_nominee(_id : str) ->Nominee | None:
     conn = sqlite3.connect('my_database.db')
 
 
-    address = wallet_address.lower()
     cur = conn.cursor()
-    info = cur.execute("SELECT * FROM  nominee where  wallet_address = ?", 
-                       (address, )).fetchone()
+    info = cur.execute("SELECT * FROM  nominee where  id = ?", 
+                       (_id, )).fetchone()
     columns = [description[0] for description in cur.description]
     if not info:
         return None 
@@ -158,10 +171,8 @@ def get_nominee(wallet_address : str) ->Nominee | None:
 
 def create_user(user : DBUser):
     conn = sqlite3.connect('my_database.db')
-
     cursor = conn.cursor()
-    new_user  = user.model_dump(exclude_unset=True, exclude_none=True)
-    
+    new_user  = user.model_dump(exclude_none=True)
     
     columns = ', '.join(new_user.keys())
     placeholders = ', '.join(['?'] * len(new_user))
@@ -175,15 +186,15 @@ def create_user(user : DBUser):
 
 
 def get_user(
-    address : str
+    _id : str
 ) -> DBUser | None:
     
     conn = sqlite3.connect('my_database.db')
     
-    address = address.lower()
+
     cur = conn.cursor()
-    info = cur.execute("SELECT * FROM  users where  wallet_address = ?", 
-                       (address, )).fetchone()
+    info = cur.execute("SELECT * FROM  users where  id = ?", 
+                       (_id, )).fetchone()
     columns = [description[0] for description in cur.description]
     if not info:
         return None 
@@ -193,28 +204,66 @@ def get_user(
     return parsed 
 
 
-def user_refs(ref_by :str ):
+def get_user_by_email(
+    email : str
+) -> DBUser | None:
+    
     conn = sqlite3.connect('my_database.db')
+    
+
     cur = conn.cursor()
-    refs = cur.execute("SELECT created_at, wallet_address from users where ref_by =? ", (ref_by, ))
-    parsed = [Refs(created_at=ref[0], wallet_address=ref[1]) for ref in refs]
+    info = cur.execute("SELECT * FROM  users where  email = ?", 
+                       (email, )).fetchone()
+    columns = [description[0] for description in cur.description]
+    if not info:
+        return None 
+    
+    dict_info = dict(zip(columns, info))
+    parsed  = DBUser.model_validate(dict_info)
     return parsed
 
 
-def bind_user(address : str):
-    address = address.lower()
+def get_user_by_phone(
+    phone : str
+) -> DBUser | None:
+    
+    conn = sqlite3.connect('my_database.db')
+    
+
+    cur = conn.cursor()
+    info = cur.execute("SELECT * FROM  users where  phone_number = ?", 
+                       (phone, )).fetchone()
+    columns = [description[0] for description in cur.description]
+    if not info:
+        return None 
+    
+    dict_info = dict(zip(columns, info))
+    parsed  = DBUser.model_validate(dict_info)
+    return parsed
+
+
+def user_refs(ref_by :str ):
     conn = sqlite3.connect('my_database.db')
     cur = conn.cursor()
-    cur.execute("INSERT INTO bind_users VALUES (?, ?)", (address, True))
+    refs = cur.execute("SELECT created_at, email from users where ref_by =? ", (ref_by, ))
+    parsed = [Refs(created_at=ref[0], email=ref[1]) for ref in refs]
+    cur.close()
+    conn.close()
+    return parsed
+
+
+def bind_user(_id : str):
+    conn = sqlite3.connect('my_database.db')
+    cur = conn.cursor()
+    cur.execute("INSERT INTO bind_users VALUES (?, ?)", (_id, True))
     conn.commit()
     return True
     
 
-def get_binded_user(address : str):
-    address = address.lower()
+def get_binded_user(_id : str):
     conn = sqlite3.connect('my_database.db')
     cur = conn.cursor()
-    bind_user = cur.execute("SELECT * from bind_users where wallet_address =? ", (address)).fetchone()
+    bind_user = cur.execute("SELECT * from bind_users where id =? ", (_id)).fetchone()
     conn.close()
     return bind_user
 

@@ -7,6 +7,14 @@ import { toast } from "react-toastify";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
+  const [kycStatus,setKycstatus] = useState(
+    // <Link
+    //             to="/kyc"
+    //             className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
+    //           >
+    //             Verify Identity
+    //           </Link>
+  )
   const { auth } = useContext(AuthContext);
 
   useEffect(() => {
@@ -19,11 +27,19 @@ const Profile = () => {
           phoneNumber: userData.phone_number,
           country: userData.country,
           email: userData.email,
-          kycStatus: userData.kyc_verified ? "Verified" : "Not Verified",
+          kycStatus: userData.kyc_verified ? <span style={{ color: 'green', fontSize: '15px' }}>Verified</span> : "Not Verified",
           referralLink: userData.ref_link,
           walletAddress : userData.wallet_address,
           referralSignUps: userData.referral_sign_ups,
         });
+        userData.kyc_verified ? "":setKycstatus(
+          <Link
+          to="/kyc"
+          className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
+        >
+          Verify Identity
+        </Link>
+        )
       } catch (error) {
         console.error("Error fetching profile data:", error);
       }
@@ -89,12 +105,10 @@ const Profile = () => {
               <p>
                 <strong>KYC Status:</strong> {profileData.kycStatus}
               </p>
-              <Link
-                to="/kyc"
-                className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
-              >
-                Verify Identity
-              </Link>
+              {
+              kycStatus
+              
+            }
             </div>
             <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:text-left text-left">
               <p>

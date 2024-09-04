@@ -1,29 +1,67 @@
-qmdsi_admin_abi = [
+user_account_abi  = [
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "swapAddress",
-          "type": "address"
-        }
-      ],
+      "inputs": [],
       "stateMutability": "nonpayable",
       "type": "constructor"
     },
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "usdAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "buyQmgt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
-          "name": "user",
+          "name": "_swap",
           "type": "address"
         }
       ],
-      "name": "getUserAccount",
-      "outputs": [
+      "name": "changeSwapAddress",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "user",
+          "type": "string"
+        },
         {
           "internalType": "address",
-          "name": "",
+          "name": "_swap",
           "type": "address"
+        }
+      ],
+      "name": "config",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -32,17 +70,17 @@ qmdsi_admin_abi = [
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "tokenAmount",
+          "type": "uint256"
         }
       ],
-      "name": "initAccount",
+      "name": "sellQmgt",
       "outputs": [
         {
-          "internalType": "address",
-          "name": "accountAddress",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
       "stateMutability": "nonpayable",
@@ -50,11 +88,6 @@ qmdsi_admin_abi = [
     },
     {
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "_from",
-          "type": "address"
-        },
         {
           "components": [
             {
@@ -79,19 +112,6 @@ qmdsi_admin_abi = [
         }
       ],
       "name": "transferTokens",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_address",
-          "type": "address"
-        }
-      ],
-      "name": "whitelistAddress",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
