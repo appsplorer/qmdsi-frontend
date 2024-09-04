@@ -1,34 +1,49 @@
-from fastapi import FastAPI, Body, Header, UploadFile, File, Depends,HTTPException,Form
+from fastapi import (
+    FastAPI,
+    Body,
+    Header,
+    UploadFile,
+    File,
+    Depends,
+    HTTPException,
+    Form,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import datetime
 from eth_typing import ChecksumAddress
 from schemas import (
-    PersonalInformation, 
-    Nominee, 
-    BaseUser, 
+    PersonalInformation,
+    Nominee,
+    BaseUser,
     Tokens,
     DebitSchema,
     RegUser,
     LoginUser,
     DBUser,
-    SwapParams
+    SwapParams,
+    TransferSchema
 )
 import cv2
 import os
 import core, db, w3
-from authkyc import get_id_no_and_fullname_from_id_card,name_contains,detect_and_crop_face
+from authkyc import (
+    get_id_no_and_fullname_from_id_card,
+    name_contains,
+    detect_and_crop_face,
+)
 import constants
 import exceptions
 import security
 from security import Jwt
 from dependencies import current_user
+import org_ids
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,16 +51,14 @@ app.add_middleware(
 
 date_format = "%Y-%m-%d"
 
+
 @app.get("/")
 async def read_root():
-    return {"stauts": "up"}
-
+    return {"status": "up"}
 
 
 @app.post("/signup")
-def sign_up(
-    user : RegUser
-):
+def sign_up(user: RegUser):
     email_user = db.get_user_by_email(user.email)
     if email_user:
         raise exceptions.BadRequest("Email already in use")
@@ -57,9 +70,7 @@ def sign_up(
 
 
 @app.post("/login")
-def login_user(
-    request_form: OAuth2PasswordRequestForm = Depends()
-):
+def login_user(request_form: OAuth2PasswordRequestForm = Depends()):
     user = db.get_user_by_email(request_form.username)
     print(request_form.username)
     if not user:
@@ -68,43 +79,43 @@ def login_user(
     if not is_valid_password:
         raise exceptions.BadRequest("Invalid credentials")
     acces_token = Jwt.get_access_token(user.id)
-    return {"access_token" : acces_token}
+    return {"access_token": acces_token}
 
 
 @app.get("/user")
-def get_a_user(
-    user : DBUser = Depends(current_user)
-):
+def get_a_user(user: DBUser = Depends(current_user)):
     raw_user = user.model_dump()
     wallet_address = w3.get_user_account(user.id)
-    del raw_user['password']
-    raw_user['wallet_address'] = wallet_address 
-    raw_user['referral_sign_ups'] = db.user_refs(user.ref_link)
+    del raw_user["password"]
+    raw_user["wallet_address"] = wallet_address
+    raw_user["referral_sign_ups"] = db.user_refs(user.ref_link)
     return raw_user
 
 
-
 @app.post("/verify")
-async def upload_image(image: UploadFile = File(...),
-                      user : DBUser = Depends(current_user)):
+async def upload_image(
+    image: UploadFile = File(...), user: DBUser = Depends(current_user)
+):
     try:
         print(user)
-        folder = os.path.join(os.path.dirname(__file__),"screenshoot")
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__),'uploads')
+        folder = os.path.join(os.path.dirname(__file__), "screenshoot")
+        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
         if not os.path.exists(UPLOAD_DIR):
             return exceptions.BadRequestException("Id card image not found")
         print(image.filename)
         image_path = os.path.join(folder, user.id + image.filename)
         os.makedirs(folder, exist_ok=True)
-        with open(image_path,"wb") as buffer:
+        with open(image_path, "wb") as buffer:
             buffer.write(await image.read())
         files = os.listdir(UPLOAD_DIR)
         user_uploaded_image = [file for file in files if file.startswith(user.id)]
         if not user_uploaded_image:
             return exceptions.BadRequestException("Id card image not found")
         id_image_file_path = os.path.join(UPLOAD_DIR, user_uploaded_image[0])
-        id_card_image = detect_and_crop_face(id_image_file_path,resize=True,output_path=f"{user.id}image.jpg")
-        img = detect_and_crop_face(image_path,resize=True)
+        id_card_image = detect_and_crop_face(
+            id_image_file_path, resize=True, output_path=f"{user.id}image.jpg"
+        )
+        img = detect_and_crop_face(image_path, resize=True)
         image1 = cv2.imread(id_card_image, cv2.IMREAD_GRAYSCALE)
         image2 = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
 
@@ -115,69 +126,69 @@ async def upload_image(image: UploadFile = File(...),
         bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
         matches = bf.match(des1, des2)
         matches = sorted(matches, key=lambda x: x.distance)
-        
+
         similarity_score = len(matches) / min(len(kp1), len(kp2))
         print(f"Similarity score: {similarity_score}")
 
         if similarity_score > 0.5:  # Threshold for similarity
             print("Images are similar")
             if os.path.exists(id_card_image):
-              os.remove(id_card_image)
+                os.remove(id_card_image)
             if os.path.exists(img):
-              os.remove(img)
+                os.remove(img)
             try:
                 res = core.update_user_kyc_verify_column(user.id)
             except Exception as e:
                 print(f"Error occurred: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
-            #here goes the logic to insert the user id into the database, since the user have being verify successfully
+            # here goes the logic to insert the user id into the database, since the user have being verify successfully
             return {"status": "success", "message": "Face verification successful"}
         else:
             print("Images are different")
             return {"status": "failure", "message": "Face verification failed"}
-            
+
     except Exception as e:
         print(f"Error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
 @app.get("/refs")
-def get_user_ref(
-    user : DBUser = Depends(current_user)
-):
+def get_user_ref(user: DBUser = Depends(current_user)):
     return db.user_refs(user.ref_link)
 
 
 @app.post("/personal_information")
 def post_personal_information(
-    personal_info : PersonalInformation,
-    user : DBUser = Depends(current_user)
+    personal_info: PersonalInformation, user: DBUser = Depends(current_user)
 ):
     try:
         print(personal_info)
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__),'uploads')
+        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
         os.makedirs(UPLOAD_DIR, exist_ok=True)
         files = os.listdir(UPLOAD_DIR)
         matching_files = [f for f in files if f.startswith(user.id)]
         if not matching_files:
-            raise exceptions.BadRequestException("Id card not found,ensure you upload your id card first before proceed") 
-        
+            raise exceptions.BadRequestException(
+                "Id card not found,ensure you upload your id card first before proceed"
+            )
+
         id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
-        fullname,id,dob = get_id_no_and_fullname_from_id_card(id_image_path)
+        fullname, id, dob = get_id_no_and_fullname_from_id_card(id_image_path)
+
         id_card_dob = datetime.strptime(dob, date_format)
         user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
         print("user id", user_dob)
         print(type(user_dob))
-        print("dob",id_card_dob)
-        if not name_contains(personal_info.name,fullname):
+        print("dob", id_card_dob)
+        if not name_contains(personal_info.name, fullname):
             raise HTTPException(status_code=400, detail="Incorrect name provided.")
         if id != str(personal_info.id_number):
             raise HTTPException(status_code=400, detail="Incorrect id number provided.")
         if id_card_dob != user_dob:
-            raise HTTPException(status_code=400, detail="Incorrect date of birth provided.")
- 
+            raise HTTPException(
+                status_code=400, detail="Incorrect date of birth provided."
+            )
+
         res = core.create_kyc_information(user.id, personal_info)
         return res
     except Exception as e:
@@ -186,114 +197,95 @@ def post_personal_information(
 
 
 @app.post("/swap")
-def swap_token(
-    swap : SwapParams,
-    user : DBUser = Depends(current_user)
-):
+def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
     if swap.amount_in <= 0:
         raise exceptions.BadRequestException("Invalid amountIn")
     try:
         res = core.swap(user.id, swap.token_in, swap.amount_in)
-        return {"hash":res}
+        return {"hash": res}
     except Exception as e:
         raise exceptions.BadRequestException(f"Error occured {e}")
 
 
 @app.post("/personal_information/images")
 async def upload_kyc_images(
-    profile_picture : UploadFile = File(...),
-    id_picture : UploadFile = File(...),
-    user : DBUser = Depends(current_user)
+    id_picture: UploadFile = File(...),
+    user: DBUser = Depends(current_user),
 ):
     try:
-        
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__),'uploads')
+
+        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
         os.makedirs(UPLOAD_DIR, exist_ok=True)
         image_path = os.path.join(UPLOAD_DIR, user.id + id_picture.filename)
-        with open(image_path,"wb") as buffer:
+        with open(image_path, "wb") as buffer:
             buffer.write(await id_picture.read())
         return True
     except Exception as err:
         raise exceptions.BadRequestException("Failed to upload id picture")
-        
 
 
 @app.get("/personal_information")
-def get_personal_information(
-    user : DBUser = Depends(current_user)
-):
-    res = db.get_personal_information(user.id) 
+def get_personal_information(user: DBUser = Depends(current_user)):
+    res = db.get_personal_information(user.id)
     return res
 
 
 @app.post("/nominee")
-def post_user_nominee(
-    nominee : Nominee,
-    user : DBUser = Depends(current_user)
-
-):
+def post_user_nominee(nominee: Nominee, user: DBUser = Depends(current_user)):
     res = core.create_nominee(user.id, nominee)
     return res
 
 
-
 @app.post("/nominee/image")
-def upload_nominee_id_image(
-    id_picture : UploadFile = File(...)
-):
+def upload_nominee_id_image(id_picture: UploadFile = File(...)):
     return True
 
 
 @app.get("/nominee")
-def get_user_nominee(
-    user : DBUser = Depends(current_user)
-):
+def get_user_nominee(user: DBUser = Depends(current_user)):
     return db.get_nominee(user.id)
 
 
 @app.get("/bind")
 def get_bind_status(
-    user : DBUser = Depends(current_user)
-
+    user_id: str,
+    x_token: str = Header(...),
 ):
-    return bool(db.get_binded_user(user.id))
+    return db.get_binded_user(user_id)
 
 
 @app.post("/bind")
 def bind_account(
-    user : DBUser = Depends(current_user)
-
+    user_id: str,
+    x_token: str = Header(...),
 ):
-    return core.bind_user_account(user.id) 
-
+    org_id = org_ids.get_ord_id(x_token)
+    if not org_id:
+        raise exceptions.BadRequest("Invalid token")
+    return core.bind_user_account(user_id)
 
 
 @app.get("/balance")
-def get_balance(
-    userId : str,
-    token : Tokens
-):
-    token_address = constants.TOKEN.get(token)
-    if not token_address:
-         raise exceptions.BadRequestException("Personal Information already exists")
-    balance = w3.check_balance(userId, token_address)
-    return balance
+def get_balance(userId: str):
+    balances = {}
+    for item in constants.TOKEN.items():
+        balances[item[0]] = w3.check_balance(userId, item[1])
+    return balances
 
+
+@app.post("/transfer")
+def transfer_token(data: TransferSchema, x_token: str = Header(...)):
+    hash = core.transfer(x_token, data)
+    return {"hash": hash}
 
 
 @app.post("/debit")
-def debit_user(
-    data : DebitSchema,
-    x_token: str = Header(...)  
-):
+def debit_user(data: DebitSchema, x_token: str = Header(...)):
     hash = core.debit_user(x_token, data)
-    return {"hash" : hash}
+    return {"hash": hash}
 
 
 @app.post("/deposit")
-def deposit_to_user(
-    info : DebitSchema,
-    x_token: str = Header(...)
-):
+def deposit_to_user(info: DebitSchema, x_token: str = Header(...)):
     hash = core.deposit_to_user(x_token, info)
-    return {"hash" : hash}
+    return {"hash": hash}
