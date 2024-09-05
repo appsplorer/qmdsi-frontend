@@ -1,29 +1,22 @@
 import { ArrowUpDown } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
 import Select from "react-select";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import TransactionModal from "./TransactionModal";
 import TransactionCompleteModal from "./TransactionCompleteModal";
-import { swapAbi } from "../abis/swapAbi";
-import {
-  useWeb3Modal,
-  useWeb3ModalAccount,
-  useWeb3ModalProvider,
-} from "@web3modal/ethers/react";
-import { BrowserProvider, formatEther, parseEther } from "ethers";
-import { Contract } from "ethers";
-import { erc20Abi } from "../abis/erc20Abi";
-import { oracleAbi } from "../abis/oracleAbi";
+
+import {parseEther } from "ethers";
+
 import {
   TOKENAddress,
   USDTAddress,
-  oracleAddress,
-  swapAddress,
 } from "../addresses";
 import { formatUnits } from "ethers";
 import { AuthContext } from "../contexts/AuthContext";
+
 import {
   getAmountOut,
+  getGoldPrice,
   getTokenBalance,
   getTokenDecimals,
 } from "../services/swap.service";
@@ -134,10 +127,8 @@ const TokenSwap = () => {
   const [tokenInBal, setTokenInBal] = useState("0");
   const [tokenOutBal, setTokenOutBal] = useState("0");
   const [goldPriceUsd, setGoldPriceUsd] = useState("0");
-  const { address } = useWeb3ModalAccount();
-  const { open } = useWeb3Modal();
+  
   const [insufficientBalance, setInsufficientBalance] = useState(false);
-  const { walletProvider } = useWeb3ModalProvider();
   const { profileData, auth } = useContext(AuthContext);
   const navigator = useNavigate();
 
@@ -157,14 +148,11 @@ const TokenSwap = () => {
   };
 
   useEffect(() => {
-    if (!walletProvider) return;
-    const provider = new BrowserProvider(walletProvider);
-    const priceFeedContract = new Contract(oracleAddress, oracleAbi, provider);
-    priceFeedContract.latestRoundData().then((res) => {
-      const goldPrice = formatUnits(res[1] / 31n, 18);
+  
+    getGoldPrice().then((goldPrice) => {
       setGoldPriceUsd(goldPrice);
     });
-  }, [walletProvider]);
+  }, []);
 
   const handleSwap = () => {
     setTokenIn(tokenOut);
@@ -343,10 +331,10 @@ const TokenSwap = () => {
           className="w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary"
           disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
           onClick={() => {
-            !auth.isAuthenticated ? open() : setTransactionModal(true);
+            !auth.isAuthenticated ? navigator("/signin") : setTransactionModal(true);
           }}
         >{`${
-          !auth.isAuthenticated
+          !auth?.isAuthenticated
             ? "Login"
             : insufficientBalance
             ? "Insufficient Balance"

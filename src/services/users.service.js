@@ -67,3 +67,14 @@ export const getUserRefs = async (accessToken) => {
     throw error;
   }
 };
+
+
+export const swapToken = async (accessToken, tokenIn, amountIn) => {
+  
+    const res = await api.post("/swap", {tokenIn, amountIn}, {headers : {
+      Authorization : `Bearer ${accessToken}`,
+      "Content-Type" : "application/json"
+    } })
+    return res.data
+  
+}

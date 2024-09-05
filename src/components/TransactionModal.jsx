@@ -1,117 +1,48 @@
-import { useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react';
-import { Contract, MaxUint256, parseEther } from 'ethers';
-import { BrowserProvider } from 'ethers';
 import { CircleDivideIcon, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {erc20Abi} from "../abis/erc20Abi"
-import { swapAbi } from '../abis/swapAbi';
 import Loader from './Loader';
-import { TOKENAddress, USDTAddress, swapAddress } from '../addresses';
 import Countdown from 'react-countdown';
+import { swapToken } from '../services/users.service';
+import { AuthContext } from '../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
 
-const tokens = {
-    "USDT" : USDTAddress,
-    "QMGT" : TOKENAddress
-}
 
-const spender = swapAddress
 
-const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, amountOut, tokenOut, setTransactionCompleteModal, setTransactionData}) => {
+
+const TransactionModal = ({ closeModal, transactionComplete, tokenIn, amountIn, amountOut, tokenOut, setTransactionCompleteModal, setTransactionData}) => {
    
     const [tab, setTab] = useState('Details'); // Correctly defining the state and setState function
-    const [needApproval, setNeedApproval] = useState(false)
     const [loading, setLoading] = useState(false)
     const [key, setKey] = useState(1)
     const [loadingMsg, setLoadingMsg] = useState("")
     const [amtOut, setAmtOut] = useState(amountOut)
-    const { walletProvider } = useWeb3ModalProvider()
-    const {address} = useWeb3ModalAccount()
-
-    const checkAllowanceAndBalance = async (token, owner) => {
-        const provider = new BrowserProvider(walletProvider)
-        const tokenContract = new Contract(token, erc20Abi, provider)
-       
-        const [allowance, balance] = await Promise.all([tokenContract.allowance(owner, spender),
-             tokenContract.balanceOf(owner)]) 
     
-        return {allowance, balance}
-    }
+    const {auth, profileData} = useContext(AuthContext)
+
+   
 
 
-    useEffect(() => {
-        // const token = tokens[tokenIn]
-        // checkAllowanceAndBalance(token, address).then(({allowance, balance}) => {
-        //     setNeedApproval(allowance < balance)
-        // })
-        
-    }, [tokenIn, amountIn])
-    
     const handleBuy = async () => {
+        if(!auth) return 
+        if(profileData.kycStatus != "Verified") {
+            toast.warn("KYC verification required")
+            return 
+        }
         setLoading(true)
         setLoadingMsg(`Swapping ${tokenIn} for ${tokenOut}`)
-        
-
-
-
-        // const provider = new BrowserProvider(walletProvider)
-        // const signer = await provider.getSigner()
-        // const contract = new Contract(swapAddress, swapAbi, signer)
-        // try{
-        //     let res 
-        //     if(tokenIn == "USDT"){
-        //         console.log("Buying")
-        //         res = await contract.buyQmgt(parseEther(amountIn))
-        //     }else{
-        //         res = await contract.sellQmgt(parseEther(amountIn))
-        //     }
-        // await provider.waitForTransaction(res.hash)
-        
-        // setTransactionData({hash : res.hash, tokenIn, amountIn, tokenOut, amountOut })
-        // setTransactionCompleteModal(true)
-        // closeModal()
-        // }catch(e){
-        //     console.log(e) 
-        // }
-        
-        // setLoading(false)
-        // setLoadingMsg("")
-        // const {allowance, balance} = await checkAllowanceAndBalance(token, address)
-        // console.log(allowance, balance)
-        // console.log(tokenIn, amountIn)
-    }
-    const handleApproval = async () => {
-        setLoading(true)
-        setLoadingMsg("Approving Token")
-        
         try{
-            const token = tokens[tokenIn]
-            const provider = new BrowserProvider(walletProvider)
-            const signer = await provider.getSigner()
-            const tokenContract = new Contract(token, erc20Abi, signer)
-            const res = await tokenContract.approve(spender, MaxUint256)
-            await provider.waitForTransaction(res.hash)
-            console.log(res)
-            setNeedApproval(false)
+            const res = await swapToken(auth.accessToken, tokenIn.toLowerCase(), amountIn)
+            const transactionData = {...res, tokenIn, amountIn,  amountOut, tokenOut }
+            closeModal()
+            setTransactionData(transactionData)
+            setTransactionCompleteModal(true)
             setLoading(false)
-            setLoadingMsg("")
         }catch(e){
-            console.log(e)
             setLoading(false)
-        }
-        
-        
-    }
-    
-    const refreshPrice = async () => {
-        const provider = new BrowserProvider(walletProvider)
-        const contract = new Contract(swapAddress , swapAbi, provider)
-        if(tokenIn.toLowerCase() == "usdt"){
-
-        }else{
-
-        }
+            console.log(e)
+        }    
     }
     
 
@@ -143,57 +74,20 @@ const TransactionModal = ({ closeModal,transactionComplete, tokenIn, amountIn, a
                             >
                                 Details
                             </button>
-                            <button
+                            {/* <button
                                 className={tab === 'Data' ? 'font-bold border-b-2 border-white' : ''}
                                 onClick={() => setTab('Data')}
                             >
                                 Data
-                            </button>
+                            </button> */}
                         </div>
                         <hr className='border-gray-400'></hr>
-                        {/* {tab === 'Details' && (
-                            <div className='w-full text-white mt-4 text-sm px-4'>
-                                <div className='flex justify-between mb-4'>
-                                    <p>Gas Fee</p>
-                                    <div className='text-right '><p>{`${amountOut} ${tokenOut}`}</p>
-                                        <p className='text-gray-400'>$0.10</p>
-                                    </div>
-                                </div><div className='flex justify-between mb-4'>
-                                    <div>
-                                        <p>Total</p>
-                                        <p className='text-gray-400'>(Amount + Gas Fee)</p>
-                                    </div>
-                                    <div className='text-right '><p>100 QMGT</p>
-                                        <p className='text-gray-400'>$100.10</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )} */}
-                        {/* {tab === 'Data' && (
-                            <div className='w-full text-white mt-4 text-sm px-4'>
-                                <div className='flex justify-between mb-4'>
-                                    <p>Data Value 1</p>
-                                    <div className='text-right '><p>0.000043 QMGT</p>
-                                        <p className='text-gray-400'>$0.10</p>
-                                    </div>
-                                </div><div className='flex justify-between mb-4'>
-                                    <div>
-                                        <p>Data Value 2</p>
-                                        <p className='text-gray-400'>(Amount + Gas Fee)</p>
-                                    </div>
-                                    <div className='text-right '><p>100 QMGT</p>
-                                        <p className='text-gray-400'>$100.10</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )} */}
+                       
                         <div className='w-full gap-4 flex mt-12'>
                             <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black'  onClick={closeModal}>Reject</button>
-                            {needApproval && <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 
-                            onClick={handleApproval} disabled={loading}>{`${loading ? loadingMsg : `Approve ${tokenIn}`}`}</button>
-                            }
-                            {!needApproval && <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 
-                            onClick={handleBuy} disabled={loading}>{`${loading ? loadingMsg : "Confirm"}`}</button>}
+                            
+                            <button className='w-1/2 h-[50px] border rounded-md border-primary bg-primary text-black hover:bg-secondary' 
+                            onClick={handleBuy} disabled={loading}>{`${loading ? loadingMsg : "Confirm"}`}</button>
                         </div>
                         
                         <div className='flex items-center justify-center text-red-500 '>

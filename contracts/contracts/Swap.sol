@@ -62,7 +62,11 @@ contract QMGTSwap {
 
     function buyQmgt(uint usdAmount) external returns(uint tokens) {        
         ERC20(usdt).transferFrom(msg.sender, address(this), usdAmount);
-        uint feeAmt = usdAmount * 3 / 1000;
+        uint _fee = 1;
+        if(usdAmount >= 150 * 10**usdtDecimals){
+            _fee = 2;
+        }
+        uint feeAmt = usdAmount * _fee / 1000;
         tokens = getQmgtAmount(usdAmount - feeAmt);
         ERC20(token).transfer(msg.sender, tokens);
         ERC20(usdt).transfer(treasury, feeAmt);
@@ -71,13 +75,10 @@ contract QMGTSwap {
 
     function getQmgtAmount(uint usdAmount) public  view returns(uint qmgtAmount) {    
         uint goldPrice = getLatestGoldPrice() / 31;
-        goldPrice = goldPrice + ((goldPrice * 7) / 100);
-
+        
          uint256 valuePerQMGT = (goldPrice * GRAMS_PER_QMGT * (10**usdtDecimals)) 
                                 / (1000 * (10**(feedDecimals + qmgtDecimals)));
-
         qmgtAmount = usdAmount / valuePerQMGT;
-
         } 
     
     
@@ -85,7 +86,11 @@ contract QMGTSwap {
         ERC20(token).transferFrom(msg.sender, address(this), tokenAmount);
         
         usdAmount = getUsdAmount(tokenAmount);
-        uint feeAmt = usdAmount * fee / 1000;
+        uint _fee = 1;
+        if(usdAmount >= 150 * 10**usdtDecimals){
+            _fee = 2;
+        }
+        uint feeAmt = usdAmount * _fee / 1000;
         ERC20(usdt).transfer(msg.sender, usdAmount - feeAmt);
         ERC20(usdt).transfer(treasury, feeAmt);
     }
@@ -93,8 +98,7 @@ contract QMGTSwap {
 
     function getUsdAmount(uint tokenAmount) public view returns (uint usdAmount) {
         uint256 goldPrice = getLatestGoldPrice() / 31;
-        goldPrice = goldPrice - ((goldPrice * 7) / 100);
-
+        
         uint256 valuePerQMGT = (goldPrice * GRAMS_PER_QMGT * (10**usdtDecimals)) 
                                 / (1000 * (10**(feedDecimals + qmgtDecimals)));
         

@@ -2,7 +2,6 @@ import { Ellipsis, X } from "lucide-react";
 import { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
-import { useWeb3Modal, useWeb3ModalAccount } from "@web3modal/ethers/react";
 import Logo from "../assets/au-logo.png";
 import { AuthContext } from "../contexts/AuthContext";
 
@@ -13,8 +12,6 @@ const shortenAddress = (address) => {
 const Navigation = () => {
   const [showModal, setShowModal] = useState(false);
   const [navShow, setNavShow] = useState(false);
-  const { open } = useWeb3Modal();
-  const { address } = useWeb3ModalAccount();
   const {auth} = useContext(AuthContext)
   const navigate = useNavigate()
   
