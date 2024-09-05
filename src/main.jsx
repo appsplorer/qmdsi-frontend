@@ -11,10 +11,11 @@ import SmartTrade from "./pages/SmartTrade.jsx";
 import KYC from "./pages/KYC.jsx";
 import Profile from "./pages/Profile.jsx";
 import Register from "./pages/Register.jsx";
-import Verify from './pages/verify.jsx'
+import Verify from "./pages/verify.jsx";
 import Login from "./pages/Login.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
-import Verification from './components/verification.jsx'
+import Verification from "./components/verification.jsx";
+import ForgetPassword from "./pages/ForgetPassword.jsx";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "/signup",
         element: <Register />,
+      },
+      {
+        path: "/forget-password",
+        element: <ForgetPassword />,
       },
       {
         path: "/pool",
@@ -65,9 +70,9 @@ const router = createBrowserRouter([
             element: <KYC />,
           },
           {
-            path : "/verify",
-            element : <Verify />
-          }
+            path: "/verify",
+            element: <Verify />,
+          },
         ],
       },
     ],
@@ -76,6 +81,6 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-      <RouterProvider router={router} />    
+    <RouterProvider router={router} />
   </React.StrictMode>
 );

@@ -31,43 +31,27 @@ const KycForm = () => {
         const data = await getUserPersonalInfo(auth.accessToken);
         setDefaultValues({
           name: data.name || "",
-          employerName: data.employeeName || "",
+          employeeName: data.employeeName || "",
           income: data.incomePerAnnum?.toString() || "",
           dateOfBirth: data.dateOfBirth || "",
           address: data.address || "",
           city: data.city || "",
           zipCode: data.postalCode || "",
-          country:
-            countryOptions.find((option) => option.value === data.country) ||
-            null,
-          citizenship:
-            nationalityOptions.find(
-              (option) => option.value === data.citizenship
-            ) || null,
-          currency:
-            countryOptions.find((option) => option.value === data.currency) ||
-            null,
           motherName: data.motherName || "",
           incomeTaxNo: data.incomeTaxNo || "",
-          idType:
-            nationalIdTypeOptions.find(
-              (option) => option.value === data.idType
-            ) || null,
+          country: data.country || "",
+          citizenship: data.citizenship || "",
+          currency: data.currency || "",
+          idType: data.idType || "",
           idNumber: data.idNumber || "",
           industry: data.industry || "",
           occupation: data.occupation || "",
           sourceOfIncome: data.sourceOfIncome || "",
-          email: data.email || "",
           mobilePhone: data.mobilePhone || "",
           phone2: data.phone2 || "",
           faxNumber: data.faxNo || "",
-          marital:
-            maritalStatusOptions.find(
-              (option) => option.value === data.maritalStatus
-            ) || null,
-          gender:
-            genderOptions.find((option) => option.value === data.gender) ||
-            null,
+          marital: data.maritalStatus || "",
+          gender: data.gender || "",
         });
       } catch (error) {
         console.error("Error fetching personal info:", error);
@@ -111,24 +95,23 @@ const KycForm = () => {
         address: data.address,
         city: data.city,
         postalCode: data.zipCode,
-        country: data.country.value,
-        citizenship: data.citizenship.value,
-        currency: data.currency.value,
+        country: data.country,
+        citizenship: data.citizenship,
+        currency: data.currency,
+        idType: data.idType,
         motherName: data.motherName,
         incomeTaxNo: data.incomeTaxNo,
-        idType: data.idType.value,
         idNumber: data.idNumber,
         industry: data.industry,
         occupation: data.occupation,
         sourceOfIncome: data.sourceOfIncome,
-        email: data.email,
         mobilePhone: data.mobilePhone,
         phone2: data.phone2,
         faxNo: data.faxNumber,
-        maritalStatus: data.marital.value,
-        gender: data.gender.value,
+        maritalStatus: data.marital,
+        gender: data.gender,
       };
-      console.log(personalInfoData)
+
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated successfully!");
       navigate("/verify");
@@ -331,17 +314,6 @@ const KycForm = () => {
                   placeholder="Source of Income"
                 />
               </div>
-
-              <div className="w-full">
-                <FormField
-                  label="Email"
-                  name="email"
-                  control={personalInfoControl}
-                  type="email"
-                  placeholder="Email"
-                />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   label="Mobile Phone"

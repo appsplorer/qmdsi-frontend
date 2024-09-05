@@ -19,8 +19,8 @@ const SelectField = ({ label, name, control, options, placeholder, rules }) => (
             options={options}
             styles={customStyles}
             onChange={(selectedOption) => field.onChange(selectedOption.value)}
-            placeholder={placeholder}
             value={options.find((option) => option.value === field.value)}
+            placeholder={placeholder}
           />
           {error && (
             <span className="text-red-500 text-sm">{error.message}</span>

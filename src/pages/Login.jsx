@@ -26,12 +26,10 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await authLogin(formData);
-      console.log(response)
       login(response.access_token);
       toast.success("Login successful!");
       navigate("/profile");
     } catch (error) {
-      console.error("Login failed:", error);
       toast.error(error?.detail || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -71,6 +69,11 @@ const Login = () => {
                 className="w-full p-2 rounded bg-black text-white"
                 required
               />
+              <div className="text-right mt-2">
+                <Link to="/forget-password" className="text-primary underline">
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
             <button
               type="submit"

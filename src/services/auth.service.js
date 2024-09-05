@@ -3,7 +3,6 @@ import api from "./api.service";
 export const authSignup = async (data) => {
   try {
     const response = await api.post("/signup", data);
-
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -23,6 +22,15 @@ export const authLogin = async (data) => {
       },
     });
 
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const forgetPassword = async (email) => {
+  try {
+    const response = await api.post("/forget-password", { email });
     return response.data;
   } catch (error) {
     throw error.response.data;

@@ -33,15 +33,10 @@ const Nominee = () => {
           address: data.address || "",
           city: data.city || "",
           zipCode: data.postalCode || "",
-          country:
-            countryOptions.find((option) => option.value === data.country) ||
-            null,
+          country: data.country || "",
           relation: data.relationshipToTestator || "",
           contactInfo: data.contactInfo || "",
-          idType:
-            nationalIdTypeOptions.find(
-              (option) => option.value === data.idType
-            ) || null,
+          idType: data.idType || "",
           idNumber: data.idNumber?.toString() || "",
         };
       } catch (error) {
@@ -68,12 +63,13 @@ const Nominee = () => {
         address: data.address,
         city: data.city,
         postalCode: data.zipCode,
-        country: data.country.value,
+        country: data.country,
         relationshipToTestator: data.relation,
         contactInfo: data.contactInfo,
-        idType: data.idType.value,
+        idType: data.idType,
         idNumber: parseInt(data.idNumber, 10),
       };
+      console.log(nomineeData);
 
       await updateNomineeInfo(auth.accessToken, nomineeData);
       toast.success("Nominee information submitted successfully!");
@@ -310,6 +306,12 @@ const Nominee = () => {
                     options={countryOptions}
                     styles={customStyles}
                     placeholder="Select Country"
+                    onChange={(selectedOption) =>
+                      field.onChange(selectedOption.value)
+                    }
+                    value={countryOptions.find(
+                      (option) => option.value === field.value
+                    )}
                   />
                 )}
               />
@@ -387,6 +389,12 @@ const Nominee = () => {
                     options={nationalIdTypeOptions}
                     styles={customStyles}
                     placeholder="Select ID Type"
+                    onChange={(selectedOption) =>
+                      field.onChange(selectedOption.value)
+                    }
+                    value={nationalIdTypeOptions.find(
+                      (option) => option.value === field.value
+                    )}
                   />
                 )}
               />
