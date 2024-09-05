@@ -5,6 +5,8 @@ import { GitCompare, RefreshCcw } from "lucide-react";
 
 const Swap = () => {
   const [tokenSwap, setTokenSwap] = useState(true);
+  const [fee, setFee] = useState("0.1")
+
   return (
     <div className="px-4 md:px-24 pt-4 h-full">
       <div className="border border-primary border-b-0 p-3 min-h-[100vh] flex justify-center">
@@ -22,14 +24,14 @@ const Swap = () => {
             </div>
             <div className="flex gap-2">
               <button className="text-[14px] flex gap-2 bg-black p-1 px-2 rounded-full items-center ">
-                <GitCompare className="w-[14px] text-primary" /> 0.3%
+                <GitCompare className="w-[14px] text-primary" /> {fee}%
               </button>
               <button className="text-[14px] bg-black p-1 px-2 rounded-full">
                 <RefreshCcw className="w-[14px] text-primary" />
               </button>
             </div>
           </div>
-          {tokenSwap ? <TokenSwap /> : <CreditSwap />}
+          {tokenSwap ? <TokenSwap setFee={setFee} /> : <CreditSwap />}
         </div>
       </div>
 

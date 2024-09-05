@@ -128,7 +128,7 @@ const KycForm = () => {
         maritalStatus: data.marital.value,
         gender: data.gender.value,
       };
-
+      console.log(personalInfoData)
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated successfully!");
       navigate("/verify");

@@ -41,7 +41,7 @@ const CustomSingleValue = (props) => {
   );
 };
 
-const TokenSwap = () => {
+const TokenSwap = ({setFee}) => {
   const CustomOption = (props) => {
     const { innerRef, innerProps, data } = props;
     return (
@@ -154,6 +154,7 @@ const TokenSwap = () => {
     });
   }, []);
 
+
   const handleSwap = () => {
     setTokenIn(tokenOut);
     setTokenOut(tokenIn);
@@ -169,6 +170,17 @@ const TokenSwap = () => {
       return;
     }
     getAmountOut(tokenIn.toLowerCase(), amountIn).then((res) => {
+      if(tokenIn.toLowerCase() == "usdt" && parseFloat(amountIn) >= 150){
+          setFee(0.2)
+        // 
+      }else{
+        if(parseFloat(res) >= 150) {
+          setFee(0.2)
+        }else{
+          setFee(0.1)
+        }
+      }
+
       if (res) setAmountOut(res);
     });
   }, [tokenIn, amountIn]);
@@ -180,9 +192,20 @@ const TokenSwap = () => {
       return;
     }
     getAmountOut(tokenOut.toLowerCase(), amountOut).then((res) => {
+      if(tokenOut.toLowerCase() == "usdt" && parseFloat(amountOut) >= 150){
+          setFee(0.2)
+        // 
+      }else{
+        if(parseFloat(res) >= 150) {
+          setFee(0.2)
+        }else{
+          setFee(0.1)
+        }
+      }
       if (res) setAmountIn(res);
     });
   }, [tokenOut, amountOut]);
+
 
   useEffect(() => {
     if (!tokenIn || !amountIn || !profileData?.walletAddress) {
@@ -199,6 +222,7 @@ const TokenSwap = () => {
       }
     });
   }, [tokenIn, amountIn]);
+
 
   useEffect(() => {
     if (!tokenIn || !profileData?.walletAddress) return;
