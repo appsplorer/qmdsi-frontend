@@ -61,16 +61,14 @@ def bind_user_account(_id: str):
 
     if binded_user:
         return BindResult(
-            status="binded",
-            message="User has been binded",
-            wallet_address=w3.get_user_account(_id),
+            status="success",
+            walletAddress=w3.get_user_account(_id),
         )
     db.bind_user(_id)
 
     return BindResult(
-        status="binded",
-        message="User has been binded",
-        wallet_address=w3.get_user_account(_id),
+        status="success",
+        walletAddress=w3.get_user_account(_id),
     )
 
 

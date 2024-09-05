@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import {
   updatePersonalInfo,
   getUserPersonalInfo,
+  updateProfileImages,
 } from "../services/users.service";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
@@ -113,15 +114,18 @@ const KycForm = () => {
       };
 
       await updatePersonalInfo(auth.accessToken, personalInfoData);
+      // await new Promise.resolve()
       toast.success("Personal information updated successfully!");
-      navigate("/verify");
+      setSelectedTab(1)
+      // navigate("/verify");
     } catch (error) {
       console.error("Error updating personal info:", error);
       if (error?.detail === "400: Personal Information already exists") {
         toast.success(
           "Personal Information already exists, redirecting to verify page"
         );
-        navigate("/verify");
+        
+        // navigate("/verify");
       } else {
         toast.error(error?.detail || "Failed to update personal information");
       }
@@ -133,8 +137,12 @@ const KycForm = () => {
   const onImageUploadSubmit = async (data) => {
     setIsImageUploadLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      const res = await updateProfileImages(auth.accessToken, data.profilePic, data.personalId)
+      
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
       toast.success("Images uploaded successfully!");
+      navigate("/verify");
     } catch (error) {
       console.error("Error during image upload simulation:", error);
       toast.error("Failed to simulate image upload. Please try again.");

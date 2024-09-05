@@ -22,7 +22,8 @@ from schemas import (
     LoginUser,
     DBUser,
     SwapParams,
-    TransferSchema
+    TransferSchema,
+    BindRequestSchema,
 )
 import cv2
 import os
@@ -162,32 +163,32 @@ def post_personal_information(
     personal_info: PersonalInformation, user: DBUser = Depends(current_user)
 ):
     try:
-        print(personal_info)
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        files = os.listdir(UPLOAD_DIR)
-        matching_files = [f for f in files if f.startswith(user.id)]
-        if not matching_files:
-            raise exceptions.BadRequestException(
-                "Id card not found,ensure you upload your id card first before proceed"
-            )
+        # print(personal_info)
+        # UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+        # os.makedirs(UPLOAD_DIR, exist_ok=True)
+        # files = os.listdir(UPLOAD_DIR)
+        # matching_files = [f for f in files if f.startswith(user.id)]
+        # if not matching_files:
+        #     raise exceptions.BadRequestException(
+        #         "Id card not found,ensure you upload your id card first before proceed"
+        #     )
 
-        id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
-        fullname, id, dob = get_id_no_and_fullname_from_id_card(id_image_path)
+        # id_image_path = os.path.join(UPLOAD_DIR, matching_files[0])
+        # fullname, id, dob = get_id_no_and_fullname_from_id_card(id_image_path)
 
-        id_card_dob = datetime.strptime(dob, date_format)
-        user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
-        print("user id", user_dob)
-        print(type(user_dob))
-        print("dob", id_card_dob)
-        if not name_contains(personal_info.name, fullname):
-            raise HTTPException(status_code=400, detail="Incorrect name provided.")
-        if id != str(personal_info.id_number):
-            raise HTTPException(status_code=400, detail="Incorrect id number provided.")
-        if id_card_dob != user_dob:
-            raise HTTPException(
-                status_code=400, detail="Incorrect date of birth provided."
-            )
+        # id_card_dob = datetime.strptime(dob, date_format)
+        # user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
+        # print("user id", user_dob)
+        # print(type(user_dob))
+        # print("dob", id_card_dob)
+        # if not name_contains(personal_info.name, fullname):
+        #     raise HTTPException(status_code=400, detail="Incorrect name provided.")
+        # if id != str(personal_info.id_number):
+        #     raise HTTPException(status_code=400, detail="Incorrect id number provided.")
+        # if id_card_dob != user_dob:
+        #     raise HTTPException(
+        #         status_code=400, detail="Incorrect date of birth provided."
+        #     )
 
         res = core.create_kyc_information(user.id, personal_info)
         return res
@@ -209,6 +210,7 @@ def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
 
 @app.post("/personal_information/images")
 async def upload_kyc_images(
+    profile_picture: UploadFile = File(...),
     id_picture: UploadFile = File(...),
     user: DBUser = Depends(current_user),
 ):
@@ -256,13 +258,13 @@ def get_bind_status(
 
 @app.post("/bind")
 def bind_account(
-    user_id: str,
+    data: BindRequestSchema,
     x_token: str = Header(...),
 ):
     org_id = org_ids.get_ord_id(x_token)
     if not org_id:
         raise exceptions.BadRequest("Invalid token")
-    return core.bind_user_account(user_id)
+    return core.bind_user_account(data.identificationNumber)
 
 
 @app.get("/balance")

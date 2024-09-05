@@ -82,7 +82,23 @@ const TransactionModal = ({ closeModal, transactionComplete, tokenIn, amountIn, 
                             </button> */}
                         </div>
                         <hr className='border-gray-400'></hr>
-                       
+                            <div className='w-full text-white mt-4 text-sm px-4'>
+                                <div className='flex justify-between mb-4'>
+                                    <p>Fee</p>
+                                    <div className='text-right '><p>{0.1}%</p>
+                                        {/* <p className='text-gray-400'>$0.10</p> */}
+                                    </div>
+                                </div><div className='flex justify-between mb-4'>
+                                    <div>
+                                        <p>Amount</p>
+                                        {/* <p className='text-gray-400'></p> */}
+                                    </div>
+                                    {/* <div className='text-right '><p>100 QMGT</p> */}
+                                        <p className='text-gray-400'>{0.2} USDT</p>
+                                    {/* </div> */}
+                                </div>
+                            </div>
+                        
                         <div className='w-full gap-4 flex mt-12'>
                             <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black'  onClick={closeModal}>Reject</button>
                             

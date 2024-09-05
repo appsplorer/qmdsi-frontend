@@ -67,8 +67,6 @@ class PersonalInformation(BaseModel):
     source_of_income: str = Field(
         ..., validation_alias=AliasChoices("sourceOfIncome", "source_of_income")
     )
-    email: EmailStr
-    email2: EmailStr
     mobile_phone: str = Field(
         ..., validation_alias=AliasChoices("mobilePhone", "mobile_phone")
     )
@@ -122,8 +120,7 @@ class SwapParams(BaseModel):
 
 class BindResult(BaseModel):
     status: str
-    message: str
-    wallet_address: str
+    walletAddress: str
 
 
 class DebitSchema(BaseModel):
@@ -136,3 +133,7 @@ class TransferSchema(BaseModel):
     toAccount: str
     fromAccount: str
     amountInUSD: str
+
+
+class BindRequestSchema(BaseModel):
+    identificationNumber: str

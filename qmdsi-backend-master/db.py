@@ -49,8 +49,6 @@ def create_tables():
                 industry TEXT NOT NULL,
                 occupation TEXT NOT NULL,
                 source_of_income TEXT NOT NULL,
-                email TEXT NOT NULL,
-                email2 TEXT NOT NULL,
                 mobile_phone TEXT NOT NULL,
                 phone_2 TEXT NOT NULL,
                 fax_no TEXT NOT NULL,
