@@ -45,4 +45,12 @@ export const customStyles = {
     alignItems: "center",
     gap: "5px",
   }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: "white",
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: "white",
+  }),
 };

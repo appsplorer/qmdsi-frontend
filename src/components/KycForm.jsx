@@ -63,7 +63,6 @@ const KycForm = () => {
         occupation: data.occupation,
         sourceOfIncome: data.income,
         email: data.email,
-        email2: data.email2,
         mobilePhone: data.mobilePhone,
         phone2: data.phone2,
         faxNo: data.faxNumber,
@@ -77,10 +76,12 @@ const KycForm = () => {
     } catch (error) {
       console.log(error);
       console.error("Error updating personal info:", error);
-      if (error?.detail ==="400: Personal Information already exists"){
-        toast.success("Personal Information already exists,redirect to verify page");
+      if (error?.detail === "400: Personal Information already exists") {
+        toast.success(
+          "Personal Information already exists,redirect to verify page"
+        );
         navigate("/verify");
-      }else{
+      } else {
         toast.error(error?.detail);
       }
     } finally {
@@ -273,20 +274,13 @@ const KycForm = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="w-full">
                 <FormField
                   label="Email"
                   name="email"
                   control={personalInfoControl}
                   type="email"
                   placeholder="Email"
-                />
-                <FormField
-                  label="Email 2"
-                  name="email2"
-                  control={personalInfoControl}
-                  type="email"
-                  placeholder="Email 2"
                 />
               </div>
 
