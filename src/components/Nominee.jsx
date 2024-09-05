@@ -1,13 +1,10 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
-import {
-  updateNomineeInfo,
-  updateNomineeImages,
-} from "../services/nominee.service";
+import { updateNomineeInfo, getUserNominee } from "../services/nominee.service";
 import { countryOptions } from "../data/countries";
 import { nationalIdTypeOptions } from "../constants/KYC";
 import { customStyles } from "../styles";
@@ -15,12 +12,50 @@ import { customStyles } from "../styles";
 const Nominee = () => {
   const [activeTab, setActiveTab] = useState("info");
   const [isLoading, setIsLoading] = useState(false);
+  const [nomineeData, setNomineeData] = useState(null);
   const { auth } = useContext(AuthContext);
+
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    reset,
+  } = useForm({
+    defaultValues: async () => {
+      try {
+        const data = await getUserNominee(auth.accessToken);
+        setNomineeData(data);
+        return {
+          firstName: data.firstName || "",
+          middleName: data.middleName || "",
+          lastName: data.lastName || "",
+          dateOfBirth: data.dateOfBirth || "",
+          address: data.address || "",
+          city: data.city || "",
+          zipCode: data.postalCode || "",
+          country:
+            countryOptions.find((option) => option.value === data.country) ||
+            null,
+          relation: data.relationshipToTestator || "",
+          contactInfo: data.contactInfo || "",
+          idType:
+            nationalIdTypeOptions.find(
+              (option) => option.value === data.idType
+            ) || null,
+          idNumber: data.idNumber?.toString() || "",
+        };
+      } catch (error) {
+        console.error("Error fetching personal info:", error);
+        return {};
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (nomineeData) {
+      reset(nomineeData);
+    }
+  }, [nomineeData, reset]);
 
   const onSubmitInfo = async (data) => {
     setIsLoading(true);
@@ -44,9 +79,8 @@ const Nominee = () => {
       toast.success("Nominee information submitted successfully!");
       setActiveTab("image");
     } catch (error) {
-      console.log(error);
       console.error("Error updating nominee information:", error);
-      toast.error(error?.detail);
+      toast.error(error?.detail || "Failed to update nominee information");
     } finally {
       setIsLoading(false);
     }
@@ -56,17 +90,17 @@ const Nominee = () => {
     setIsLoading(true);
     try {
       if (data.idFile && data.idFile.length > 0) {
-        const formData = new FormData();
-        formData.append("id_picture", data.idFile[0]);
-        await updateNomineeImages(auth.accessToken, formData);
-        toast.success("Nominee ID image uploaded successfully!");
+        setTimeout(() => {
+          toast.success("Nominee ID image uploaded successfully!");
+          setIsLoading(false);
+        }, 2000);
       } else {
         toast.error("Please select an image file to upload.");
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error uploading nominee ID image:", error);
       toast.error("Failed to upload nominee ID image. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };

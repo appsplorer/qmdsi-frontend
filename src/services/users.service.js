@@ -38,6 +38,20 @@ export const updatePersonalInfo = async (accessToken, data) => {
   }
 };
 
+export const getUserPersonalInfo = async (accessToken) => {
+  try {
+    const response = await api.get("/personal_information", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
 export const getUser = async (accessToken) => {
   try {
     const response = await api.get("/user", {
@@ -68,13 +82,16 @@ export const getUserRefs = async (accessToken) => {
   }
 };
 
-
 export const swapToken = async (accessToken, tokenIn, amountIn) => {
-  
-    const res = await api.post("/swap", {tokenIn, amountIn}, {headers : {
-      Authorization : `Bearer ${accessToken}`,
-      "Content-Type" : "application/json"
-    } })
-    return res.data
-  
-}
+  const res = await api.post(
+    "/swap",
+    { tokenIn, amountIn },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return res.data;
+};

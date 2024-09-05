@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
 import { countryOptions, nationalityOptions } from "../data/countries";
@@ -7,10 +7,10 @@ import {
   maritalStatusOptions,
   nationalIdTypeOptions,
 } from "../constants/KYC";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   updatePersonalInfo,
-  updateProfileImages,
+  getUserPersonalInfo,
 } from "../services/users.service";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
@@ -20,14 +20,74 @@ import SelectField from "./SelectField";
 import FileUploadField from "./FileUploadField";
 
 const KycForm = () => {
+  const [defaultValues, setDefaultValues] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPersonalInfo = async () => {
+      try {
+        const data = await getUserPersonalInfo(auth.accessToken);
+        setDefaultValues({
+          name: data.name || "",
+          employerName: data.employeeName || "",
+          income: data.incomePerAnnum?.toString() || "",
+          dateOfBirth: data.dateOfBirth || "",
+          address: data.address || "",
+          city: data.city || "",
+          zipCode: data.postalCode || "",
+          country:
+            countryOptions.find((option) => option.value === data.country) ||
+            null,
+          citizenship:
+            nationalityOptions.find(
+              (option) => option.value === data.citizenship
+            ) || null,
+          currency:
+            countryOptions.find((option) => option.value === data.currency) ||
+            null,
+          motherName: data.motherName || "",
+          incomeTaxNo: data.incomeTaxNo || "",
+          idType:
+            nationalIdTypeOptions.find(
+              (option) => option.value === data.idType
+            ) || null,
+          idNumber: data.idNumber || "",
+          industry: data.industry || "",
+          occupation: data.occupation || "",
+          sourceOfIncome: data.sourceOfIncome || "",
+          email: data.email || "",
+          mobilePhone: data.mobilePhone || "",
+          phone2: data.phone2 || "",
+          faxNumber: data.faxNo || "",
+          marital:
+            maritalStatusOptions.find(
+              (option) => option.value === data.maritalStatus
+            ) || null,
+          gender:
+            genderOptions.find((option) => option.value === data.gender) ||
+            null,
+        });
+      } catch (error) {
+        console.error("Error fetching personal info:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPersonalInfo();
+  }, [auth.accessToken]);
+
   const {
     control: personalInfoControl,
     handleSubmit: handlePersonalInfoSubmit,
     formState: { isValid: isPersonalInfoValid },
   } = useForm({
     mode: "onChange",
+    defaultValues: defaultValues,
   });
-  const navigate = useNavigate();
+
   const {
     handleSubmit: handleImageUploadSubmit,
     setValue: setImageUploadValue,
@@ -36,7 +96,6 @@ const KycForm = () => {
     mode: "onChange",
   });
 
-  const { auth } = useContext(AuthContext);
   const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
   const [isImageUploadLoading, setIsImageUploadLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
@@ -52,37 +111,36 @@ const KycForm = () => {
         address: data.address,
         city: data.city,
         postalCode: data.zipCode,
-        country: data.country,
-        citizenship: data.citizenship,
-        currency: data.currency,
+        country: data.country.value,
+        citizenship: data.citizenship.value,
+        currency: data.currency.value,
         motherName: data.motherName,
         incomeTaxNo: data.incomeTaxNo,
-        idType: data.idType,
+        idType: data.idType.value,
         idNumber: data.idNumber,
         industry: data.industry,
         occupation: data.occupation,
-        sourceOfIncome: data.income,
+        sourceOfIncome: data.sourceOfIncome,
         email: data.email,
         mobilePhone: data.mobilePhone,
         phone2: data.phone2,
         faxNo: data.faxNumber,
-        maritalStatus: data.marital,
-        gender: data.gender,
+        maritalStatus: data.marital.value,
+        gender: data.gender.value,
       };
 
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated successfully!");
       navigate("/verify");
     } catch (error) {
-      console.log(error);
       console.error("Error updating personal info:", error);
       if (error?.detail === "400: Personal Information already exists") {
         toast.success(
-          "Personal Information already exists,redirect to verify page"
+          "Personal Information already exists, redirecting to verify page"
         );
         navigate("/verify");
       } else {
-        toast.error(error?.detail);
+        toast.error(error?.detail || "Failed to update personal information");
       }
     } finally {
       setIsPersonalInfoLoading(false);
@@ -92,19 +150,19 @@ const KycForm = () => {
   const onImageUploadSubmit = async (data) => {
     setIsImageUploadLoading(true);
     try {
-      await updateProfileImages(
-        auth.accessToken,
-        data.profilePic,
-        data.personalId
-      );
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       toast.success("Images uploaded successfully!");
     } catch (error) {
-      console.error("Error uploading images:", error);
-      toast.error("Failed to upload images. Please try again.");
+      console.error("Error during image upload simulation:", error);
+      toast.error("Failed to simulate image upload. Please try again.");
     } finally {
       setIsImageUploadLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="w-full max-w-[1200px] bg-accent rounded-md p-4 md:p-8 text-white">

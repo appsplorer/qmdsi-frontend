@@ -7,39 +7,38 @@ import { toast } from "react-toastify";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
-  const [kycStatus,setKycstatus] = useState(
-    // <Link
-    //             to="/kyc"
-    //             className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
-    //           >
-    //             Verify Identity
-    //           </Link>
-  )
+  const [kycStatus, setKycstatus] = useState();
   const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
-        console.log(userData.referral_sign_ups)
+        console.log(userData.referral_sign_ups);
         setProfileData({
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
           country: userData.country,
           email: userData.email,
-          kycStatus: userData.kyc_verified ? <span style={{ color: 'green', fontSize: '15px' }}>Verified</span> : "Not Verified",
+          kycStatus: userData.kyc_verified ? (
+            <span style={{ color: "green", fontSize: "15px" }}>Verified</span>
+          ) : (
+            "Not Verified"
+          ),
           referralLink: userData.ref_link,
-          walletAddress : userData.wallet_address,
+          walletAddress: userData.wallet_address,
           referralSignUps: userData.referral_sign_ups,
         });
-        userData.kyc_verified ? "":setKycstatus(
-          <Link
-          to="/kyc"
-          className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
-        >
-          Verify Identity
-        </Link>
-        )
+        userData.kyc_verified
+          ? ""
+          : setKycstatus(
+              <Link
+                to="/kyc"
+                className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
+              >
+                Verify Identity
+              </Link>
+            );
       } catch (error) {
         console.error("Error fetching profile data:", error);
       }
@@ -97,18 +96,15 @@ const Profile = () => {
               </div>
             </div>
             <div>
-                <p>
-                  <strong>Wallet Address:</strong> {profileData.walletAddress}
-                </p>
-              </div>
+              <p>
+                <strong>Wallet Address:</strong> {profileData.walletAddress}
+              </p>
+            </div>
             <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:text-left text-left">
               <p>
                 <strong>KYC Status:</strong> {profileData.kycStatus}
               </p>
-              {
-              kycStatus
-              
-            }
+              {kycStatus}
             </div>
             <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:text-left text-left">
               <p>

@@ -27,3 +27,18 @@ export const updateNomineeInfo = async (accessToken, data) => {
     throw error?.response.data;
   }
 };
+
+export const getUserNominee = async (accessToken) => {
+  try {
+    const response = await api.get("/nominee", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching nominee data:", error);
+    throw error;
+  }
+};
