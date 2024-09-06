@@ -97,6 +97,22 @@ def create_personal_info(_id: str, info: PersonalInformation):
     conn.close()
     return cursor.lastrowid
 
+def update_personal_info(_id: str, info: PersonalInformation):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+    
+    new_record = info.model_dump()
+    set_clause = ", ".join([f"{key} = ?" for key in new_record.keys()])
+    values = list(new_record.values())
+    values.append(_id)
+    sql = f"UPDATE personal_information SET {set_clause} WHERE id = ?"
+    
+    cursor.execute(sql, values)
+    conn.commit()
+    conn.close()
+    
+    return cursor.rowcount
+
 
 def get_personal_information(_id: str) -> PersonalInformation | None:
     conn = sqlite3.connect("my_database.db")

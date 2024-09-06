@@ -16,6 +16,11 @@ from exceptions import BadRequestException
 import security
 
 
+def get_personal_info(_id:str):
+    res = db.get_personal_information(_id)
+    return res
+
+
 def create_kyc_information(id_: str, information: PersonalInformation):
     info = db.get_personal_information(id_)
 
@@ -25,6 +30,14 @@ def create_kyc_information(id_: str, information: PersonalInformation):
     res = db.create_personal_info(id_, information)
 
     return bool(res)
+
+def update_kyc_information(id_:str, information:PersonalInformation):
+    try:
+        res = db.update_personal_info(id_, information)
+        return bool(res)
+    except Exception as err:
+        print(err)
+        raise BadRequestException(f"{err}")
 
 
 def create_nominee(id_: str, nominee: Nominee):

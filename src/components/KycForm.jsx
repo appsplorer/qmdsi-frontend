@@ -144,8 +144,8 @@ const KycForm = () => {
       toast.success("Images uploaded successfully!");
       navigate("/verify");
     } catch (error) {
-      console.error("Error during image upload simulation:", error);
-      toast.error("Failed to simulate image upload. Please try again.");
+      console.error("Error during image upload simulation:", error.data);
+      toast.error("Your kyc data doesn't match with the id card uploaded,update your kyc information and try again");
     } finally {
       setIsImageUploadLoading(false);
     }
