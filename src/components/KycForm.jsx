@@ -31,7 +31,7 @@ const KycForm = () => {
       try {
         const data = await getUserPersonalInfo(auth.accessToken);
         setDefaultValues({
-          name: data.name || "",
+          name: data.name || "John Doe",
           employeeName: data.employeeName || "",
           income: data.incomePerAnnum?.toString() || "",
           dateOfBirth: data.dateOfBirth || "",
@@ -116,7 +116,7 @@ const KycForm = () => {
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       // await new Promise.resolve()
       toast.success("Personal information updated successfully!");
-      setSelectedTab(1)
+      setSelectedTab(1);
       // navigate("/verify");
     } catch (error) {
       console.error("Error updating personal info:", error);
@@ -124,7 +124,7 @@ const KycForm = () => {
         toast.success(
           "Personal Information already exists, redirecting to verify page"
         );
-        
+
         // navigate("/verify");
       } else {
         toast.error(error?.detail || "Failed to update personal information");
@@ -137,15 +137,20 @@ const KycForm = () => {
   const onImageUploadSubmit = async (data) => {
     setIsImageUploadLoading(true);
     try {
-      
-      const res = await updateProfileImages(auth.accessToken, data.profilePic, data.personalId)
-      
+      const res = await updateProfileImages(
+        auth.accessToken,
+        data.profilePic,
+        data.personalId
+      );
+
       // await new Promise((resolve) => setTimeout(resolve, 2000));
       toast.success("Images uploaded successfully!");
       navigate("/verify");
     } catch (error) {
       console.error("Error during image upload simulation:", error.data);
-      toast.error("Your kyc data doesn't match with the id card uploaded,update your kyc information and try again");
+      toast.error(
+        "Your kyc data doesn't match with the id card uploaded,update your kyc information and try again"
+      );
     } finally {
       setIsImageUploadLoading(false);
     }
