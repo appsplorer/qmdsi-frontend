@@ -137,3 +137,16 @@ class TransferSchema(BaseModel):
 
 class BindRequestSchema(BaseModel):
     identificationNumber: str
+
+
+class BuyGoldSchema(BaseModel):
+    userId: str
+    aurumWalletPin: str
+    amountUSD: float
+    gcaOption: bool
+
+
+class SellGoldSchema(BaseModel):
+    userId: str
+    walletAddress: str
+    amountQMGT: float

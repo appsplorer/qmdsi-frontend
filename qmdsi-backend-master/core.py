@@ -7,6 +7,9 @@ from schemas import (
     DebitSchema,
     RegUser,
     TransferSchema,
+    BuyGoldSchema,
+    Tokens,
+    SellGoldSchema,
 )
 import w3, db
 import shortuuid
@@ -16,7 +19,7 @@ from exceptions import BadRequestException
 import security
 
 
-def get_personal_info(_id:str):
+def get_personal_info(_id: str):
     res = db.get_personal_information(_id)
     return res
 
@@ -31,7 +34,8 @@ def create_kyc_information(id_: str, information: PersonalInformation):
 
     return bool(res)
 
-def update_kyc_information(id_:str, information:PersonalInformation):
+
+def update_kyc_information(id_: str, information: PersonalInformation):
     try:
         res = db.update_personal_info(id_, information)
         return bool(res)
@@ -85,7 +89,7 @@ def bind_user_account(_id: str):
     )
 
 
-def debit_user(client_secret: str, info: DebitSchema):
+def debit_user(client_secret: str, info: DebitSchema, convert_to_wei: bool = True):
     org_id = org_ids.get_ord_id(client_secret)
 
     if not org_id:
@@ -103,10 +107,14 @@ def debit_user(client_secret: str, info: DebitSchema):
 
     client_wallet_account = w3.get_user_account(org_id)
     balance = w3.get_token_balance(w3.get_user_account(info.id), tokenAddress)
-    amount_wei = w3.token_amount_to_wei(tokenAddress, info.amount)
+
+    if convert_to_wei:
+        amount_wei = w3.token_amount_to_wei(tokenAddress, info.amount)
+    else:
+        amount_wei = info.amount
 
     if balance < amount_wei:
-        raise BadRequestException("Insufficient Balance")
+        raise BadRequestException("Insufficient User Balance")
 
     transfer_param = [
         {"token": tokenAddress, "to": client_wallet_account, "amount": amount_wei}
@@ -116,9 +124,9 @@ def debit_user(client_secret: str, info: DebitSchema):
 
 
 def deposit_to_user(client_secret: str, info: DebitSchema):
-    client_address = org_ids.get_ord_id(client_secret)
+    client_id = org_ids.get_ord_id(client_secret)
 
-    if not client_address:
+    if not client_id:
         raise BadRequestException("Invalid client secret")
 
     tokenAddress = TOKEN.get(info.token)
@@ -131,16 +139,18 @@ def deposit_to_user(client_secret: str, info: DebitSchema):
     if not tokenAddress:
         raise BadRequestException(f"Unsupported token: {info.token}")
 
-    balance = w3.get_token_balance(w3.get_user_account(client_address), tokenAddress)
+    balance = w3.get_token_balance(w3.get_user_account(client_id), tokenAddress)
     amount_wei = w3.token_amount_to_wei(tokenAddress, info.amount)
 
     if balance < amount_wei:
-        raise BadRequestException("Insufficient Balance")
+        raise BadRequestException(
+            "Transaction failed due to insufficient funds in Master Wallet"
+        )
 
     user_address = w3.get_user_account(info.id)
 
     transfer_param = [{"token": tokenAddress, "to": user_address, "amount": amount_wei}]
-    res = w3.make_transfers(client_address, transfer_param)
+    res = w3.make_transfers(client_id, transfer_param)
     return res
 
 
@@ -159,3 +169,18 @@ def transfer(org_token: str, data: TransferSchema):
     _org_id = org_ids.get_ord_id(org_token)
     if not _org_id:
         raise BadRequestException("Invalid token")
+
+
+def buy_gold(data: BuyGoldSchema, x_token: str):
+
+    qmdt_amount = w3.convert_usd_to_qmdt(data.amountUSD)
+    info = DebitSchema(token=Tokens.qmgt, id=data.userId, amount=qmdt_amount)
+    hash = debit_user(x_token, info)
+    return {"status": "success", "transactionRef": hash}
+
+
+def sell_gold(data: SellGoldSchema, x_token: str):
+
+    info = DebitSchema(token=Tokens.qmgt, id=data.userId, amount=data.amountQMGT)
+    hash = deposit_to_user(x_token, info)
+    return {"status": "success", "transactionRef": hash}

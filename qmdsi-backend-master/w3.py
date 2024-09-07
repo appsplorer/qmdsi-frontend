@@ -1,25 +1,27 @@
 from web3 import Web3
 from abis.qmdsi_admin import qmdsi_admin_abi
 from abis.token_abi import token_abi
+from abis.swap_abi import swap_abi
 
 url = "https://bsc-testnet-rpc.publicnode.com"
 w3 = Web3(Web3.HTTPProvider(url))
 admin_key = "af7c3b6a2c12efea7a84eb56500845c9bf35b06e0ef74ee61bbaa7af4fbdb811"
-usdt_ddress = "0xbf5564f8799566784d4031839613aeeb5b7bba5a"
+usdt_ddress = w3.to_checksum_address("0xbf5564f8799566784d4031839613aeeb5b7bba5a")
 token_address = "0x1359899ab37623c8ddf07dcd2295a50cd6db549a"
+swap_address = w3.to_checksum_address("0x4a200cfaee47ef49bd94173a7541a88a8dbc583a")
 admin_account = w3.eth.account.from_key(admin_key)
 qmdsi_admin_address = w3.to_checksum_address(
     "0x09bf8d338652f0aff2bd00338cefb2fb7e090ac4"
 )
 qmdsi_admin_contract = w3.eth.contract(address=qmdsi_admin_address, abi=qmdsi_admin_abi)
+swap_contract = w3.eth.contract(address=swap_address, abi=swap_abi)
 
 
 def convert_usd_to_qmdt(usdt_amount: float):
-    token_contract = w3.eth.contract(usdt_ddress, abi=token_abi)
+    token_contract = w3.eth.contract(address=usdt_ddress, abi=token_abi)
     decimals = token_contract.functions.decimals().call()
-    amount_usdt = int(usdt_amount * 10**decimals)
-
-    pass
+    usdt_amount_wei = int(usdt_amount * 10**decimals)
+    return swap_contract.functions.getQmgtAmount(usdt_amount_wei).call()
 
 
 def check_balance(_id: str, token_address: str):

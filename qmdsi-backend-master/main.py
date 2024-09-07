@@ -7,7 +7,7 @@ from fastapi import (
     Depends,
     HTTPException,
     Form,
-    status
+    status,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -25,6 +25,8 @@ from schemas import (
     SwapParams,
     TransferSchema,
     BindRequestSchema,
+    BuyGoldSchema,
+    SellGoldSchema,
 )
 import cv2
 import os
@@ -161,12 +163,12 @@ def get_user_ref(user: DBUser = Depends(current_user)):
 
 @app.post("/personal_information")
 def post_personal_information(
-    personal_info: PersonalInformation, user: DBUser = Depends(current_user),
-    
+    personal_info: PersonalInformation,
+    user: DBUser = Depends(current_user),
 ):
     try:
         print(personal_info)
-        personal_info_data= core.get_personal_info(user.id)
+        personal_info_data = core.get_personal_info(user.id)
         if personal_info_data:
             print(personal_info_data)
             res = core.update_kyc_information(user.id, personal_info)
@@ -194,33 +196,50 @@ def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
 async def upload_kyc_images(
     profile_picture: UploadFile = File(...),
     id_picture: UploadFile = File(...),
-    user: DBUser = Depends(current_user)
+    user: DBUser = Depends(current_user),
 ):
     try:
         personal_info = core.get_personal_info(user.id)
+        if not personal_info:
+            raise exceptions.BadRequestException(
+                "Personal information doesn't exist,submit the form and try again."
+            )
+
         print(personal_info)
         print(personal_info.name)
         print(personal_info.id_number)
         print(personal_info.date_of_birth)
-        if personal_info:
-            UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            image_path = os.path.join(UPLOAD_DIR, user.id + id_picture.filename)
-            with open(image_path, "wb") as buffer:
-                buffer.write(await id_picture.read())
-            fullname, id, dob = get_id_no_and_fullname_from_id_card(image_path)
-            id_card_dob = datetime.strptime(dob, date_format)
-            user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
-            print(id_card_dob, user_dob)
-            if not name_contains(personal_info.name, fullname):
-                raise exceptions.BadRequestException("Your kyc name doesn't match with the id card uploaded,update your kyc information and try again")
-            if id != str(personal_info.id_number):
-                raise exceptions.BadRequestException("Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again")
-            if id_card_dob != user_dob:
-                raise exceptions.BadRequestException("Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
-                )
-            return True
-        raise exceptions.BadRequestException("Personal information doesn't exist,submit the form and try again.")
+
+        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        image_path = os.path.join(UPLOAD_DIR, user.id + id_picture.filename)
+        with open(image_path, "wb") as buffer:
+            buffer.write(await id_picture.read())
+        fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
+        if not fullname:
+            raise exceptions.BadRequestException("Unable to extract info from ID")
+        elif not dob:
+            raise exceptions.BadRequestException("Unable to extract info from ID")
+        elif not id_number:
+            raise exceptions.BadRequestException("Unable to extract info from ID")
+
+        id_card_dob = datetime.strptime(dob, date_format)
+        user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
+
+        if not name_contains(personal_info.name, fullname):
+            raise exceptions.BadRequestException(
+                "Your kyc name doesn't match with the id card uploaded,update your kyc information and try again"
+            )
+        if id_number != str(personal_info.id_number):
+            raise exceptions.BadRequestException(
+                "Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again"
+            )
+        if id_card_dob != user_dob:
+            raise exceptions.BadRequestException(
+                "Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
+            )
+        return True
+
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -248,15 +267,15 @@ def get_user_nominee(user: DBUser = Depends(current_user)):
     return db.get_nominee(user.id)
 
 
-@app.get("/bind")
+@app.get("/api/account/bind")
 def get_bind_status(
     user_id: str,
     x_token: str = Header(...),
 ):
-    return db.get_binded_user(user_id)
+    return bool(db.get_binded_user(user_id))
 
 
-@app.post("/bind")
+@app.post("/api/account/binding")
 def bind_account(
     data: BindRequestSchema,
     x_token: str = Header(...),
@@ -267,7 +286,7 @@ def bind_account(
     return core.bind_user_account(data.identificationNumber)
 
 
-@app.get("/balance")
+@app.get("/api/account/balance")
 def get_balance(userId: str):
     balances = {}
     for item in constants.TOKEN.items():
@@ -275,19 +294,29 @@ def get_balance(userId: str):
     return balances
 
 
-@app.post("/transfer")
+@app.post("/api/account/transfer")
 def transfer_token(data: TransferSchema, x_token: str = Header(...)):
     hash = core.transfer(x_token, data)
     return {"hash": hash}
 
 
-@app.post("/debit")
+@app.post("/api/account/debit")
 def debit_user(data: DebitSchema, x_token: str = Header(...)):
     hash = core.debit_user(x_token, data)
     return {"hash": hash}
 
 
-@app.post("/deposit")
+@app.post("/api/account/deposit")
 def deposit_to_user(info: DebitSchema, x_token: str = Header(...)):
     hash = core.deposit_to_user(x_token, info)
     return {"hash": hash}
+
+
+@app.post("/api/gold/buy")
+def buy_gold(data: BuyGoldSchema, x_token: str = Header(...)):
+    return core.buy_gold(data, x_token)
+
+
+@app.post("/api/gold/sell")
+def sell_gold(data: SellGoldSchema, x_token: str = Header(...)):
+    return core.sell_gold(data, x_token)
