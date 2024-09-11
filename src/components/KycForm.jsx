@@ -30,6 +30,7 @@ const KycForm = () => {
     const fetchPersonalInfo = async () => {
       try {
         const data = await getUserPersonalInfo(auth.accessToken);
+        console.log(data)
         setDefaultValues({
           name: data.name || "John Doe",
           employeeName: data.employeeName || "",

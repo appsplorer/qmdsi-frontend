@@ -13,9 +13,9 @@ const main = async () => {
     // const usdt = await viem.deployContract("Token", [parseEther("1000000000000"), "USD Tether", "USDT"])
     // const token = await viem.deployContract("Token", [parseEther("1000000000000"), "QMGTToken", "$QMGT"])
     // const swap  = await viem.deployContract("QMGTSwap", [bscScanOracle, usdt.address, token.address, signer.account.address])
-    const res = await token.write.transfer(["0x316e928Fa70E1BE36F93b98B3Ce1681A210C38D6", parseEther("100000000000")])
+    const res = await token.write.transfer(["0xf70de4F32C5D54AEDD588447B13B8158801AD7D0", parseEther("200")])
     await provider.waitForTransactionReceipt({hash : res})
-    await usdt.write.transfer(["0x316e928Fa70E1BE36F93b98B3Ce1681A210C38D6", parseEther("100000000000")])
+    await usdt.write.transfer(["0xf70de4F32C5D54AEDD588447B13B8158801AD7D0", parseEther("200")])
     
     // console.log(`Swap deployed at ${swap.address}`)
     console.log(`Token deployed at ${token.address}`)

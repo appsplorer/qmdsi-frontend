@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+
 import { authSignup } from "../services/auth.service";
 import { toast } from "react-toastify";
 import { FaSpinner, FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import { countryOptions } from "../data/countries";
 
 const Register = () => {
+  const [searchParams] = useSearchParams();
+  const refBy = searchParams.get('ref');
+
   const [formData, setFormData] = useState({
     firstName: "",
     middleName: "",
@@ -13,7 +17,7 @@ const Register = () => {
     country: "",
     phoneNumber: "",
     email: "",
-    refBy: "",
+    refBy: refBy ? refBy : "",
     password: "",
     confirmPassword: "",
     pin: "",
@@ -24,6 +28,9 @@ const Register = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [passwordValid, setPasswordValid] = useState(false);
+  
+  
+
   const navigate = useNavigate();
 
   const validatePassword = (password) => {

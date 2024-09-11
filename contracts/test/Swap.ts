@@ -6,7 +6,7 @@ import {
   import hre from "hardhat";
   import { getAddress, parseGwei, parseEther } from "viem";
 
-const initSupply = parseEther("1000000")
+const initSupply = parseEther("10000000000000")
 const name = "QMGTToken"
 const symbol = "$QMGT"
 const initSwap = parseEther("10000000")
@@ -21,15 +21,23 @@ describe("Token", () => {
         
         const swap = await hre.viem.deployContract("QMGTSwap",  [mockAggregator.address, usdt.address,
                                              token.address, treasury])
+        console.log(`Swap address ${swap.address}`)
+        await token.write.transfer([swap.address, initSwap])
+        await usdt.write.transfer([swap.address, initSwap])
         return {usdt, token, swap}
     }
     
     describe("Swap", () => {
         it("Should buy token", async () => {
+            const [signer] = await hre.viem.getWalletClients()
+            console.log(`Signer address ${signer.account.address}`)
             const {usdt, token, swap} = await loadFixture(deployContracts)
-            // await token.write.transfer([swap.address, initSwap])
+            
             const amountOut = await swap.read.getQmgtAmount([parseEther("100")])
-            console.log(amountOut)
+            await token.write.approve([swap.address, initSwap])
+            await usdt.write.approve([swap.address, initSwap])
+            
+            await swap.write.sellQmgt([parseEther("1000")])
             // const goldPrice = await swap.read.getLatestGoldPrice();
 
 

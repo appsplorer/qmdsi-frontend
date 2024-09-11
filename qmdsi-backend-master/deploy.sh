@@ -1,1 +1,1 @@
-rsync -avz ./ --exclude-from='.gitignore' --exclude='.git' ubuntu@3.24.123.219:~/backend
+rsync -avz ./ --exclude-from='.gitignore' --exclude='.git' root@45.79.209.234:~/backend

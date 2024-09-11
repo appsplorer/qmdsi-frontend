@@ -41,7 +41,7 @@ const CustomSingleValue = (props) => {
   );
 };
 
-const TokenSwap = ({setFee}) => {
+const TokenSwap = ({fee, setFee}) => {
   const CustomOption = (props) => {
     const { innerRef, innerProps, data } = props;
     return (
@@ -127,7 +127,8 @@ const TokenSwap = ({setFee}) => {
   const [tokenInBal, setTokenInBal] = useState("0");
   const [tokenOutBal, setTokenOutBal] = useState("0");
   const [goldPriceUsd, setGoldPriceUsd] = useState("0");
-  
+  const [feeAmount, setFeeAmount] = useState("0")
+  const [amtReceived, setAmtReceived ] = useState(0)
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const { profileData, auth } = useContext(AuthContext);
   const navigator = useNavigate();
@@ -167,17 +168,25 @@ const TokenSwap = ({setFee}) => {
     if (changeData !== "input") return;
     if (!amountIn || !tokenIn) {
       setAmountOut("");
+      setFeeAmount("0")
       return;
     }
     getAmountOut(tokenIn.toLowerCase(), amountIn).then((res) => {
       if(tokenIn.toLowerCase() == "usdt" && parseFloat(amountIn) >= 150){
           setFee(0.2)
+          const feeAmt = 0.2 * parseFloat(amountIn) / 100
+          setFeeAmount(feeAmt)
         // 
       }else{
         if(parseFloat(res) >= 150) {
           setFee(0.2)
+          const feeAmt = 0.2 * parseFloat(res) / 100
+          setFeeAmount(feeAmt)
         }else{
           setFee(0.1)
+          const feeAmt = 0.2 * parseFloat(res) / 100
+          setFeeAmount(feeAmt)
+          
         }
       }
 
@@ -189,17 +198,24 @@ const TokenSwap = ({setFee}) => {
     if (changeData !== "output") return;
     if (!tokenOut || !amountOut) {
       setAmountIn("");
+      setFeeAmount("0")
       return;
     }
     getAmountOut(tokenOut.toLowerCase(), amountOut).then((res) => {
       if(tokenOut.toLowerCase() == "usdt" && parseFloat(amountOut) >= 150){
           setFee(0.2)
+          const feeAmt = 0.2 * parseFloat(amountOut) / 100
+          setFeeAmount(feeAmt)
         // 
       }else{
         if(parseFloat(res) >= 150) {
           setFee(0.2)
+          const feeAmt = 0.2 * parseFloat(res) / 100
+          setFeeAmount(feeAmt)
         }else{
           setFee(0.1)
+          const feeAmt = 0.1 * parseFloat(res) / 100
+          setFeeAmount(feeAmt)
         }
       }
       if (res) setAmountIn(res);
@@ -254,6 +270,25 @@ const TokenSwap = ({setFee}) => {
 
     return () => clearInterval(interValId);
   }, [tokenOut, profileData?.walletAddress]);
+
+
+  useEffect(() => {
+    if(!feeAmount){
+      setAmtReceived(0)
+      return 
+    }
+    if(tokenOut.toLowerCase() == "usdt"){
+      setAmtReceived(parseFloat(amountOut) - parseFloat(feeAmount))
+      
+    }else{
+      const usdtAfterFee = parseFloat(amountIn) - parseFloat(feeAmount)
+      
+      getAmountOut("usdt", String(usdtAfterFee)).then((res) => {
+        setAmtReceived(parseFloat(res))
+      })
+      // console.log("cjecking")
+    }
+  }, [feeAmount])
 
   return (
     <div className="mt-4">
@@ -346,9 +381,8 @@ const TokenSwap = ({setFee}) => {
             1.002g per {Number(goldPriceUsd).toPrecision(4)} USDT
           </span>
         </p>
-        {/* <p className='flex justify-between mt-2'><span>Minimum Received</span><span className='text-white'>100 QMGT</span></p>
-                <p className='flex justify-between mt-2'><span>Price Impact</span><span className='text-white'>0.001</span></p>
-                <p className='flex justify-between mt-2'><span>Liquidity Provider Fee</span><span className='text-white'>0.000063 USDT</span></p> */}
+        <p className='flex justify-between mt-2'><span>Amount Received</span><span className='text-white'>{amtReceived.toFixed(6) } {tokenOut}</span></p>
+        <p className='flex justify-between mt-2'><span>Fee</span><span className='text-white'>{parseFloat(feeAmount).toFixed(4)} USDT {fee}% </span></p>
       </div>
       <div>
         <button
@@ -368,6 +402,7 @@ const TokenSwap = ({setFee}) => {
 
       {transactionModal && (
         <TransactionModal
+          fee = {fee}
           closeModal={closeModal}
           transactionComplete={transactionSubmit}
           tokenIn={tokenIn}

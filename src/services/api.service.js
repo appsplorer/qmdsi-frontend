@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://3.24.123.219:3005",
+  baseURL: "https://aurum.financial:3000",
 });
 
 export default api;

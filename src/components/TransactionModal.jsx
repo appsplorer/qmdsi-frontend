@@ -11,25 +11,35 @@ import { toast } from 'react-toastify';
 
 
 
-const TransactionModal = ({ closeModal, transactionComplete, tokenIn, amountIn, amountOut, tokenOut, setTransactionCompleteModal, setTransactionData}) => {
+const TransactionModal = ({ fee, closeModal, transactionComplete, tokenIn, amountIn, amountOut, tokenOut, setTransactionCompleteModal, setTransactionData}) => {
    
     const [tab, setTab] = useState('Details'); // Correctly defining the state and setState function
     const [loading, setLoading] = useState(false)
     const [key, setKey] = useState(1)
     const [loadingMsg, setLoadingMsg] = useState("")
     const [amtOut, setAmtOut] = useState(amountOut)
-    
+    const [feeAmount, setFeeAmount] = useState("")
     const {auth, profileData} = useContext(AuthContext)
 
    
+    useEffect(() => {
+        if(tokenIn.toLowerCase() == "usdt"){
+            const feeAmt = fee * parseFloat(amountIn) / 100
+            setFeeAmount(feeAmt)
+        }else{
+            const feeAmt = fee * parseFloat(amountOut) / 100
+            setFeeAmount(feeAmt)
+        }
+    }, [fee, tokenIn, amountIn, amountOut, tokenOut])
+
 
 
     const handleBuy = async () => {
         if(!auth) return 
-        if(profileData.kycStatus != "Verified") {
-            toast.warn("KYC verification required")
-            return 
-        }
+        // if(profileData.kycStatus != "Verified") {
+        //     toast.warn("KYC verification required")
+        //     return 
+        // }
         setLoading(true)
         setLoadingMsg(`Swapping ${tokenIn} for ${tokenOut}`)
         try{
@@ -85,7 +95,7 @@ const TransactionModal = ({ closeModal, transactionComplete, tokenIn, amountIn, 
                             <div className='w-full text-white mt-4 text-sm px-4'>
                                 <div className='flex justify-between mb-4'>
                                     <p>Fee</p>
-                                    <div className='text-right '><p>{0.1}%</p>
+                                    <div className='text-right '><p>{fee}%</p>
                                         {/* <p className='text-gray-400'>$0.10</p> */}
                                     </div>
                                 </div><div className='flex justify-between mb-4'>
@@ -94,7 +104,7 @@ const TransactionModal = ({ closeModal, transactionComplete, tokenIn, amountIn, 
                                         {/* <p className='text-gray-400'></p> */}
                                     </div>
                                     {/* <div className='text-right '><p>100 QMGT</p> */}
-                                        <p className='text-gray-400'>{0.2} USDT</p>
+                                        <p className='text-gray-400'>{feeAmount} USDT</p>
                                     {/* </div> */}
                                 </div>
                             </div>

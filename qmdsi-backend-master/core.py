@@ -159,6 +159,7 @@ def swap(user_id: str, token_in: str, amount_in: float):
     amount_in_wei = w3.token_amount_to_wei(token_address, amount_in)
     balance = w3.check_balance_raw(user_id, token_address)
     print(balance, amount_in_wei)
+
     if amount_in_wei > balance:
         raise Exception("Insufficient balance")
 

@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
 import axios from "axios";
-import {useWeb3ModalAccount } from '@web3modal/ethers/react'
 import api from "../services/api.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { useContext } from "react";

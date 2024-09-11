@@ -10,8 +10,9 @@ usdt_ddress = w3.to_checksum_address("0xbf5564f8799566784d4031839613aeeb5b7bba5a
 token_address = "0x1359899ab37623c8ddf07dcd2295a50cd6db549a"
 swap_address = w3.to_checksum_address("0x4a200cfaee47ef49bd94173a7541a88a8dbc583a")
 admin_account = w3.eth.account.from_key(admin_key)
+
 qmdsi_admin_address = w3.to_checksum_address(
-    "0x09bf8d338652f0aff2bd00338cefb2fb7e090ac4"
+    "0x2c4528c5d7bf6115e377d8652bce19dd1f058fc5"
 )
 qmdsi_admin_contract = w3.eth.contract(address=qmdsi_admin_address, abi=qmdsi_admin_abi)
 swap_contract = w3.eth.contract(address=swap_address, abi=swap_abi)

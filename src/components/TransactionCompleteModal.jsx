@@ -26,7 +26,7 @@ const TransactionCompleteModal = ({ closeModal, data }) => {
                         </div>
                         
                         <div className='w-full gap-4 flex mt-12 justify-center'>
-                            <a href={`https://testnet.bscscan.com/tx/${data.hash}`} target='_blank'>
+                            <a href={`https://testnet.bscscan.com/tx/0x${data.hash}`} target='_blank'>
                             <button className='w-1/2 h-[50px] border rounded-md border-primary text-primary mb-2 hover:bg-secondary hover:text-black' 
                             >View on Bscscan</button>
                             </a>

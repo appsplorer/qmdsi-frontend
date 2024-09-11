@@ -14,7 +14,7 @@ const Profile = () => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
-        console.log(userData.referral_sign_ups);
+
         setProfileData({
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
@@ -50,7 +50,8 @@ const Profile = () => {
   }, [auth?.accessToken]);
 
   const handleCopyReferralLink = () => {
-    navigator.clipboard.writeText(profileData.referralLink);
+    const refLink = `${window.location.host}/signup?ref=${profileData.referralLink}`
+    navigator.clipboard.writeText(refLink);
     toast.info("Referral link copied to clipboard!");
   };
 

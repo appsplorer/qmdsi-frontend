@@ -31,7 +31,7 @@ const Swap = () => {
               </button>
             </div>
           </div>
-          {tokenSwap ? <TokenSwap setFee={setFee} /> : <CreditSwap />}
+          {tokenSwap ? <TokenSwap setFee={setFee} fee={fee}/> : <CreditSwap />}
         </div>
       </div>
 

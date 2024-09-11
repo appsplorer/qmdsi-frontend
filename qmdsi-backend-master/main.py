@@ -185,11 +185,12 @@ def post_personal_information(
 def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
     if swap.amount_in <= 0:
         raise exceptions.BadRequestException("Invalid amountIn")
-    try:
-        res = core.swap(user.id, swap.token_in, swap.amount_in)
-        return {"hash": res}
-    except Exception as e:
-        raise exceptions.BadRequestException(f"Error occured {e}")
+    # try:
+    res = core.swap(user.id, swap.token_in, swap.amount_in)
+    return {"hash": res}
+    # except Exception as e:
+    #     print(e)
+    #     raise exceptions.BadRequestException(f"Error occured {e}")
 
 
 @app.post("/personal_information/images")
@@ -204,40 +205,40 @@ async def upload_kyc_images(
             raise exceptions.BadRequestException(
                 "Personal information doesn't exist,submit the form and try again."
             )
-
+        res = core.update_user_kyc_verify_column(user.id)
         print(personal_info)
         print(personal_info.name)
         print(personal_info.id_number)
         print(personal_info.date_of_birth)
+        return True
+        # UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+        # os.makedirs(UPLOAD_DIR, exist_ok=True)
+        # image_path = os.path.join(UPLOAD_DIR, user.id + id_picture.filename)
+        # with open(image_path, "wb") as buffer:
+        #     buffer.write(await id_picture.read())
+        # fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
+        # if not fullname:
+        #     raise exceptions.BadRequestException("Unable to extract info from ID")
+        # elif not dob:
+        #     raise exceptions.BadRequestException("Unable to extract info from ID")
+        # elif not id_number:
+        #     raise exceptions.BadRequestException("Unable to extract info from ID")
 
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        image_path = os.path.join(UPLOAD_DIR, user.id + id_picture.filename)
-        with open(image_path, "wb") as buffer:
-            buffer.write(await id_picture.read())
-        fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
-        if not fullname:
-            raise exceptions.BadRequestException("Unable to extract info from ID")
-        elif not dob:
-            raise exceptions.BadRequestException("Unable to extract info from ID")
-        elif not id_number:
-            raise exceptions.BadRequestException("Unable to extract info from ID")
+        # id_card_dob = datetime.strptime(dob, date_format)
+        # user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
 
-        id_card_dob = datetime.strptime(dob, date_format)
-        user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
-
-        if not name_contains(personal_info.name, fullname):
-            raise exceptions.BadRequestException(
-                "Your kyc name doesn't match with the id card uploaded,update your kyc information and try again"
-            )
-        if id_number != str(personal_info.id_number):
-            raise exceptions.BadRequestException(
-                "Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again"
-            )
-        if id_card_dob != user_dob:
-            raise exceptions.BadRequestException(
-                "Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
-            )
+        # if not name_contains(personal_info.name, fullname):
+        #     raise exceptions.BadRequestException(
+        #         "Your kyc name doesn't match with the id card uploaded,update your kyc information and try again"
+        #     )
+        # if id_number != str(personal_info.id_number):
+        #     raise exceptions.BadRequestException(
+        #         "Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again"
+        #     )
+        # if id_card_dob != user_dob:
+        #     raise exceptions.BadRequestException(
+        #         "Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
+        #     )
         return True
 
     except Exception as e:

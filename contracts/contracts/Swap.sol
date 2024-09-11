@@ -67,7 +67,9 @@ contract QMGTSwap {
             _fee = 2;
         }
         uint feeAmt = usdAmount * _fee / 1000;
+        
         tokens = getQmgtAmount(usdAmount - feeAmt);
+        
         ERC20(token).transfer(msg.sender, tokens);
         ERC20(usdt).transfer(treasury, feeAmt);
     }

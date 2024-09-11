@@ -51,8 +51,8 @@ contract UserAccount {
 
     function sellQmgt(uint tokenAmount) external onlyAdmin returns(uint amount) {
         address token = swap.getTokenAddress();
-        ERC20(token).approve(address(token), tokenAmount);
-        amount = swap.buyQmgt(tokenAmount);
+        ERC20(token).approve(address(swap), tokenAmount);
+        amount = swap.sellQmgt(tokenAmount);
         
     }
 
