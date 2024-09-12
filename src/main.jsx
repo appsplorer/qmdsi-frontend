@@ -17,6 +17,7 @@ import PrivateRoute from "./components/PrivateRoute.jsx";
 import Verification from "./components/verification.jsx";
 import ForgetPassword from "./pages/ForgetPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import VerifyEmail from "./pages/VerifyEmail.jsx";
 const router = createBrowserRouter([
   {
     element: <App />,
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "/signup",
         element: <Register />,
+      },
+      {
+        path: "/verify_email",
+        element: <VerifyEmail />,
       },
       {
         path: "/forget-password",

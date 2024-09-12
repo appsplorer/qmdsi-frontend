@@ -28,6 +28,8 @@ export const authLogin = async (data) => {
   }
 };
 
+export const verifyOtp = async (data) => {};
+
 export const forgetPassword = async (email) => {
   try {
     const response = await api.post("/forget_password", { email });
@@ -37,12 +39,11 @@ export const forgetPassword = async (email) => {
   }
 };
 
-
 export const resetPassword = async (password, token) => {
-  try{
-    const response = await api.post("/reset_password", { password, token});
+  try {
+    const response = await api.post("/reset_password", { password, token });
     return response.data;
-  }catch(error){
-  throw error.response.data
-}
-}
+  } catch (error) {
+    throw error.response.data;
+  }
+};

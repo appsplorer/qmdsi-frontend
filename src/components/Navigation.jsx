@@ -1,8 +1,9 @@
-import { Ellipsis, X, LogOut, User, Wallet } from "lucide-react"; // Add Wallet icon
+import { Ellipsis, X, LogOut, User, Wallet } from "lucide-react";
 import { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
 import Logo from "../assets/au-logo.png";
+import Balance from "./Balance";
 import { AuthContext } from "../contexts/AuthContext";
 
 const shortenAddress = (address) => {
@@ -12,6 +13,7 @@ const shortenAddress = (address) => {
 const Navigation = () => {
   const [showModal, setShowModal] = useState(false);
   const [navShow, setNavShow] = useState(false);
+  const [showBalance, setShowBalance] = useState(false);
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -63,10 +65,9 @@ const Navigation = () => {
               >
                 <User size={16} /> Profile
               </button>
-              {/* Wallet Balance Button */}
               <button
                 className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
-                onClick={() => navigate("/wallet")}
+                onClick={() => setShowBalance(true)}
               >
                 <Wallet size={16} /> Wallet Balance
               </button>
@@ -96,8 +97,8 @@ const Navigation = () => {
           </button>
         </div>
       </div>
-
       {showModal && <LoginModal closeModal={closeModal} />}
+      <Balance isOpen={showBalance} onClose={() => setShowBalance(false)} />
     </div>
   );
 };
