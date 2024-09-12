@@ -50,25 +50,22 @@ const Balance = ({ isOpen, onClose }) => {
   const totalValue = balances.reduce((sum, coin) => sum + coin.value, 0);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center sm:justify-end sm:items-start">
+    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center sm:justify-end sm:items-start">
       <div
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md sm:mt-4 sm:mr-4 sm:absolute sm:top-0 sm:right-0"
+        className="bg-accent text-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md sm:mt-4 sm:mr-4 sm:absolute sm:top-0 sm:right-0"
       >
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Total cash value</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <button onClick={onClose} className="text-white hover:text-primary">
               <X size={20} />
             </button>
           </div>
           <div className="text-3xl font-bold mb-2">
             ${totalValue.toFixed(2)} USD
           </div>
-          <div className="text-red-500 text-sm mb-4">-8.19% Last day</div>
+          <div className="text-red-400 text-sm mb-4">-8.19% Last day</div>
           <div className="space-y-2">
             {balances.map((coin) => (
               <div
@@ -86,7 +83,7 @@ const Balance = ({ isOpen, onClose }) => {
                 </div>
                 <div className="text-right">
                   <div>${coin.value.toFixed(2)}</div>
-                  <div className="text-red-500 text-xs">
+                  <div className="text-red-400 text-xs">
                     {coin.change.toFixed(2)}%
                   </div>
                 </div>
