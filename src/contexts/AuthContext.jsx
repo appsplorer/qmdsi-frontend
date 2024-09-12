@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { createContext, useState, useEffect } from "react";
 import { getUser } from "../services/users.service";
 
@@ -9,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: false,
     accessToken: null,
   });
-  const [profileData, setProfileData] = useState(null)
+  const [profileData, setProfileData] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -21,12 +20,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
-        
+
         setProfileData({
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
@@ -34,7 +32,7 @@ export const AuthProvider = ({ children }) => {
           email: userData.email,
           kycStatus: userData.kyc_verified ? "Verified" : "Not Verified",
           referralLink: userData.ref_link,
-          walletAddress : userData.wallet_address,
+          walletAddress: userData.wallet_address,
           referralSignUps: userData.referral_sign_ups,
         });
       } catch (error) {

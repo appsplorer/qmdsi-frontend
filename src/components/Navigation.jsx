@@ -1,4 +1,4 @@
-import { Ellipsis, X } from "lucide-react";
+import { Ellipsis, X, LogOut, User } from "lucide-react";
 import { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
@@ -12,11 +12,16 @@ const shortenAddress = (address) => {
 const Navigation = () => {
   const [showModal, setShowModal] = useState(false);
   const [navShow, setNavShow] = useState(false);
-  const {auth} = useContext(AuthContext)
-  const navigate = useNavigate()
-  
+  const { auth, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const closeModal = () => {
     setShowModal(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -24,7 +29,7 @@ const Navigation = () => {
       <div className="px-4 md:px-24 py-4 text-white flex justify-between items-center">
         <div className="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-8">
           <a href="">
-            <img src={Logo} className="h-[50px]" />
+            <img src={Logo} className="h-[50px]" alt="Logo" />
           </a>
           <div
             className={`nav-links duration-500 md:static bg-background absolute md:min-h-fit min-h-[60vh] left-0 w-full flex flex-col items-center px-5 z-1000 md:z-0 ${
@@ -46,29 +51,34 @@ const Navigation = () => {
                   Swap
                 </NavLink>
               </li>
-            
-          
             </ul>
           </div>
         </div>
         <div className="nav-right text-sm flex gap-2">
-          {
-            auth.isAuthenticated ?
+          {auth.isAuthenticated ? (
+            <>
+              <button
+                className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
+                onClick={() => navigate("/profile")}
+              >
+                <User size={16} /> Profile
+              </button>
+              <button
+                className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut size={16} /> Logout
+              </button>
+            </>
+          ) : (
             <button
-            className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary"
-            onClick={() => navigate("/profile")}
-          >
-             Profile
+              className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary"
+              onClick={() => navigate("/signin")}
+            >
+              Login
             </button>
-            :
-            <button
-            className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary"
-            onClick={() => navigate("/signin")}
-          >
-             Login
-            </button>
-          }
-          
+          )}
+
           <button
             className="bg-accent py-1 px-3 rounded hover:bg-black h-[35px]"
             onClick={() => {

@@ -1,28 +1,30 @@
+/* eslint-disable react/no-unescaped-entities */
 import { useState, useContext, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useNavigate, Link } from "react-router-dom";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
-import { countryOptions, nationalityOptions } from "../data/countries";
-import {
-  genderOptions,
-  maritalStatusOptions,
-  nationalIdTypeOptions,
-} from "../constants/KYC";
-import { useNavigate } from "react-router-dom";
+import Select from "react-select";
+import { toast } from "react-toastify";
+import { FaSpinner } from "react-icons/fa";
+import { AuthContext } from "../contexts/AuthContext";
 import {
   updatePersonalInfo,
   getUserPersonalInfo,
   updateProfileImages,
 } from "../services/users.service";
-import { toast } from "react-toastify";
-import { FaSpinner } from "react-icons/fa";
-import { AuthContext } from "../contexts/AuthContext";
-import FormField from "./FormField";
-import SelectField from "./SelectField";
-import FileUploadField from "./FileUploadField";
+import {
+  genderOptions,
+  maritalStatusOptions,
+  nationalIdTypeOptions,
+} from "../constants/KYC";
+import { countryOptions, nationalityOptions } from "../data/countries";
+import { customStyles } from "../styles";
 
 const KycForm = () => {
   const [defaultValues, setDefaultValues] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
+  const [isImageUploadLoading, setIsImageUploadLoading] = useState(false);
+  const [selectedTab, setSelectedTab] = useState(0);
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -30,29 +32,28 @@ const KycForm = () => {
     const fetchPersonalInfo = async () => {
       try {
         const data = await getUserPersonalInfo(auth.accessToken);
-        console.log(data)
         setDefaultValues({
           name: data.name || "John Doe",
-          employeeName: data.employeeName || "",
-          income: data.incomePerAnnum?.toString() || "",
-          dateOfBirth: data.dateOfBirth || "",
+          employeeName: data.employee_name || "",
+          income: data.income_per_annum?.toString() || "",
+          dateOfBirth: data.date_of_birth || "",
           address: data.address || "",
           city: data.city || "",
-          zipCode: data.postalCode || "",
-          motherName: data.motherName || "",
-          incomeTaxNo: data.incomeTaxNo || "",
+          zipCode: data.postal_code || "",
+          motherName: data.mother_name || "",
+          incomeTaxNo: data.income_tax_no || "",
           country: data.country || "",
           citizenship: data.citizenship || "",
           currency: data.currency || "",
-          idType: data.idType || "",
-          idNumber: data.idNumber || "",
+          idType: data.id_type || "",
+          idNumber: data.id_number || "",
           industry: data.industry || "",
           occupation: data.occupation || "",
-          sourceOfIncome: data.sourceOfIncome || "",
-          mobilePhone: data.mobilePhone || "",
-          phone2: data.phone2 || "",
-          faxNumber: data.faxNo || "",
-          marital: data.maritalStatus || "",
+          sourceOfIncome: data.source_of_income || "",
+          mobilePhone: data.mobile_phone || "",
+          phone2: data.phone_2 || "",
+          faxNumber: data.fax_no || "",
+          marital: data.marital_status || "",
           gender: data.gender || "",
         });
       } catch (error) {
@@ -65,360 +66,539 @@ const KycForm = () => {
     fetchPersonalInfo();
   }, [auth.accessToken]);
 
-  const {
-    control: personalInfoControl,
-    handleSubmit: handlePersonalInfoSubmit,
-    formState: { isValid: isPersonalInfoValid },
-  } = useForm({
-    mode: "onChange",
-    defaultValues: defaultValues,
-  });
-
-  const {
-    handleSubmit: handleImageUploadSubmit,
-    setValue: setImageUploadValue,
-    formState: { isValid: isImageUploadValid },
-  } = useForm({
-    mode: "onChange",
-  });
-
-  const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
-  const [isImageUploadLoading, setIsImageUploadLoading] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(0);
-
-  const onPersonalInfoSubmit = async (data) => {
+  const handlePersonalInfoSubmit = async (event) => {
+    event.preventDefault();
     setIsPersonalInfoLoading(true);
     try {
       const personalInfoData = {
-        name: data.name,
-        employeeName: data.employerName,
-        incomePerAnnum: parseFloat(data.income),
-        dateOfBirth: data.dateOfBirth,
-        address: data.address,
-        city: data.city,
-        postalCode: data.zipCode,
-        country: data.country,
-        citizenship: data.citizenship,
-        currency: data.currency,
-        idType: data.idType,
-        motherName: data.motherName,
-        incomeTaxNo: data.incomeTaxNo,
-        idNumber: data.idNumber,
-        industry: data.industry,
-        occupation: data.occupation,
-        sourceOfIncome: data.sourceOfIncome,
-        mobilePhone: data.mobilePhone,
-        phone2: data.phone2,
-        faxNo: data.faxNumber,
-        maritalStatus: data.marital,
-        gender: data.gender,
+        name: defaultValues.name,
+        employeeName: defaultValues.employeeName,
+        incomePerAnnum: parseFloat(defaultValues.income),
+        dateOfBirth: defaultValues.dateOfBirth,
+        address: defaultValues.address,
+        city: defaultValues.city,
+        postalCode: defaultValues.zipCode,
+        country: defaultValues.country,
+        citizenship: defaultValues.citizenship,
+        currency: defaultValues.currency,
+        idType: defaultValues.idType,
+        motherName: defaultValues.motherName,
+        incomeTaxNo: defaultValues.incomeTaxNo,
+        idNumber: defaultValues.idNumber,
+        industry: defaultValues.industry,
+        occupation: defaultValues.occupation,
+        sourceOfIncome: defaultValues.sourceOfIncome,
+        mobilePhone: defaultValues.mobilePhone,
+        phone2: defaultValues.phone2,
+        faxNo: defaultValues.faxNumber,
+        maritalStatus: defaultValues.marital,
+        gender: defaultValues.gender,
       };
 
       await updatePersonalInfo(auth.accessToken, personalInfoData);
-      // await new Promise.resolve()
-      toast.success("Personal information updated successfully!");
+      toast.success("Personal information updated!");
       setSelectedTab(1);
-      // navigate("/verify");
     } catch (error) {
       console.error("Error updating personal info:", error);
-      if (error?.detail === "400: Personal Information already exists") {
-        toast.success(
-          "Personal Information already exists, redirecting to verify page"
-        );
-
-        // navigate("/verify");
-      } else {
-        toast.error(error?.detail || "Failed to update personal information");
-      }
+      toast.error(error?.detail || "Failed to update personal information");
     } finally {
       setIsPersonalInfoLoading(false);
     }
   };
 
-  const onImageUploadSubmit = async (data) => {
+  const handleImageUploadSubmit = async (event) => {
+    event.preventDefault();
     setIsImageUploadLoading(true);
     try {
-      const res = await updateProfileImages(
-        auth.accessToken,
-        data.profilePic,
-        data.personalId
-      );
+      const formData = new FormData();
+      formData.append("profilePic", defaultValues.profilePic);
+      formData.append("personalId", defaultValues.personalId);
 
-      // await new Promise((resolve) => setTimeout(resolve, 2000));
+      await updateProfileImages(auth.accessToken, formData);
       toast.success("Images uploaded successfully!");
       navigate("/verify");
     } catch (error) {
-      console.error("Error during image upload simulation:", error.data);
-      toast.error(
-        "Your kyc data doesn't match with the id card uploaded,update your kyc information and try again"
-      );
+      console.error("Error uploading images:", error);
+      toast.error("Failed to upload images. Please try again.");
     } finally {
       setIsImageUploadLoading(false);
     }
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="text-center">Loading...</div>;
   }
 
   return (
     <div className="w-full max-w-[1200px] bg-accent rounded-md p-4 md:p-8 text-white">
-      <h1 className="text-2xl md:text-3xl mb-6 text-center">
-        Personal Information
+      <h1 className="text-2xl md:text-3xl mt-6 md:mt-12 text-center mb-6">
+        KYC Form
       </h1>
 
       <TabGroup selectedIndex={selectedTab} onChange={setSelectedTab}>
-        <TabList className="flex space-x-1 rounded-xl bg-blue-900/20 p-1 mb-4">
+        <TabList className="flex mb-4">
           <Tab
             className={({ selected }) =>
-              `w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-white
-              ${
-                selected
-                  ? "bg-primary shadow"
-                  : "text-white hover:bg-white/[0.12] hover:text-white"
-              }`
+              `flex-1 py-2 ${selected ? "bg-primary" : "bg-gray-600"}`
             }
           >
-            Info
+            Personal Information
           </Tab>
           <Tab
             className={({ selected }) =>
-              `w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-white
-              ${
-                selected
-                  ? "bg-primary shadow"
-                  : "text-white hover:bg-white/[0.12] hover:text-white"
-              }`
+              `flex-1 py-2 ${selected ? "bg-primary" : "bg-gray-600"}`
             }
           >
-            Image
+            Upload Images
           </Tab>
         </TabList>
+
         <TabPanels>
           <TabPanel>
-            <form onSubmit={handlePersonalInfoSubmit(onPersonalInfoSubmit)}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  label="Name"
-                  name="name"
-                  control={personalInfoControl}
-                  placeholder="Enter Your Name"
-                  rules={{ required: "Name is required" }}
-                />
-                <FormField
-                  label="Employer's Name"
-                  name="employerName"
-                  control={personalInfoControl}
-                  placeholder="Enter Your Employer's Name"
-                  rules={{ required: "Employer's name is required" }}
-                />
-                <FormField
-                  label="Income Per Annum"
-                  name="income"
-                  control={personalInfoControl}
-                  placeholder="₱200,001 - ₱500,000"
-                  rules={{ required: "Income is required" }}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  label="Date of Birth"
-                  name="dateOfBirth"
-                  control={personalInfoControl}
-                  type="date"
-                />
-                <div className="md:col-span-2">
-                  <FormField
-                    label="Address"
-                    name="address"
-                    control={personalInfoControl}
-                    placeholder="Enter Your Address"
+            <form onSubmit={handlePersonalInfoSubmit} className="space-y-6">
+              {/* Name, Employee Name */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Full Name</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.name}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Your Full Name"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Employee Name</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.employeeName}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        employeeName: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Employee Name"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  label="City"
-                  name="city"
-                  control={personalInfoControl}
-                  placeholder="Enter Your City Name"
-                />
-                <FormField
-                  label="Postal Code / Zip Code"
-                  name="zipCode"
-                  control={personalInfoControl}
-                  placeholder="Enter Your Zip Code"
-                />
+              {/* Income, Date of Birth */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Income</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="number"
+                    value={defaultValues.income}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        income: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Annual Income"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Date of Birth</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="date"
+                    value={defaultValues.dateOfBirth}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        dateOfBirth: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <SelectField
-                  label="Country"
-                  name="country"
-                  control={personalInfoControl}
-                  options={countryOptions}
-                  placeholder="Select Country"
-                />
-                <SelectField
-                  label="Citizenship"
-                  name="citizenship"
-                  control={personalInfoControl}
-                  options={nationalityOptions}
-                  placeholder="Select Citizenship"
-                />
-                <SelectField
-                  label="Currency"
-                  name="currency"
-                  control={personalInfoControl}
-                  options={countryOptions}
-                  placeholder="Select Currency"
-                />
+              {/* Address, City, Postal Code */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Address</label>
+                  <textarea
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    rows={2}
+                    value={defaultValues.address}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Your Address"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">City</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.city}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        city: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Your City"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Postal Code</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.zipCode}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        zipCode: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Postal Code"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  label="Mother's Name"
-                  name="motherName"
-                  control={personalInfoControl}
-                  placeholder="Enter Your Mother's Name"
-                />
-                <FormField
-                  label="Income Tax No"
-                  name="incomeTaxNo"
-                  control={personalInfoControl}
-                  placeholder="Enter Income Tax No"
-                />
+              {/* Mother Name, Income Tax Number */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Mother's Name</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.motherName}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        motherName: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Mother's Name"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">
+                    Income Tax Number
+                  </label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.incomeTaxNo}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        incomeTaxNo: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Income Tax Number"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SelectField
-                  label="ID Type"
-                  name="idType"
-                  control={personalInfoControl}
-                  options={nationalIdTypeOptions}
-                  placeholder="Select ID Type"
-                />
-                <FormField
-                  label="ID Number"
-                  name="idNumber"
-                  control={personalInfoControl}
-                  placeholder="Enter ID Number"
-                />
+              {/* Country, Nationality */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Country</label>
+                  <Select
+                    options={countryOptions}
+                    value={countryOptions.find(
+                      (option) => option.value === defaultValues.country
+                    )}
+                    onChange={(selectedOption) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        country: selectedOption.value,
+                      }))
+                    }
+                    styles={customStyles}
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Citizenship</label>
+                  <Select
+                    options={nationalityOptions}
+                    value={nationalityOptions.find(
+                      (option) => option.value === defaultValues.citizenship
+                    )}
+                    onChange={(selectedOption) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        citizenship: selectedOption.value,
+                      }))
+                    }
+                    styles={customStyles}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  label="Industry"
-                  name="industry"
-                  control={personalInfoControl}
-                  placeholder="Industry"
-                />
-                <FormField
-                  label="Occupation"
-                  name="occupation"
-                  control={personalInfoControl}
-                  placeholder="Occupation"
-                />
-                <FormField
-                  label="Source of Income"
-                  name="sourceOfIncome"
-                  control={personalInfoControl}
-                  placeholder="Source of Income"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  label="Mobile Phone"
-                  name="mobilePhone"
-                  control={personalInfoControl}
-                  placeholder="Mobile Phone"
-                />
-                <FormField
-                  label="Phone 2"
-                  name="phone2"
-                  control={personalInfoControl}
-                  placeholder="Phone 2"
-                />
-                <FormField
-                  label="Fax No"
-                  name="faxNumber"
-                  control={personalInfoControl}
-                  placeholder="Fax Number"
-                />
+              {/* Currency, National ID Type */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Currency</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.currency}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        currency: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Currency"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">ID Type</label>
+                  <Select
+                    options={nationalIdTypeOptions}
+                    value={nationalIdTypeOptions.find(
+                      (option) => option.value === defaultValues.idType
+                    )}
+                    onChange={(selectedOption) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        idType: selectedOption.value,
+                      }))
+                    }
+                    styles={customStyles}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SelectField
-                  label="Marital Status"
-                  name="marital"
-                  control={personalInfoControl}
-                  options={maritalStatusOptions}
-                  placeholder="Select Marital Status"
-                  rules={{ required: "Marital status is required" }}
-                />
-                <SelectField
-                  label="Gender"
-                  name="gender"
-                  control={personalInfoControl}
+              {/* ID Number, Industry */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">ID Number</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.idNumber}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        idNumber: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter ID Number"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Industry</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.industry}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        industry: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Industry"
+                  />
+                </div>
+              </div>
+
+              {/* Occupation, Source of Income */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Occupation</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.occupation}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        occupation: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Occupation"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Source of Income</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.sourceOfIncome}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        sourceOfIncome: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Source of Income"
+                  />
+                </div>
+              </div>
+
+              {/* Mobile Phone, Phone 2 */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Mobile Phone</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.mobilePhone}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        mobilePhone: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Mobile Phone"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Phone 2</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.phone2}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        phone2: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Phone 2"
+                  />
+                </div>
+              </div>
+
+              {/* Fax Number, Marital Status */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Fax Number</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.faxNumber}
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        faxNumber: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Fax Number"
+                  />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <label className="block text-sm mb-2">Marital Status</label>
+                  <Select
+                    options={maritalStatusOptions}
+                    value={maritalStatusOptions.find(
+                      (option) => option.value === defaultValues.marital
+                    )}
+                    onChange={(selectedOption) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        marital: selectedOption.value,
+                      }))
+                    }
+                    styles={customStyles}
+                  />
+                </div>
+              </div>
+
+              {/* Gender */}
+              <div className="w-full">
+                <label className="block text-sm mb-2">Gender</label>
+                <Select
                   options={genderOptions}
-                  placeholder="Select Gender"
-                  rules={{ required: "Gender is required" }}
+                  value={genderOptions.find(
+                    (option) => option.value === defaultValues.gender
+                  )}
+                  onChange={(selectedOption) =>
+                    setDefaultValues((prev) => ({
+                      ...prev,
+                      gender: selectedOption.value,
+                    }))
+                  }
+                  styles={customStyles}
                 />
               </div>
 
               <button
                 type="submit"
-                className={`w-full p-3 rounded text-white flex items-center justify-center ${
-                  isPersonalInfoValid
-                    ? "bg-primary hover:bg-secondary"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-                disabled={!isPersonalInfoValid || isPersonalInfoLoading}
+                className="bg-primary text-white p-3 rounded mt-6 w-full"
+                disabled={isPersonalInfoLoading}
               >
                 {isPersonalInfoLoading ? (
-                  <>
-                    <FaSpinner className="animate-spin mr-2" />
-                    Updating...
-                  </>
+                  <FaSpinner className="animate-spin mx-auto" />
                 ) : (
-                  "Update Personal Info"
+                  "Save Personal Information"
                 )}
               </button>
             </form>
           </TabPanel>
           <TabPanel>
-            <form onSubmit={handleImageUploadSubmit(onImageUploadSubmit)}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FileUploadField
-                  label="Upload Profile Picture"
-                  name="profilePic"
-                  setValue={setImageUploadValue}
-                />
-                <FileUploadField
-                  label="Upload ID"
-                  name="personalId"
-                  setValue={setImageUploadValue}
+            <form onSubmit={handleImageUploadSubmit} className="space-y-6">
+              <div className="w-full">
+                <label className="block text-sm mb-2">Profile Picture</label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setDefaultValues((prev) => ({
+                      ...prev,
+                      profilePic: e.target.files[0],
+                    }))
+                  }
+                  className="file-input"
                 />
               </div>
-
+              <div className="w-full">
+                <label className="block text-sm mb-2">Personal ID</label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setDefaultValues((prev) => ({
+                      ...prev,
+                      personalId: e.target.files[0],
+                    }))
+                  }
+                  className="file-input"
+                />
+              </div>
+              <div className="w-full">
+                <label className="block text-sm mb-2">Proof of Address</label>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setDefaultValues((prev) => ({
+                      ...prev,
+                      proofOfAddress: e.target.files[0],
+                    }))
+                  }
+                  className="file-input"
+                />
+              </div>
               <button
                 type="submit"
-                className={`w-full p-3 rounded text-white flex items-center justify-center ${
-                  isImageUploadValid
-                    ? "bg-primary hover:bg-secondary"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-                disabled={!isImageUploadValid || isImageUploadLoading}
+                className="bg-primary text-white p-3 rounded w-full"
+                disabled={isImageUploadLoading}
               >
                 {isImageUploadLoading ? (
-                  <>
-                    <FaSpinner className="animate-spin mr-2" />
-                    Uploading...
-                  </>
+                  <FaSpinner className="animate-spin mx-auto" />
                 ) : (
-                  "Upload Images"
+                  "Upload Documents"
                 )}
               </button>
             </form>

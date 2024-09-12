@@ -1,5 +1,4 @@
 import { useState, useContext, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
@@ -12,67 +11,88 @@ import { customStyles } from "../styles";
 const Nominee = () => {
   const [activeTab, setActiveTab] = useState("info");
   const [isLoading, setIsLoading] = useState(false);
-  const [nomineeData, setNomineeData] = useState(null);
+  const [formValues, setFormValues] = useState({
+    firstName: null,
+    middleName: null,
+    lastName: null,
+    dateOfBirth: null,
+    address: null,
+    city: null,
+    zipCode: null,
+    country: null,
+    relation: null,
+    contactInfo: null,
+    idType: null,
+    idNumber: null,
+    idFile: null,
+  });
   const { auth } = useContext(AuthContext);
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    defaultValues: async () => {
+  useEffect(() => {
+    const fetchNomineeData = async () => {
       try {
         const data = await getUserNominee(auth.accessToken);
-        setNomineeData(data);
-        return {
-          firstName: data.firstName || "",
-          middleName: data.middleName || "",
-          lastName: data.lastName || "",
-          dateOfBirth: data.dateOfBirth || "",
-          address: data.address || "",
-          city: data.city || "",
-          zipCode: data.postalCode || "",
-          country: data.country || "",
-          relation: data.relationshipToTestator || "",
-          contactInfo: data.contactInfo || "",
-          idType: data.idType || "",
-          idNumber: data.idNumber?.toString() || "",
-        };
+        console.log(auth.accessToken);
+        setFormValues({
+          firstName: data.firstName || null,
+          middleName: data.middleName || null,
+          lastName: data.lastName || null,
+          dateOfBirth: data.dateOfBirth || null,
+          address: data.address || null,
+          city: data.city || null,
+          zipCode: data.postalCode || null,
+          country: data.country || null,
+          relation: data.relationshipToTestator || null,
+          contactInfo: data.contactInfo || null,
+          idType: data.idType || null,
+          idNumber: data.idNumber ? data.idNumber.toString() : null,
+          idFile: null,
+        });
       } catch (error) {
-        console.error("Error fetching personal info:", error);
-        return {};
+        console.error("Error fetching nominee info:", error);
       }
-    },
-  });
+    };
 
-  useEffect(() => {
-    if (nomineeData) {
-      reset(nomineeData);
-    }
-  }, [nomineeData, reset]);
+    fetchNomineeData();
+  }, [auth.accessToken]);
 
-  const onSubmitInfo = async (data) => {
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: type === "file" ? files[0] : value || null,
+    }));
+  };
+
+  const handleSelectChange = (name) => (selectedOption) => {
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: selectedOption ? selectedOption.value : null,
+    }));
+  };
+
+  const onSubmitInfo = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
       const nomineeData = {
-        firstName: data.firstName,
-        middleName: data.middleName,
-        lastName: data.lastName,
-        dateOfBirth: data.dateOfBirth,
-        address: data.address,
-        city: data.city,
-        postalCode: data.zipCode,
-        country: data.country,
-        relationshipToTestator: data.relation,
-        contactInfo: data.contactInfo,
-        idType: data.idType,
-        idNumber: parseInt(data.idNumber, 10),
+        firstName: formValues.firstName || "",
+        middleName: formValues.middleName || "",
+        lastName: formValues.lastName || "",
+        dateOfBirth: formValues.dateOfBirth || "",
+        address: formValues.address || "",
+        city: formValues.city || "",
+        postalCode: formValues.zipCode || "",
+        country: formValues.country || "",
+        relationshipToTestator: formValues.relation || "",
+        contactInfo: formValues.contactInfo || "",
+        idType: formValues.idType || "",
+        idNumber: formValues.idNumber
+          ? parseInt(formValues.idNumber, 10)
+          : null,
       };
-      console.log(nomineeData);
-
       await updateNomineeInfo(auth.accessToken, nomineeData);
-      toast.success("Nominee information submitted successfully!");
+      toast.success("Nominee information submitted!");
       setActiveTab("image");
     } catch (error) {
       console.error("Error updating nominee information:", error);
@@ -82,10 +102,12 @@ const Nominee = () => {
     }
   };
 
-  const onSubmitImage = async (data) => {
+  const onSubmitImage = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
-      if (data.idFile && data.idFile.length > 0) {
+      if (formValues.idFile) {
+        // Assume some upload logic here
         setTimeout(() => {
           toast.success("Nominee ID image uploaded successfully!");
           setIsLoading(false);
@@ -127,71 +149,47 @@ const Nominee = () => {
       </div>
 
       {activeTab === "info" && (
-        <form onSubmit={handleSubmit(onSubmitInfo)} className="space-y-6">
+        <form onSubmit={onSubmitInfo} className="space-y-6">
           {/* First Name, Middle Name, Last Name */}
           <div className="flex flex-col md:flex-row gap-3">
             <div className="w-full md:w-1/3">
               <label className="block text-sm mb-2" htmlFor="firstName">
                 First Name
               </label>
-              <Controller
+              <input
                 name="firstName"
-                control={control}
-                rules={{ required: "First Name is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Nominee's First Name"
-                  />
-                )}
+                value={formValues.firstName || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Nominee's First Name"
               />
-              {errors.firstName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.firstName.message}
-                </p>
-              )}
             </div>
             <div className="w-full md:w-1/3">
               <label className="block text-sm mb-2" htmlFor="middleName">
                 Middle Name
               </label>
-              <Controller
+              <input
                 name="middleName"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Nominee's Middle Name"
-                  />
-                )}
+                value={formValues.middleName || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Nominee's Middle Name"
               />
             </div>
             <div className="w-full md:w-1/3">
               <label className="block text-sm mb-2" htmlFor="lastName">
                 Last Name
               </label>
-              <Controller
+              <input
                 name="lastName"
-                control={control}
-                rules={{ required: "Last Name is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Nominee's Last Name"
-                  />
-                )}
+                value={formValues.lastName || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Nominee's Last Name"
               />
-              {errors.lastName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.lastName.message}
-                </p>
-              )}
             </div>
           </div>
 
@@ -201,46 +199,26 @@ const Nominee = () => {
               <label className="block text-sm mb-2" htmlFor="dateOfBirth">
                 Date of Birth
               </label>
-              <Controller
+              <input
                 name="dateOfBirth"
-                control={control}
-                rules={{ required: "Date of Birth is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="date"
-                  />
-                )}
+                value={formValues.dateOfBirth || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="date"
               />
-              {errors.dateOfBirth && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.dateOfBirth.message}
-                </p>
-              )}
             </div>
             <div className="w-full md:w-2/3">
               <label className="block text-sm mb-2" htmlFor="address">
                 Address
               </label>
-              <Controller
+              <textarea
                 name="address"
-                control={control}
-                rules={{ required: "Address is required" }}
-                render={({ field }) => (
-                  <textarea
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    rows={2}
-                    placeholder="Enter Nominee's Address"
-                  />
-                )}
+                value={formValues.address || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                rows={2}
+                placeholder="Enter Nominee's Address"
               />
-              {errors.address && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.address.message}
-                </p>
-              )}
             </div>
           </div>
 
@@ -250,126 +228,74 @@ const Nominee = () => {
               <label className="block text-sm mb-2" htmlFor="city">
                 City
               </label>
-              <Controller
+              <input
                 name="city"
-                control={control}
-                rules={{ required: "City is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Nominee's City"
-                  />
-                )}
+                value={formValues.city || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Nominee's City"
               />
-              {errors.city && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.city.message}
-                </p>
-              )}
             </div>
             <div className="w-full md:w-1/3">
               <label className="block text-sm mb-2" htmlFor="zipCode">
                 Postal Code
               </label>
-              <Controller
+              <input
                 name="zipCode"
-                control={control}
-                rules={{ required: "Postal Code is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Postal Code"
-                  />
-                )}
+                value={formValues.zipCode || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Nominee's Postal Code"
               />
-              {errors.zipCode && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.zipCode.message}
-                </p>
-              )}
             </div>
             <div className="w-full md:w-1/3">
               <label className="block text-sm mb-2" htmlFor="country">
                 Country
               </label>
-              <Controller
+              <Select
                 name="country"
-                control={control}
-                rules={{ required: "Country is required" }}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={countryOptions}
-                    styles={customStyles}
-                    placeholder="Select Country"
-                    onChange={(selectedOption) =>
-                      field.onChange(selectedOption.value)
-                    }
-                    value={countryOptions.find(
-                      (option) => option.value === field.value
-                    )}
-                  />
-                )}
+                value={
+                  countryOptions.find(
+                    (option) => option.value === formValues.country
+                  ) || null
+                }
+                onChange={handleSelectChange("country")}
+                options={countryOptions}
+                styles={customStyles}
+                placeholder="Select Country"
               />
-              {errors.country && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.country.message}
-                </p>
-              )}
             </div>
           </div>
 
-          {/* Relationship, Contact Info */}
+          {/* Relation, Contact Info */}
           <div className="flex flex-col md:flex-row gap-3">
             <div className="w-full md:w-1/2">
               <label className="block text-sm mb-2" htmlFor="relation">
-                Relationship to Testator
+                Relation to Testator
               </label>
-              <Controller
+              <input
                 name="relation"
-                control={control}
-                rules={{ required: "Relationship is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Relationship to Testator"
-                  />
-                )}
+                value={formValues.relation || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Relation to Testator"
               />
-              {errors.relation && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.relation.message}
-                </p>
-              )}
             </div>
             <div className="w-full md:w-1/2">
               <label className="block text-sm mb-2" htmlFor="contactInfo">
-                Contact Info
+                Contact Information
               </label>
-              <Controller
+              <input
                 name="contactInfo"
-                control={control}
-                rules={{ required: "Contact Info is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter Contact Information"
-                  />
-                )}
+                value={formValues.contactInfo || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter Contact Information"
               />
-              {errors.contactInfo && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.contactInfo.message}
-                </p>
-              )}
             </div>
           </div>
 
@@ -379,117 +305,70 @@ const Nominee = () => {
               <label className="block text-sm mb-2" htmlFor="idType">
                 ID Type
               </label>
-              <Controller
+              <Select
                 name="idType"
-                control={control}
-                rules={{ required: "ID Type is required" }}
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    options={nationalIdTypeOptions}
-                    styles={customStyles}
-                    placeholder="Select ID Type"
-                    onChange={(selectedOption) =>
-                      field.onChange(selectedOption.value)
-                    }
-                    value={nationalIdTypeOptions.find(
-                      (option) => option.value === field.value
-                    )}
-                  />
-                )}
+                value={
+                  nationalIdTypeOptions.find(
+                    (option) => option.value === formValues.idType
+                  ) || null
+                }
+                onChange={handleSelectChange("idType")}
+                options={nationalIdTypeOptions}
+                styles={customStyles}
+                placeholder="Select ID Type"
               />
-              {errors.idType && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.idType.message}
-                </p>
-              )}
             </div>
             <div className="w-full md:w-1/2">
               <label className="block text-sm mb-2" htmlFor="idNumber">
                 ID Number
               </label>
-              <Controller
+              <input
                 name="idNumber"
-                control={control}
-                rules={{ required: "ID Number is required" }}
-                render={({ field }) => (
-                  <input
-                    {...field}
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    placeholder="Enter ID Number"
-                  />
-                )}
+                value={formValues.idNumber || ""}
+                onChange={handleChange}
+                className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                type="text"
+                placeholder="Enter ID Number"
               />
-              {errors.idNumber && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.idNumber.message}
-                </p>
-              )}
             </div>
           </div>
 
-          <button
-            type="submit"
-            className={`w-full bg-primary p-3 rounded text-white hover:bg-secondary flex items-center justify-center ${
-              isLoading ? "bg-gray-400 cursor-not-allowed" : ""
-            }`}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <FaSpinner className="animate-spin mr-2" />
-                Submitting...
-              </>
-            ) : (
-              "Submit Nominee Information"
-            )}
-          </button>
+          <div className="flex justify-center mt-8">
+            <button
+              type="submit"
+              className="px-8 py-2 bg-primary text-white rounded"
+              disabled={isLoading}
+            >
+              {isLoading ? <FaSpinner className="animate-spin" /> : "Save"}
+            </button>
+          </div>
         </form>
       )}
 
       {activeTab === "image" && (
-        <form onSubmit={handleSubmit(onSubmitImage)} className="space-y-6">
+        <form onSubmit={onSubmitImage} className="space-y-6">
           <div>
             <label className="block text-sm mb-2" htmlFor="idFile">
-              ID File
+              Upload ID Image
             </label>
-            <Controller
+            <input
               name="idFile"
-              control={control}
-              rules={{ required: "ID File is required" }}
-              render={({ field }) => (
-                <input
-                  className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => field.onChange(e.target.files)}
-                />
-              )}
+              type="file"
+              accept="image/*"
+              onChange={handleChange}
+              className="w-full text-sm"
             />
-            {errors.idFile && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.idFile.message}
-              </p>
-            )}
           </div>
 
-          <button
-            type="submit"
-            className={`w-full bg-primary p-3 rounded text-white hover:bg-secondary flex items-center justify-center ${
-              isLoading ? "bg-gray-400 cursor-not-allowed" : ""
-            }`}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <FaSpinner className="animate-spin mr-2" />
-                Uploading...
-              </>
-            ) : (
-              "Upload ID Image"
-            )}
-          </button>
+          <div className="flex justify-center mt-8">
+            <button
+              type="submit"
+              className="px-8 py-2 bg-primary text-white rounded"
+              disabled={isLoading}
+            >
+              {isLoading ? <FaSpinner className="animate-spin" /> : "Upload"}
+            </button>
+          </div>
         </form>
       )}
     </div>
