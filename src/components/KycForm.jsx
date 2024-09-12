@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useState, useContext, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
 import Select from "react-select";
 import { toast } from "react-toastify";
@@ -25,15 +25,29 @@ const KycForm = () => {
   const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
   const [isImageUploadLoading, setIsImageUploadLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
-  const { auth } = useContext(AuthContext);
+  const { auth, profile } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const splitFullName = (fullName) => {
+    const nameParts = fullName.split(" ");
+    return {
+      firstName: nameParts[0] || "",
+      middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "",
+      lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : "",
+    };
+  };
 
   useEffect(() => {
     const fetchPersonalInfo = async () => {
       try {
         const data = await getUserPersonalInfo(auth.accessToken);
+        const { firstName, middleName, lastName } = splitFullName(
+          profile.fullName
+        );
         setDefaultValues({
-          name: data.name || "John Doe",
+          firstName,
+          middleName,
+          lastName,
           employeeName: data.employee_name || "",
           income: data.income_per_annum?.toString() || "",
           dateOfBirth: data.date_of_birth || "",
@@ -158,19 +172,31 @@ const KycForm = () => {
             <form onSubmit={handlePersonalInfoSubmit} className="space-y-6">
               {/* Name, Employee Name */}
               <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Full Name</label>
+                <div className="w-full md:w-1/3">
+                  <label className="block text-sm mb-2">First Name</label>
                   <input
                     className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                     type="text"
-                    value={defaultValues.name}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Your Full Name"
+                    value={defaultValues.firstName}
+                    disabled
+                  />
+                </div>
+                <div className="w-full md:w-1/3">
+                  <label className="block text-sm mb-2">Middle Name</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.middleName}
+                    disabled
+                  />
+                </div>
+                <div className="w-full md:w-1/3">
+                  <label className="block text-sm mb-2">Last Name</label>
+                  <input
+                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
+                    type="text"
+                    value={defaultValues.lastName}
+                    disabled
                   />
                 </div>
                 <div className="w-full md:w-1/2">

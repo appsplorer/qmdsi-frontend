@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: false,
     accessToken: null,
   });
-  const [profileData, setProfileData] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }) => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
-
-        setProfileData({
+        console.log(userData);
+        setProfile({
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
           country: userData.country,
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout, profileData }}>
+    <AuthContext.Provider value={{ auth, login, logout, profile }}>
       {children}
     </AuthContext.Provider>
   );

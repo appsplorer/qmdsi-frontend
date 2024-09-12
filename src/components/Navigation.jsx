@@ -1,4 +1,4 @@
-import { Ellipsis, X, LogOut, User } from "lucide-react";
+import { Ellipsis, X, LogOut, User, Wallet } from "lucide-react"; // Add Wallet icon
 import { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import LoginModal from "./LoginModal";
@@ -62,6 +62,13 @@ const Navigation = () => {
                 onClick={() => navigate("/profile")}
               >
                 <User size={16} /> Profile
+              </button>
+              {/* Wallet Balance Button */}
+              <button
+                className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
+                onClick={() => navigate("/wallet")}
+              >
+                <Wallet size={16} /> Wallet Balance
               </button>
               <button
                 className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
