@@ -65,12 +65,14 @@ const Navigation = () => {
               >
                 <User size={16} /> Profile
               </button>
+              {auth.isAuthenticated &&
               <button
                 className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
                 onClick={() => setShowBalance(true)}
               >
                 <Wallet size={16} /> Wallet Balance
               </button>
+              }
               <button
                 className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
                 onClick={handleLogout}

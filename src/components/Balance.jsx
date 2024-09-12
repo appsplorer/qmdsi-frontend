@@ -1,28 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
-
-const Balance = ({ isOpen, onClose }) => {
-  const modalRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const balances = [
+import { AuthContext } from "../contexts/AuthContext";
+import { getTokenBalance } from "../services/swap.service";
+import { getUserBalances } from "../services/users.service";
+import { TOKENAddress, USDTAddress } from "../addresses";
+import { formatEther } from "ethers";
+const balances = [
     {
       name: "Bitcoin",
       symbol: "BTC",
@@ -47,6 +30,46 @@ const Balance = ({ isOpen, onClose }) => {
     { name: "XRP", symbol: "XRP", value: 0.23, change: -9.0, color: "#23292F" },
   ];
 
+const Balance = ({ isOpen, onClose }) => {
+  const modalRef = useRef(null);
+  const { profile } = useContext(AuthContext);
+  const [tokenBalance, setTokenBalance] = useState("0")
+  const [usdtBalance, setUsdtBalance] = useState("0")
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if(!profile) return 
+
+    getTokenBalance(TOKENAddress, profile.walletAddress).then((tokenBalance) => {
+      setTokenBalance(formatEther(tokenBalance))
+    })
+    getTokenBalance(USDTAddress, profile.walletAddress).then((tokenBalance) => {
+      setUsdtBalance(formatEther(tokenBalance))
+    })
+
+  }, [profile])
+
+
+
+  if (!isOpen) return null;
+
+  
+
   const totalValue = balances.reduce((sum, coin) => sum + coin.value, 0);
 
   return (
@@ -57,38 +80,60 @@ const Balance = ({ isOpen, onClose }) => {
       >
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Total cash value</h2>
+            <h2 className="text-xl font-bold">Token Balances</h2>
             <button onClick={onClose} className="text-white hover:text-primary">
               <X size={20} />
             </button>
           </div>
-          <div className="text-3xl font-bold mb-2">
+          {/* <div className="text-3xl font-bold mb-2">
             ${totalValue.toFixed(2)} USD
-          </div>
-          <div className="text-red-400 text-sm mb-4">-8.19% Last day</div>
+          </div> */}
+          <div className="text-red-400 text-sm mb-4"></div>
           <div className="space-y-2">
-            {balances.map((coin) => (
+
+            
               <div
-                key={coin.symbol}
+                
                 className="flex justify-between items-center"
               >
                 <div className="flex items-center space-x-2">
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: coin.color }}
+                    style={{ backgroundColor: "#627EEA" }}
                   >
-                    {coin.symbol[0]}
+                    Q
                   </div>
-                  <span>{coin.name}</span>
+                  <span>QMDT</span>
                 </div>
                 <div className="text-right">
-                  <div>${coin.value.toFixed(2)}</div>
-                  <div className="text-red-400 text-xs">
+                  <div>{tokenBalance}</div>
+                  {/* <div className="text-red-400 text-xs">
                     {coin.change.toFixed(2)}%
-                  </div>
+                  </div> */}
                 </div>
               </div>
-            ))}
+
+              <div
+                
+                className="flex justify-between items-center"
+              >
+                <div className="flex items-center space-x-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: "#23292F" }}
+                  >
+                    U
+                  </div>
+                  <span>USDT</span>
+                </div>
+                <div className="text-right">
+                  <div>{usdtBalance}</div>
+                  {/* <div className="text-red-400 text-xs">
+                    {coin.change.toFixed(2)}%
+                  </div> */}
+                </div>
+              </div>
+            
           </div>
         </div>
       </div>

@@ -95,3 +95,9 @@ export const swapToken = async (accessToken, tokenIn, amountIn) => {
   );
   return res.data;
 };
+
+
+export const getUserBalances = async (userId) => {
+  const res = await api.get(`/api/account/balance?userId]${userId}`)
+  console.log(res.data)
+}
