@@ -67,9 +67,9 @@ def create_tables():
                 date_of_birth TEXT NOT NULL,
                 address TEXT NOT NULL,
                 city TEXT NOT NULL,
+                relationship_to_testator TEXT NOT NULL,
                 postal_code TEXT NOT NULL,
                 country TEXT NOT NULL,
-                relationship TEXT NOT NULL,
                 contact_info TEXT NOT NULL,
                 id_type TEXT NOT NULL,
                 id_number TEXT NOT NULL
@@ -97,20 +97,21 @@ def create_personal_info(_id: str, info: PersonalInformation):
     conn.close()
     return cursor.lastrowid
 
+
 def update_personal_info(_id: str, info: PersonalInformation):
     conn = sqlite3.connect("my_database.db")
     cursor = conn.cursor()
-    
+
     new_record = info.model_dump()
     set_clause = ", ".join([f"{key} = ?" for key in new_record.keys()])
     values = list(new_record.values())
     values.append(_id)
     sql = f"UPDATE personal_information SET {set_clause} WHERE id = ?"
-    
+
     cursor.execute(sql, values)
     conn.commit()
     conn.close()
-    
+
     return cursor.rowcount
 
 
@@ -159,7 +160,7 @@ def create_nominee(_id: str, info: Nominee):
 
     cursor = conn.cursor()
     new_record = info.model_dump()
-    new_record["_id"] = _id
+    new_record["id"] = _id
 
     columns = ", ".join(new_record.keys())
     placeholders = ", ".join(["?"] * len(new_record))
@@ -170,6 +171,55 @@ def create_nominee(_id: str, info: Nominee):
     conn.commit()
     conn.close()
     return cursor.lastrowid
+
+
+def update_nominee_info(_id: str, info: Nominee):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+
+    new_record = info.model_dump()
+    set_clause = ", ".join([f"{key} = ?" for key in new_record.keys()])
+    values = list(new_record.values())
+    values.append(_id)
+    sql = f"UPDATE nominee SET {set_clause} WHERE id = ?"
+
+    cursor.execute(sql, values)
+    conn.commit()
+    conn.close()
+
+    return cursor.rowcount
+
+
+def update_user(email: str, update: dict):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+
+    set_clause = ", ".join([f"{key} = ?" for key in update.keys()])
+    values = list(update.values())
+    values.append(email)
+    sql = f"UPDATE users SET {set_clause} WHERE email = ?"
+
+    cursor.execute(sql, values)
+    conn.commit()
+    conn.close()
+
+    return cursor.rowcount
+
+
+# def update_nominee_info(_id: str, update: dict):
+#     conn = sqlite3.connect("my_database.db")
+#     cursor = conn.cursor()
+
+#     set_clause = ", ".join([f"{key} = ?" for key in update.keys()])
+#     values = list(update.values())
+#     values.append(email)
+#     sql = f"UPDATE users SET {set_clause} WHERE email = ?"
+
+#     cursor.execute(sql, values)
+#     conn.commit()
+#     conn.close()
+
+#     return cursor.rowcount
 
 
 def get_nominee(_id: str) -> Nominee | None:

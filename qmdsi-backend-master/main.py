@@ -1,32 +1,28 @@
 from fastapi import (
     FastAPI,
-    Body,
     Header,
     UploadFile,
     File,
     Depends,
     HTTPException,
-    Form,
     status,
+    Request,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
-from datetime import datetime
-from eth_typing import ChecksumAddress
 from schemas import (
     PersonalInformation,
     Nominee,
-    BaseUser,
-    Tokens,
     DebitSchema,
     RegUser,
-    LoginUser,
     DBUser,
     SwapParams,
     TransferSchema,
     BindRequestSchema,
     BuyGoldSchema,
     SellGoldSchema,
+    ForgetPassowrd,
+    ResetUserPassword,
 )
 import cv2
 import os
@@ -39,9 +35,13 @@ from authkyc import (
 import constants
 import exceptions
 import security
+import emails
 from security import Jwt
+
 from dependencies import current_user
+from exceptions import BadRequest
 import org_ids
+import config
 
 app = FastAPI()
 
@@ -84,6 +84,26 @@ def login_user(request_form: OAuth2PasswordRequestForm = Depends()):
         raise exceptions.BadRequest("Invalid credentials")
     acces_token = Jwt.get_access_token(user.id)
     return {"access_token": acces_token}
+
+
+@app.post("/forget_password")
+def forget_password(data: ForgetPassowrd):
+    user = db.get_user_by_email(data.email)
+
+    if not user:
+        raise BadRequest("User not found")
+
+    token = Jwt.encode_reset_password(data.email)
+
+    link = f"{config.FRONTEND_URL}/reset_password?token={token}"
+    print(link)
+    emails.send_forgot_password_email(data.email, link)
+    return True
+
+
+@app.post("/reset_password")
+def reset_user_password(data: ResetUserPassword):
+    return core.reset_password(data)
 
 
 @app.get("/user")
@@ -254,6 +274,11 @@ def get_personal_information(user: DBUser = Depends(current_user)):
 
 @app.post("/nominee")
 def post_user_nominee(nominee: Nominee, user: DBUser = Depends(current_user)):
+    existing_nominee = db.get_nominee(user.id)
+
+    if existing_nominee:
+        return db.update_nominee_info(user.id, nominee)
+
     res = core.create_nominee(user.id, nominee)
     return res
 

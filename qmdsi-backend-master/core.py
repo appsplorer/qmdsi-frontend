@@ -10,9 +10,10 @@ from schemas import (
     BuyGoldSchema,
     Tokens,
     SellGoldSchema,
+    ResetUserPassword,
 )
 import w3, db
-import shortuuid
+from pydantic import EmailStr
 from constants import TOKEN
 import org_ids
 from exceptions import BadRequestException
@@ -185,3 +186,14 @@ def sell_gold(data: SellGoldSchema, x_token: str):
     info = DebitSchema(token=Tokens.qmgt, id=data.userId, amount=data.amountQMGT)
     hash = deposit_to_user(x_token, info)
     return {"status": "success", "transactionRef": hash}
+
+
+def reset_password(data: ResetUserPassword):
+
+    res = security.Jwt.decode_reset_password(data.token)
+    email = res["sub"]
+
+    update = {}
+    update["password"] = security.hash_password(data.password)
+    res = db.update_user(email, update)
+    return bool(res)

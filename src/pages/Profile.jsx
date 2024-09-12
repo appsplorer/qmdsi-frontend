@@ -9,6 +9,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [kycStatus, setKycstatus] = useState();
   const { auth } = useContext(AuthContext);
+  
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -109,7 +110,7 @@ const Profile = () => {
             </div>
             <div className="flex flex-col md:flex-row justify-between space-y-2 md:space-y-0 md:text-left text-left">
               <p>
-                <strong>Referral Link:</strong> {profileData.referralLink}
+                <strong>Referral Link:</strong> {`${window.location.protocol}//${window.location.host}/signup?ref=${profileData.referralLink}`}
               </p>
               <button
                 className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"

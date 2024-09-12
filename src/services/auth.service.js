@@ -30,9 +30,19 @@ export const authLogin = async (data) => {
 
 export const forgetPassword = async (email) => {
   try {
-    const response = await api.post("/forget-password", { email });
+    const response = await api.post("/forget_password", { email });
     return response.data;
   } catch (error) {
     throw error.response.data;
   }
 };
+
+
+export const resetPassword = async (password, token) => {
+  try{
+    const response = await api.post("/reset_password", { password, token});
+    return response.data;
+  }catch(error){
+  throw error.response.data
+}
+}

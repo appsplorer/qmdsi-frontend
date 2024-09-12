@@ -150,3 +150,12 @@ class SellGoldSchema(BaseModel):
     userId: str
     walletAddress: str
     amountQMGT: float
+
+
+class ForgetPassowrd(BaseModel):
+    email: EmailStr
+
+
+class ResetUserPassword(BaseModel):
+    password: str
+    token: str

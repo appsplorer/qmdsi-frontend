@@ -16,7 +16,7 @@ import Login from "./pages/Login.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import Verification from "./components/verification.jsx";
 import ForgetPassword from "./pages/ForgetPassword.jsx";
-
+import ResetPassword from "./pages/ResetPassword.jsx";
 const router = createBrowserRouter([
   {
     element: <App />,
@@ -37,6 +37,10 @@ const router = createBrowserRouter([
       {
         path: "/forget-password",
         element: <ForgetPassword />,
+      },
+      {
+        path: "/reset_password",
+        element: <ResetPassword />,
       },
       {
         path: "/pool",

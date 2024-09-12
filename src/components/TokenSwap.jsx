@@ -323,6 +323,10 @@ const TokenSwap = ({fee, setFee}) => {
             onChange={(e) => {
               setChangeData("input");
               setTokenIn(e.value);
+              if(e.value == tokenOut){
+                const otherTk = options.find((value) => value.value != e.value)
+                setTokenOut(otherTk.value)
+              }
             }}
           />
         </div>
@@ -364,6 +368,11 @@ const TokenSwap = ({fee, setFee}) => {
             onChange={(e) => {
               setChangeData("output");
               setTokenOut(e.value);
+              if(e.value == tokenIn){
+                const otherTk = options.find((value) => value.value != e.value)
+                setTokenIn(otherTk.value)
+              }
+              
             }}
             placeholder="Select an option"
           />
@@ -381,7 +390,7 @@ const TokenSwap = ({fee, setFee}) => {
             1.002g per {Number(goldPriceUsd).toPrecision(4)} USDT
           </span>
         </p>
-        <p className='flex justify-between mt-2'><span>Amount Received</span><span className='text-white'>{amtReceived.toFixed(6) } {tokenOut}</span></p>
+        <p className='flex justify-between mt-2'><span>Amount Received</span><span className='text-white'>{amtReceived ? amtReceived.toFixed(6) : 0 } {tokenOut}</span></p>
         <p className='flex justify-between mt-2'><span>Fee</span><span className='text-white'>{parseFloat(feeAmount).toFixed(4)} USDT {fee}% </span></p>
       </div>
       <div>
