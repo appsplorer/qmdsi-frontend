@@ -2,14 +2,16 @@ import api from "./api.service";
 
 export const updateProfileImages = async (
   accessToken,
-  profilePicture,
-  idPicture
+  profilePic,
+  personalId,
+  proofOfAddress
 ) => {
   try {
     const formData = new FormData();
-    formData.append("profile_picture", profilePicture);
-    formData.append("id_picture", idPicture);
-
+    formData.append("profilePic", profilePic);
+    formData.append("personalId", personalId);
+    formData.append("proofOfAddress", proofOfAddress);
+    console.log(formData)
     const response = await api.post("/personal_information/images", formData, {
       headers: {
         Authorization: `Bearer ${accessToken}`,

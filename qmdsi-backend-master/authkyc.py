@@ -1,11 +1,11 @@
-
-import google.generativeai as genai
+import openai
 from PIL import Image
 import json
 import pytesseract
 import os
 import cv2
 import numpy as np
+import config
 
 
 def detect_and_crop_face(image_path, resize= False,output_path = None):
@@ -36,48 +36,59 @@ def preprocess_image(image_path):
     return image
 
 
-def extractor(image_link):
-    try:
-         img_path = image_link
-         script_directory = os.path.dirname(os.path.abspath(__file__))
-         path_file = os.path.join(script_directory, "scanned_img")
-         if not os.path.exists(path_file):
-             os.makedirs(path_file)
-         images = os.path.basename(image_link)
-         full_path = os.path.join(path_file, images)
-         img = cv2.imread(img_path)
-         cv2.imwrite(full_path, img)
-         #img = brigth_some_pixel(img,brightness_value=100)
-         img = dim_some_pixel(img, threshold=170)
-         img = cv2.bitwise_not(img)
-         #cv2.imwrite('image.jpg',img)
-         #  pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
-         extracted_text = pytesseract.image_to_string(img,lang="eng",timeout=20)
-         print(extracted_text)
-         #API_KEY = os.getenv('GOOGLE_API_KEY')
-         API_KEY = 'AIzaSyCDv5adaf0eYx5aUBnqnJ4HyJ1OFE5kDts'
-         
-         genai.configure(api_key=API_KEY)
-         
-         model = genai.GenerativeModel('gemini-pro')
-         chat = model.start_chat()
-    
-         response = chat.send_message(f"""You are a helpful assistant designed to output JSON,but don't include json word inside the output,give only the result data in json format.
-                 Given user input, match main keywords/terms with their corresponding key names if they appear in the text if they did not match there value as None. The keywords include:
-                 Id,First_name,Middle_name,Suname,Nationality,Date_Of_Birth,Date_Of_Issues,Issues_Authority,Expiry_Date,Gender, Card_Type.
-                 store Date_Of_Birth,Date_Of_Issues,Expiry_Date in normal data format e.g "YYYY-MM-DD".
-                 Gender can only be string not integer e.g F/M{extracted_text}""")
-         return response.text
-     
-    except Exception as err:
-        print(err)
-        return None
+def text_extractor(image_link):
+
+   try:
+     img_path = image_link
+     script_directory = os.path.dirname(os.path.abspath(__file__))
+     path_file = os.path.join(script_directory, "scanned_img")
+     if not os.path.exists(path_file):
+        os.makedirs(path_file)
+     images = os.path.basename(image_link)
+     full_path = os.path.join(path_file, images)
+     img = cv2.imread(img_path)
+     cv2.imwrite(full_path, img)
+     #img = brigth_some_pixel(img,brightness_value=100)
+     img = dim_some_pixel(img, threshold=170)
+     img = cv2.bitwise_not(img)
+     #cv2.imwrite('image.jpg',img)
+     pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+     extracted_text = pytesseract.image_to_string(img,lang="eng",timeout=20)
+     print(extracted_text)
+     openai.api_key = config.OPENAI_API
+     client = openai.OpenAI(api_key=openai.api_key)
+
+     response = client.chat.completions.create(
+     model="gpt-4-0125-preview",
+     response_format={ "type": "json_object" },
+     messages=[
+          {
+             "role": "system",
+             "content": """You are a helpful assistant designed to output JSON.
+             Given user input, match main keywords/terms with their corresponding key names if they appear in the text if they did not match there value as None. The keywords include:
+             Id,First_name,Middle_name,Suname,Nationality,Date_Of_Birth,Date_Of_Issues,Issues_Authority,Expiry_Date,Gender, Card_Type.
+             store Date_Of_Birth,Date_Of_Issues,Expiry_Date in normal date format e.g "YYYY-MM-DD".
+             Gender can only be string not integer e.g F/M
+             """ 
+              },
+           {
+            "role": "user",
+            "content": extracted_text
+           }
+         ]
+         )
+     if os.path.exists(path_file):
+         os.remove(path_file)
+     return response.choices[0].message.content
+   except RuntimeError as timeout_error:
+       print(timeout_error)
+       return None
     
     
 
 
 def get_id_no_and_fullname_from_id_card(id_card_image):
-    data = extractor(id_card_image)
+    data = text_extractor(id_card_image)
     print(id_card_image)
     print(data)
     if not data or not isinstance(data, str):
@@ -97,7 +108,7 @@ def get_id_no_and_fullname_from_id_card(id_card_image):
     if first_name or middle_name or surname:
         fullname = " ".join(filter(None, [first_name or '', middle_name or '', surname or '']))
 
-    id = str(data.get('Id')).replace(" ","")
+    id = str(data.get('Id')).replace(" ","").replace("-","")
     dob = data.get('Date_Of_Birth')
     print(dob)
 

@@ -84,8 +84,9 @@ const KycForm = () => {
     event.preventDefault();
     setIsPersonalInfoLoading(true);
     try {
+      console.log(defaultValues.firstName + " " + defaultValues.middleName + " " + defaultValues.lastName)
       const personalInfoData = {
-        name: defaultValues.name,
+        name:String(defaultValues.firstName + " " + defaultValues.middleName + " " + defaultValues.lastName),
         employeeName: defaultValues.employeeName,
         incomePerAnnum: parseFloat(defaultValues.income),
         dateOfBirth: defaultValues.dateOfBirth,
@@ -108,13 +109,13 @@ const KycForm = () => {
         maritalStatus: defaultValues.marital,
         gender: defaultValues.gender,
       };
-
+      console.log(personalInfoData)
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated!");
       setSelectedTab(1);
     } catch (error) {
       console.error("Error updating personal info:", error);
-      toast.error(error?.detail || "Failed to update personal information");
+      toast.error(error.response.data.detail|| "Failed to update personal information");
     } finally {
       setIsPersonalInfoLoading(false);
     }
@@ -124,16 +125,17 @@ const KycForm = () => {
     event.preventDefault();
     setIsImageUploadLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("profilePic", defaultValues.profilePic);
-      formData.append("personalId", defaultValues.personalId);
 
-      await updateProfileImages(auth.accessToken, formData);
+      await updateProfileImages(auth.accessToken, 
+        defaultValues.profilePic,
+        defaultValues.personalId,
+        defaultValues.proofOfAddress
+      );
       toast.success("Images uploaded successfully!");
-      navigate("/verify");
+      navigate("/nominee");
     } catch (error) {
-      console.error("Error uploading images:", error);
-      toast.error("Failed to upload images. Please try again.");
+      console.error("Error uploading images:", error.response.data.detail);
+      toast.error(error.response.data.detail);
     } finally {
       setIsImageUploadLoading(false);
     }
@@ -178,7 +180,14 @@ const KycForm = () => {
                     className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                     type="text"
                     value={defaultValues.firstName}
-                    disabled
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        firstName: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter First Name"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/3">
@@ -187,7 +196,14 @@ const KycForm = () => {
                     className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                     type="text"
                     value={defaultValues.middleName}
-                    disabled
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        middleName: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter middle Name"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/3">
@@ -196,7 +212,14 @@ const KycForm = () => {
                     className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                     type="text"
                     value={defaultValues.lastName}
-                    disabled
+                    onChange={(e) =>
+                      setDefaultValues((prev) => ({
+                        ...prev,
+                        lastName: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter Last Name"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -212,6 +235,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Employee Name"
+                    required
                   />
                 </div>
               </div>
@@ -231,6 +255,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Annual Income"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -245,6 +270,7 @@ const KycForm = () => {
                         dateOfBirth: e.target.value,
                       }))
                     }
+                    required
                   />
                 </div>
               </div>
@@ -264,6 +290,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Your Address"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -279,6 +306,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Your City"
+                    required
                   />
                 </div>
               </div>
@@ -296,6 +324,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Postal Code"
+                    required
                   />
                 </div>
               </div>
@@ -315,6 +344,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Mother's Name"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -332,6 +362,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Income Tax Number"
+                    required
                   />
                 </div>
               </div>
@@ -352,6 +383,7 @@ const KycForm = () => {
                       }))
                     }
                     styles={customStyles}
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -368,6 +400,7 @@ const KycForm = () => {
                       }))
                     }
                     styles={customStyles}
+                    required
                   />
                 </div>
               </div>
@@ -387,6 +420,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Currency"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -403,6 +437,7 @@ const KycForm = () => {
                       }))
                     }
                     styles={customStyles}
+                    required
                   />
                 </div>
               </div>
@@ -422,6 +457,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter ID Number"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -437,6 +473,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Industry"
+                    required
                   />
                 </div>
               </div>
@@ -456,6 +493,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Occupation"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -471,6 +509,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Source of Income"
+                    required
                   />
                 </div>
               </div>
@@ -490,6 +529,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Mobile Phone"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -505,6 +545,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Phone 2"
+                    required
                   />
                 </div>
               </div>
@@ -524,6 +565,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Fax Number"
+                    required
                   />
                 </div>
                 <div className="w-full md:w-1/2">
@@ -540,6 +582,7 @@ const KycForm = () => {
                       }))
                     }
                     styles={customStyles}
+                    required
                   />
                 </div>
               </div>
@@ -559,6 +602,7 @@ const KycForm = () => {
                     }))
                   }
                   styles={customStyles}
+                  required
                 />
               </div>
 

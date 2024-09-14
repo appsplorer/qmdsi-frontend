@@ -42,6 +42,7 @@ from dependencies import current_user
 from exceptions import BadRequest
 import org_ids
 import config
+from datetime import datetime
 
 app = FastAPI()
 
@@ -215,8 +216,9 @@ def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
 
 @app.post("/personal_information/images")
 async def upload_kyc_images(
-    profile_picture: UploadFile = File(...),
-    id_picture: UploadFile = File(...),
+    profilePic: UploadFile = File(...),
+    personalId: UploadFile = File(...),
+    proofOfAddress:UploadFile = File(...),
     user: DBUser = Depends(current_user),
 ):
     try:
@@ -225,40 +227,34 @@ async def upload_kyc_images(
             raise exceptions.BadRequestException(
                 "Personal information doesn't exist,submit the form and try again."
             )
-        res = core.update_user_kyc_verify_column(user.id)
-        print(personal_info)
-        print(personal_info.name)
-        print(personal_info.id_number)
-        print(personal_info.date_of_birth)
-        return True
-        # UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-        # os.makedirs(UPLOAD_DIR, exist_ok=True)
-        # image_path = os.path.join(UPLOAD_DIR, user.id + id_picture.filename)
-        # with open(image_path, "wb") as buffer:
-        #     buffer.write(await id_picture.read())
-        # fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
-        # if not fullname:
-        #     raise exceptions.BadRequestException("Unable to extract info from ID")
-        # elif not dob:
-        #     raise exceptions.BadRequestException("Unable to extract info from ID")
-        # elif not id_number:
-        #     raise exceptions.BadRequestException("Unable to extract info from ID")
+        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        image_path = os.path.join(UPLOAD_DIR, user.id + personalId.filename)
+        with open(image_path, "wb") as buffer:
+            buffer.write(await personalId.read())
+        fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
+        if not fullname:
+            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+        elif not dob:
+            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+        elif not id_number:
+            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
 
-        # id_card_dob = datetime.strptime(dob, date_format)
-        # user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
+        id_card_dob = datetime.strptime(dob, date_format)
+        user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
 
-        # if not name_contains(personal_info.name, fullname):
-        #     raise exceptions.BadRequestException(
-        #         "Your kyc name doesn't match with the id card uploaded,update your kyc information and try again"
-        #     )
-        # if id_number != str(personal_info.id_number):
-        #     raise exceptions.BadRequestException(
-        #         "Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again"
-        #     )
-        # if id_card_dob != user_dob:
-        #     raise exceptions.BadRequestException(
-        #         "Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
-        #     )
+        if not name_contains(personal_info.name, fullname):
+            raise exceptions.BadRequestException(
+                "Your kyc name doesn't match with the id card uploaded,update your kyc information and try again"
+            )
+        if str(personal_info.id_number) not in id_number:
+            raise exceptions.BadRequestException(
+                "Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again"
+            )
+        if id_card_dob != user_dob:
+            raise exceptions.BadRequestException(
+                "Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
+            )
         return True
 
     except Exception as e:
@@ -274,18 +270,74 @@ def get_personal_information(user: DBUser = Depends(current_user)):
 
 @app.post("/nominee")
 def post_user_nominee(nominee: Nominee, user: DBUser = Depends(current_user)):
-    existing_nominee = db.get_nominee(user.id)
+    try:
+        
+        existing_nominee = db.get_nominee(user.id)
 
-    if existing_nominee:
-        return db.update_nominee_info(user.id, nominee)
+        if existing_nominee:
+            return db.update_nominee_info(user.id, nominee)
 
-    res = core.create_nominee(user.id, nominee)
-    return res
+        res = core.create_nominee(user.id, nominee)
+        return res
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @app.post("/nominee/image")
-def upload_nominee_id_image(id_picture: UploadFile = File(...)):
-    return True
+async def upload_nominee_id_image(personalId: UploadFile = File(...),
+                            user: DBUser = Depends(current_user)):
+    try:
+        nominee_info = db.get_nominee(user.id)
+        print(nominee_info)
+        if not nominee_info:
+            raise exceptions.BadRequestException(
+                "Nominee information doesn't exist,submit the form and try again."
+            )
+        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads/nominees")
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        image_path = os.path.join(UPLOAD_DIR, user.id + personalId.filename)
+        with open(image_path, "wb") as buffer:
+            buffer.write(await personalId.read())
+        fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
+        if not fullname:
+            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+        elif not dob:
+            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+        elif not id_number:
+            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+
+        id_card_dob = datetime.strptime(dob, date_format)
+        user_dob = datetime.strptime(nominee_info.date_of_birth, date_format)
+        nominee_fullname = nominee_info.first_name + " " + nominee_info.middle_name + " " + nominee_info.last_name
+        print(nominee_fullname)
+        
+        if not name_contains(nominee_fullname, fullname):
+            raise exceptions.BadRequestException(
+                "Your Nominee name doesn't match with the id card uploaded,update your Nominee information and try again"
+            )
+        print(nominee_info.id_number)
+        print(id_number)
+        if str(nominee_info.id_number) not in id_number:
+            raise exceptions.BadRequestException(
+                "Your Nominee id number doesn't match with the id card uploaded,update your Nominee information and try again"
+            )
+        if id_card_dob != user_dob:
+            raise exceptions.BadRequestException(
+                "Your Nominee date of birth doesn't match with the id card uploaded,update your Nominee information and try again"
+            )
+        try:
+            res = core.update_user_kyc_verify_column(user.id)
+            if res:
+                return res
+        except Exception as e:
+            print(e)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @app.get("/nominee")

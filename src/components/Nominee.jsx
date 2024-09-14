@@ -3,14 +3,16 @@ import Select from "react-select";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
-import { updateNomineeInfo, getUserNominee } from "../services/nominee.service";
+import {updateImages, updateNomineeInfo, getUserNominee } from "../services/nominee.service";
 import { countryOptions } from "../data/countries";
 import { nationalIdTypeOptions } from "../constants/KYC";
 import { customStyles } from "../styles";
+import { useNavigate } from "react-router-dom";
 
 const Nominee = () => {
   const [activeTab, setActiveTab] = useState("info");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const [formValues, setFormValues] = useState({
     firstName: null,
     middleName: null,
@@ -88,15 +90,13 @@ const Nominee = () => {
         contactInfo: formValues.contactInfo || "",
         idType: formValues.idType || "",
         idNumber: formValues.idNumber
-          ? parseInt(formValues.idNumber, 10)
-          : null,
       };
       await updateNomineeInfo(auth.accessToken, nomineeData);
       toast.success("Nominee information submitted!");
       setActiveTab("image");
     } catch (error) {
       console.error("Error updating nominee information:", error);
-      toast.error(error?.detail || "Failed to update nominee information");
+      toast.error(error.response.data.detail || "Failed to update nominee information");
     } finally {
       setIsLoading(false);
     }
@@ -108,17 +108,21 @@ const Nominee = () => {
     try {
       if (formValues.idFile) {
         // Assume some upload logic here
+        await updateImages(auth.accessToken, 
+          formValues.idFile
+        )
         setTimeout(() => {
           toast.success("Nominee ID image uploaded successfully!");
           setIsLoading(false);
         }, 2000);
+        navigate("/profile");
       } else {
         toast.error("Please select an image file to upload.");
         setIsLoading(false);
       }
     } catch (error) {
-      console.error("Error uploading nominee ID image:", error);
-      toast.error("Failed to upload nominee ID image. Please try again.");
+      console.error("Error uploading nominee ID image:", error.response.data.detail);
+      toast.error(error.response.data.detail);
       setIsLoading(false);
     }
   };
@@ -163,6 +167,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Nominee's First Name"
+                required
               />
             </div>
             <div className="w-full md:w-1/3">
@@ -176,6 +181,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Nominee's Middle Name"
+                required
               />
             </div>
             <div className="w-full md:w-1/3">
@@ -189,6 +195,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Nominee's Last Name"
+                required
               />
             </div>
           </div>
@@ -205,6 +212,7 @@ const Nominee = () => {
                 onChange={handleChange}
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="date"
+                required
               />
             </div>
             <div className="w-full md:w-2/3">
@@ -218,6 +226,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 rows={2}
                 placeholder="Enter Nominee's Address"
+                required
               />
             </div>
           </div>
@@ -235,6 +244,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Nominee's City"
+                required
               />
             </div>
             <div className="w-full md:w-1/3">
@@ -248,6 +258,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Nominee's Postal Code"
+                required
               />
             </div>
             <div className="w-full md:w-1/3">
@@ -265,6 +276,7 @@ const Nominee = () => {
                 options={countryOptions}
                 styles={customStyles}
                 placeholder="Select Country"
+                required
               />
             </div>
           </div>
@@ -282,6 +294,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Relation to Testator"
+                required
               />
             </div>
             <div className="w-full md:w-1/2">
@@ -295,6 +308,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter Contact Information"
+                required
               />
             </div>
           </div>
@@ -316,6 +330,7 @@ const Nominee = () => {
                 options={nationalIdTypeOptions}
                 styles={customStyles}
                 placeholder="Select ID Type"
+                required
               />
             </div>
             <div className="w-full md:w-1/2">
@@ -329,6 +344,7 @@ const Nominee = () => {
                 className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
                 type="text"
                 placeholder="Enter ID Number"
+                required
               />
             </div>
           </div>

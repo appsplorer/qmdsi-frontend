@@ -61,7 +61,7 @@ class PersonalInformation(BaseModel):
         ..., validation_alias=AliasChoices("incomeTaxNo", "income_tax_no")
     )
     id_type: str = Field(..., validation_alias=AliasChoices("idType", "id_type"))
-    id_number: int = Field(..., validation_alias=AliasChoices("idNumber", "id_number"))
+    id_number: str = Field(..., validation_alias=AliasChoices("idNumber", "id_number"))
     industry: str
     occupation: str
     source_of_income: str = Field(
@@ -110,7 +110,7 @@ class Nominee(BaseModel):
         ..., validation_alias=AliasChoices("contactInfo", "contact_info")
     )
     id_type: str = Field(..., validation_alias=AliasChoices("idType", "id_type"))
-    id_number: int = Field(..., validation_alias=AliasChoices("idNumber", "id_number"))
+    id_number: str = Field(..., validation_alias=AliasChoices("idNumber", "id_number"))
 
 
 class SwapParams(BaseModel):
