@@ -11,7 +11,7 @@ import SmartTrade from "./pages/SmartTrade.jsx";
 import KYC from "./pages/KYC.jsx";
 import Profile from "./pages/Profile.jsx";
 import Register from "./pages/Register.jsx";
-import Nom from "./pages/Nominee.jsx"
+import Nom from "./pages/Nominee.jsx";
 import Verify from "./pages/verify.jsx";
 import Login from "./pages/Login.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
@@ -79,7 +79,7 @@ const router = createBrowserRouter([
             path: "/kyc",
             element: <KYC />,
           },
-          
+
           {
             path: "/nominee",
             element: <Nom />,

@@ -3,14 +3,12 @@ import React, { useContext, useEffect, useState } from "react";
 import Select from "react-select";
 import { useNavigate } from "react-router-dom";
 import TransactionModal from "./TransactionModal";
+import { customStyles } from "../styles";
 import TransactionCompleteModal from "./TransactionCompleteModal";
 
-import {parseEther } from "ethers";
+import { parseEther } from "ethers";
 
-import {
-  TOKENAddress,
-  USDTAddress,
-} from "../addresses";
+import { TOKENAddress, USDTAddress } from "../addresses";
 import { formatUnits } from "ethers";
 import { AuthContext } from "../contexts/AuthContext";
 
@@ -41,7 +39,7 @@ const CustomSingleValue = (props) => {
   );
 };
 
-const TokenSwap = ({fee, setFee}) => {
+const TokenSwap = ({ fee, setFee }) => {
   const CustomOption = (props) => {
     const { innerRef, innerProps, data } = props;
     return (
@@ -66,55 +64,6 @@ const TokenSwap = ({fee, setFee}) => {
     { value: "QMGT", label: "QMGT", image: "https://via.placeholder.com/20" },
   ];
 
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      backgroundColor: "#1E1E20",
-      borderColor: "#1E1E20",
-      minHeight: "50px",
-      height: "50px",
-      outline: "none",
-    }),
-    valueContainer: (provided) => ({
-      ...provided,
-      height: "40px",
-      display: "flex",
-      alignItems: "center",
-    }),
-    input: (provided) => ({
-      ...provided,
-      margin: "0px",
-    }),
-    indicatorsContainer: (provided) => ({
-      ...provided,
-      height: "50px",
-      borderColor: "#1E1E20",
-    }),
-    indicatorSeparator: (provided) => ({
-      display: "none", // Removes the left border line
-    }),
-    menu: (provided) => ({
-      ...provided,
-      backgroundColor: "#1E1E20", // Background color of the menu
-      borderRadius: "5px",
-      marginTop: "0px",
-      padding: "5px",
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected
-        ? "blue"
-        : state.isFocused
-        ? "lightblue"
-        : "white", // Background color on hover and selection
-      color: state.isSelected ? "white" : "black", // Text color
-      padding: "10px",
-      display: "flex",
-      alignItems: "center",
-      gap: "5px",
-    }),
-  };
-
   const [transactionModal, setTransactionModal] = useState(false);
   const [transactionCompleteModal, setTransactionCompleteModal] =
     useState(false);
@@ -127,8 +76,8 @@ const TokenSwap = ({fee, setFee}) => {
   const [tokenInBal, setTokenInBal] = useState("0");
   const [tokenOutBal, setTokenOutBal] = useState("0");
   const [goldPriceUsd, setGoldPriceUsd] = useState("0");
-  const [feeAmount, setFeeAmount] = useState("0")
-  const [amtReceived, setAmtReceived ] = useState(0)
+  const [feeAmount, setFeeAmount] = useState("0");
+  const [amtReceived, setAmtReceived] = useState(0);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const { profileData, auth } = useContext(AuthContext);
   const navigator = useNavigate();
@@ -149,12 +98,10 @@ const TokenSwap = ({fee, setFee}) => {
   };
 
   useEffect(() => {
-  
     getGoldPrice().then((goldPrice) => {
       setGoldPriceUsd(goldPrice);
     });
   }, []);
-
 
   const handleSwap = () => {
     setTokenIn(tokenOut);
@@ -168,25 +115,24 @@ const TokenSwap = ({fee, setFee}) => {
     if (changeData !== "input") return;
     if (!amountIn || !tokenIn) {
       setAmountOut("");
-      setFeeAmount("0")
+      setFeeAmount("0");
       return;
     }
     getAmountOut(tokenIn.toLowerCase(), amountIn).then((res) => {
-      if(tokenIn.toLowerCase() == "usdt" && parseFloat(amountIn) >= 150){
-          setFee(0.2)
-          const feeAmt = 0.2 * parseFloat(amountIn) / 100
-          setFeeAmount(feeAmt)
-        // 
-      }else{
-        if(parseFloat(res) >= 150) {
-          setFee(0.2)
-          const feeAmt = 0.2 * parseFloat(res) / 100
-          setFeeAmount(feeAmt)
-        }else{
-          setFee(0.1)
-          const feeAmt = 0.2 * parseFloat(res) / 100
-          setFeeAmount(feeAmt)
-          
+      if (tokenIn.toLowerCase() == "usdt" && parseFloat(amountIn) >= 150) {
+        setFee(0.2);
+        const feeAmt = (0.2 * parseFloat(amountIn)) / 100;
+        setFeeAmount(feeAmt);
+        //
+      } else {
+        if (parseFloat(res) >= 150) {
+          setFee(0.2);
+          const feeAmt = (0.2 * parseFloat(res)) / 100;
+          setFeeAmount(feeAmt);
+        } else {
+          setFee(0.1);
+          const feeAmt = (0.2 * parseFloat(res)) / 100;
+          setFeeAmount(feeAmt);
         }
       }
 
@@ -198,30 +144,29 @@ const TokenSwap = ({fee, setFee}) => {
     if (changeData !== "output") return;
     if (!tokenOut || !amountOut) {
       setAmountIn("");
-      setFeeAmount("0")
+      setFeeAmount("0");
       return;
     }
     getAmountOut(tokenOut.toLowerCase(), amountOut).then((res) => {
-      if(tokenOut.toLowerCase() == "usdt" && parseFloat(amountOut) >= 150){
-          setFee(0.2)
-          const feeAmt = 0.2 * parseFloat(amountOut) / 100
-          setFeeAmount(feeAmt)
-        // 
-      }else{
-        if(parseFloat(res) >= 150) {
-          setFee(0.2)
-          const feeAmt = 0.2 * parseFloat(res) / 100
-          setFeeAmount(feeAmt)
-        }else{
-          setFee(0.1)
-          const feeAmt = 0.1 * parseFloat(res) / 100
-          setFeeAmount(feeAmt)
+      if (tokenOut.toLowerCase() == "usdt" && parseFloat(amountOut) >= 150) {
+        setFee(0.2);
+        const feeAmt = (0.2 * parseFloat(amountOut)) / 100;
+        setFeeAmount(feeAmt);
+        //
+      } else {
+        if (parseFloat(res) >= 150) {
+          setFee(0.2);
+          const feeAmt = (0.2 * parseFloat(res)) / 100;
+          setFeeAmount(feeAmt);
+        } else {
+          setFee(0.1);
+          const feeAmt = (0.1 * parseFloat(res)) / 100;
+          setFeeAmount(feeAmt);
         }
       }
       if (res) setAmountIn(res);
     });
   }, [tokenOut, amountOut]);
-
 
   useEffect(() => {
     if (!tokenIn || !amountIn || !profileData?.walletAddress) {
@@ -238,7 +183,6 @@ const TokenSwap = ({fee, setFee}) => {
       }
     });
   }, [tokenIn, amountIn]);
-
 
   useEffect(() => {
     if (!tokenIn || !profileData?.walletAddress) return;
@@ -271,24 +215,22 @@ const TokenSwap = ({fee, setFee}) => {
     return () => clearInterval(interValId);
   }, [tokenOut, profileData?.walletAddress]);
 
-
   useEffect(() => {
-    if(!feeAmount){
-      setAmtReceived(0)
-      return 
+    if (!feeAmount) {
+      setAmtReceived(0);
+      return;
     }
-    if(tokenOut.toLowerCase() == "usdt"){
-      setAmtReceived(parseFloat(amountOut) - parseFloat(feeAmount))
-      
-    }else{
-      const usdtAfterFee = parseFloat(amountIn) - parseFloat(feeAmount)
-      
+    if (tokenOut.toLowerCase() == "usdt") {
+      setAmtReceived(parseFloat(amountOut) - parseFloat(feeAmount));
+    } else {
+      const usdtAfterFee = parseFloat(amountIn) - parseFloat(feeAmount);
+
       getAmountOut("usdt", String(usdtAfterFee)).then((res) => {
-        setAmtReceived(parseFloat(res))
-      })
+        setAmtReceived(parseFloat(res));
+      });
       // console.log("cjecking")
     }
-  }, [feeAmount])
+  }, [feeAmount]);
 
   return (
     <div className="mt-4">
@@ -323,9 +265,9 @@ const TokenSwap = ({fee, setFee}) => {
             onChange={(e) => {
               setChangeData("input");
               setTokenIn(e.value);
-              if(e.value == tokenOut){
-                const otherTk = options.find((value) => value.value != e.value)
-                setTokenOut(otherTk.value)
+              if (e.value == tokenOut) {
+                const otherTk = options.find((value) => value.value != e.value);
+                setTokenOut(otherTk.value);
               }
             }}
           />
@@ -368,11 +310,10 @@ const TokenSwap = ({fee, setFee}) => {
             onChange={(e) => {
               setChangeData("output");
               setTokenOut(e.value);
-              if(e.value == tokenIn){
-                const otherTk = options.find((value) => value.value != e.value)
-                setTokenIn(otherTk.value)
+              if (e.value == tokenIn) {
+                const otherTk = options.find((value) => value.value != e.value);
+                setTokenIn(otherTk.value);
               }
-              
             }}
             placeholder="Select an option"
           />
@@ -390,15 +331,27 @@ const TokenSwap = ({fee, setFee}) => {
             1.002g per {Number(goldPriceUsd).toPrecision(4)} USDT
           </span>
         </p>
-        <p className='flex justify-between mt-2'><span>Amount Received</span><span className='text-white'>{amtReceived ? amtReceived.toFixed(6) : 0 } {tokenOut}</span></p>
-        <p className='flex justify-between mt-2'><span>Fee</span><span className='text-white'>{parseFloat(feeAmount).toFixed(4)} USDT {fee}% </span></p>
+        <p className="flex justify-between mt-2">
+          <span>Amount Received</span>
+          <span className="text-white">
+            {amtReceived ? amtReceived.toFixed(6) : 0} {tokenOut}
+          </span>
+        </p>
+        <p className="flex justify-between mt-2">
+          <span>Fee</span>
+          <span className="text-white">
+            {parseFloat(feeAmount).toFixed(4)} USDT {fee}%{" "}
+          </span>
+        </p>
       </div>
       <div>
         <button
           className="w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary"
           disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
           onClick={() => {
-            !auth.isAuthenticated ? navigator("/signin") : setTransactionModal(true);
+            !auth.isAuthenticated
+              ? navigator("/signin")
+              : setTransactionModal(true);
           }}
         >{`${
           !auth?.isAuthenticated
@@ -411,7 +364,7 @@ const TokenSwap = ({fee, setFee}) => {
 
       {transactionModal && (
         <TransactionModal
-          fee = {fee}
+          fee={fee}
           closeModal={closeModal}
           transactionComplete={transactionSubmit}
           tokenIn={tokenIn}
