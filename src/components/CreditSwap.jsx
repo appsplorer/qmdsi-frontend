@@ -21,7 +21,7 @@ const fetchConversionRates = async () => {
 
 const CreditSwap = () => {
   const [conversionRates, setConversionRates] = useState({ usdToGoldRate: 1 });
-  const [amount, setAmount] = useState(0.0); // Default amount
+  const [amount, setAmount] = useState(0.0);
   const [fromCurrency, setFromCurrency] = useState("USD");
   const [toCurrency, setToCurrency] = useState("USDT");
 
@@ -33,7 +33,6 @@ const CreditSwap = () => {
     getRates();
   }, []);
 
-  // Handle value changes
   const handleAmountChange = (e) => {
     setAmount(e.target.value);
   };
