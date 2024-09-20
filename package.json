@@ -24,6 +24,7 @@
     "react-iframe": "^1.8.5",
     "react-router-dom": "^6.25.1",
     "react-select": "^5.8.0",
+    "react-spinners": "^0.14.1",
     "react-toastify": "^10.0.5",
     "react-webcam": "^7.2.0"
   },

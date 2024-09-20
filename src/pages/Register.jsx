@@ -5,10 +5,12 @@ import { authSignup } from "../services/auth.service";
 import { toast } from "react-toastify";
 import { FaSpinner, FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
 import { countryOptions } from "../data/countries";
+import { Button, Input } from "antd";
+import { FiArrowLeft } from "react-icons/fi";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
-  const refBy = searchParams.get('ref');
+  const refBy = searchParams.get("ref");
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -28,8 +30,6 @@ const Register = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [passwordValid, setPasswordValid] = useState(false);
-  
-  
 
   const navigate = useNavigate();
 
@@ -122,218 +122,144 @@ const Register = () => {
   };
 
   return (
-    <div className="px-4 md:px-24 pt-4 min-h-screen">
-      <div className="border border-primary border-b-0 p-3 min-h-[100vh] flex justify-center items-center">
-        <div className="w-full max-w-[1200px] bg-accent rounded-md p-4 md:p-8 text-white">
-          <h1 className="text-2xl mb-6 text-center">Register</h1>
-          <form onSubmit={handleSubmit} className="space-y-4 px-4 md:px-24">
-            <div className="space-y-4">
-              <div className="flex flex-col md:flex-row md:justify-between md:space-x-4">
-                <div className="w-full md:w-1/3 mb-4 md:mb-0">
-                  <label className="block mb-2" htmlFor="firstName">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/3 mb-4 md:mb-0">
-                  <label className="block mb-2" htmlFor="middleName">
-                    Middle Name
-                  </label>
-                  <input
-                    type="text"
-                    id="middleName"
-                    name="middleName"
-                    value={formData.middleName}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                  />
-                </div>
-                <div className="w-full md:w-1/3">
-                  <label className="block mb-2" htmlFor="lastName">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col md:flex-row md:justify-between md:space-x-4">
-                <div className="w-full md:w-1/2 mb-4 md:mb-0">
-                  <label className="block mb-2" htmlFor="country">
-                    Country
-                  </label>
-                  <select
-                    id="country"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                    required
-                  >
-                    <option value="">Select a country</option>
-                    {countryOptions.map((country) => (
-                      <option key={country.value} value={country.value}>
-                        {country.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block mb-2" htmlFor="phoneNumber">
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col md:flex-row md:justify-between md:space-x-4">
-                <div className="w-full md:w-1/2 mb-4 md:mb-0">
-                  <label className="block mb-2" htmlFor="email">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block mb-2" htmlFor="refBy">
-                    Referred By
-                  </label>
-                  <input
-                    type="text"
-                    id="refBy"
-                    name="refBy"
-                    value={formData.refBy}
-                    onChange={handleChange}
-                    className="w-full p-2 rounded bg-black text-white"
-                  />
-                </div>
-              </div>
-              <div className="w-full mb-4 relative">
-                <label className="block mb-2" htmlFor="password">
-                  Password
-                </label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full p-2 rounded bg-black text-white"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center -bottom-7"
-                >
-                  {showPassword ? (
-                    <FaEyeSlash color="white" />
-                  ) : (
-                    <FaEye color="white" />
-                  )}
-                </button>
-                <div className="mt-2 flex items-center space-x-2">
-                  {passwordValid && !passwordError ? (
-                    <FaCheck className="text-green-500" />
-                  ) : null}
-                  {passwordError && (
-                    <p className="text-red-500 text-sm">{passwordError}</p>
-                  )}
-                </div>
-              </div>
-              <div className="w-full mb-4 relative">
-                <label className="block mb-2" htmlFor="confirmPassword">
-                  Confirm Password
-                </label>
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full p-2 rounded bg-black text-white"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center -bottom-7"
-                >
-                  {showConfirmPassword ? (
-                    <FaEyeSlash color="white" />
-                  ) : (
-                    <FaEye color="white" />
-                  )}
-                </button>
-                {confirmPasswordError && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {confirmPasswordError}
-                  </p>
-                )}
-              </div>
-              <div className="w-full mb-4">
-                <label className="block mb-2" htmlFor="pin">
-                  PIN
-                </label>
-                <input
+    <div className="w-full px-4 md:px-10 pb-5 flex flex-col  gap-5">
+      <div className="w-full relative z-20">
+        <div className="flex flex-col gap-2 mb-7">
+          <h1 className="text-5xl  md:text-7xl text-white font-medium">
+            Register
+          </h1>
+          <span className="text-2xl font-normal text-white mb-6 mt-2">
+            Hi. Guest
+          </span>
+        </div>
+        <form className="flex   flex-col md:flex-row items-center justify-center gap-5 w-full ">
+          <div className="w-full flex  flex-col  md:flex-row  gap-5">
+            {/* information */}
+            <div className="w-full md:w-1/2 py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
+              <h1 className="text-2xl text-gray-300 tracking-wider">
+                Information
+              </h1>
+              <div className="flex flex-col md:flex-row gap-3">
+                <Input
                   type="text"
-                  id="pin"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="First Name"
+                  onChange={handleChange}
+                  name="firstName"
+                  value={formData.firstName}
+                />
+                <Input
+                  type="text"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="Middle Name"
+                  onChange={handleChange}
+                  name="middleName"
+                  value={formData.middleName}
+                />
+                <Input
+                  type="text"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="Last Name"
+                  onChange={handleChange}
+                  name="lastName"
+                  value={formData.lastName}
+                />
+              </div>
+              <div className="flex flex-col md:flex-row gap-3">
+                <select
+                  id="country"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  className=" text-lg rounded-lg w-full p-3 bg-smoke"
+                  required
+                  placeholder="test"
+                >
+                  <option value="" className="">
+                    Select a country
+                  </option>
+                  {countryOptions.map((country) => (
+                    <option
+                      key={country.value}
+                      value={country.value}
+                      className="text-charcoalBlue bg-smoke"
+                    >
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  type="number"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="Phone Number"
+                  onChange={handleChange}
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                />
+              </div>
+              <div className="flex flex-col md:flex-row gap-3">
+                <Input
+                  type="email"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="Email"
+                  onChange={handleChange}
+                  name="email"
+                  value={formData.email}
+                />
+                <Input
+                  type="text"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="Reffered By"
+                  onChange={handleChange}
+                  name="refBy"
+                  value={formData.refBy}
+                />
+              </div>
+            </div>
+            {/* security */}
+            <div className="w-full md:w-1/2   flex flex-col gap-3">
+              <div className="py-7 px-5 blur-bg border border-ash/20 rounded-md  flex flex-col gap-3">
+                <h1 className="text-2xl text-gray-300 tracking-wider">
+                  Security
+                </h1>
+                <div className="flex flex-col md:flex-row gap-3">
+                  <Input.Password
+                    type="password"
+                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                    placeholder="Password"
+                    onChange={handleChange}
+                    name="password"
+                    value={formData.password}
+                  />
+                  <Input.Password
+                    type="password"
+                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                    placeholder="Confirm Password"
+                    onChange={handleChange}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                  />
+                </div>
+                <Input
+                  type="text"
+                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                  placeholder="Enter PIN"
+                  onChange={handleChange}
                   name="pin"
                   value={formData.pin}
-                  onChange={handleChange}
-                  className="w-full p-2 rounded bg-black text-white"
-                  required
                 />
               </div>
-              <button
-                type="submit"
-                className={`w-full p-2 rounded bg-primary text-white ${
-                  isLoading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <FaSpinner className="animate-spin" />
-                ) : (
-                  "Register"
-                )}
-              </button>
+              <div className="w-full px-5">
+                <button
+                  onClick={handleSubmit}
+                  className=" text-lg font-medium p-3 border  w-full bg-golden text-white rounded-lg"
+                >
+                  Register
+                </button>
+              </div>
             </div>
-          </form>
-          <div className="mt-4 text-center">
-            <Link to="/signin" className="text-primary">
-              Already have an account? Sign in
-            </Link>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

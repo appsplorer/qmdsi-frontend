@@ -1,13 +1,15 @@
-import { Ellipsis, X, LogOut, User, Wallet } from "lucide-react";
-import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { LogOut, User, Wallet } from "lucide-react";
+import { useContext, useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
+import { GiHamburgerMenu } from "react-icons/gi";
+import { IoClose } from "react-icons/io5";
 import LoginModal from "./LoginModal";
 import Balance from "./Balance";
-import { AuthContext } from "../contexts/AuthContext";
 
-const shortenAddress = (address) => {
-  return `${address.slice(0, 4)}...${address.slice(-4)}`;
-};
+// Utility function to shorten address
+const shortenAddress = (address) =>
+  `${address.slice(0, 4)}...${address.slice(-4)}`;
 
 const Navigation = () => {
   const [showModal, setShowModal] = useState(false);
@@ -16,78 +18,87 @@ const Navigation = () => {
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const closeModal = () => {
-    setShowModal(false);
-  };
+  const closeModal = () => setShowModal(false);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
+  // Links dynamically filtered based on auth state
+  const links = useMemo(() => {
+    if (auth.isAuthenticated) {
+      return [
+        { to: "/profile", label: "Profile", icon: <User size={16} /> },
+        {
+          label: "Wallet Balance",
+          icon: <Wallet size={16} />,
+          action: () => setShowBalance(true),
+        },
+        { label: "Logout", icon: <LogOut size={16} />, action: handleLogout },
+      ];
+    }
+    return [{ to: "/signin", label: "Login" }];
+  }, [auth.isAuthenticated]);
+
   return (
-    <header className="blur-bg w-full fixed top-0 left-0 z-50 h-20 ">
-      <div className="container mx-auto px-4 py-4  md:px-14 text-white flex justify-between">
-        <div className="flex md:flex-row flex-col md:items-center md:gap-[4vw] gap-8">
-          <h1 className="flex items-center text-xl text-golden font-bold">
-            <img src="/qmdsiLogo.png" className="w-16" alt="" />
-            Aurum
+    <header
+      className={`blur-bg w-screen fixed top-0 left-0 z-50 h-20 flex items-center justify-center`}
+    >
+      <div className={`container mx-auto px-0 md:px-10 text-white w-full`}>
+        {/* Brand and Logo */}
+        <div className="flex items-center justify-between gap-8 md:gap-[4vw] w-full relative">
+          <h1 className="flex items-center text-2xl text-yellow-400 my-4 font-thin tracking-wider pl-4 md:pl-4">
+            <img src="/aurun_favi.png" className="w-10 pr-2" alt="Aurum Logo" />
+            au<span className="text-gray-400">rum</span>
           </h1>
+
+          {/* Mobile Menu Toggle Button */}
+          <div className="md:hidden mr-4 z-50">
+            <button
+              className={`text-white text-2xl cursor-pointer z-50`}
+              onClick={() => {
+                setNavShow(!navShow);
+              }}
+            >
+              {navShow ? <IoClose size={36} /> : <GiHamburgerMenu size={32} />}
+            </button>
+          </div>
+
+          {/* Navigation Links */}
           <div
-            className={`nav-links duration-500 md:static bg-background absolute left-0 w-full flex flex-col items-center px-5 z-1000 md:z-0 ${
-              navShow ? "top-0 h-screen bg-charcoalBlue" : "top-[-100%]"
-            }`}
+            className={`absolute md:static top-0 left-0 w-full h-screen md:h-auto md:w-auto transition-transform duration-500 ease-in-out ${
+              navShow ? "nav-open" : "nav-close"
+            } md:flex items-center bg-charcoalBlue md:bg-transparent`}
           >
-            <div className="absolute right-10 top-10 md:hidden justify-end">
-              <button onClick={() => setNavShow(false)}>
-                <X />
-              </button>
-            </div>
+            <ul className="text-lg flex flex-col items-start mt-20 md:mt-0 h-full md:flex-row gap-4 w-full">
+              {links.map((link, idx) => (
+                <li key={idx}>
+                  {link.to ? (
+                    <Link to={link.to} onClick={() => setNavShow(false)}>
+                      <div className="text-white hover:text-golden duration-300 p-2 px-4 flex gap-2 items-center nav-link">
+                        {link.icon} {link.label}
+                      </div>
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        link.action?.();
+                        setNavShow(false);
+                      }}
+                      className="text-white hover:text-golden duration-300 p-2 px-4 flex gap-2 items-center nav-link"
+                    >
+                      {link.icon} {link.label}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <div className="nav-right text-sm flex gap-2 items-center">
-          {auth.isAuthenticated ? (
-            <>
-              <button
-                className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
-                onClick={() => navigate("/profile")}
-              >
-                <User size={16} /> Profile
-              </button>
-              {auth.isAuthenticated && (
-                <button
-                  className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
-                  onClick={() => setShowBalance(true)}
-                >
-                  <Wallet size={16} /> Wallet Balance
-                </button>
-              )}
-              <button
-                className="bg-accent py-2 px-5 rounded hover:bg-black h-[35px] text-primary flex items-center gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut size={16} /> Logout
-              </button>
-            </>
-          ) : (
-            <button
-              className="bg-accent text-xl tracking-wider py-2 px-5 rounded hover:bg-black h-[35px] text-primary"
-              onClick={() => navigate("/signin")}
-            >
-              Login
-            </button>
-          )}
-
-          <button
-            className="bg-accent py-1 px-3 rounded-lg hover:bg-black mt-2 blur-bg"
-            onClick={() => {
-              setNavShow(!navShow);
-            }}
-          >
-            <Ellipsis />
-          </button>
-        </div>
       </div>
+
+      {/* Modals */}
       {showModal && <LoginModal closeModal={closeModal} />}
       <Balance isOpen={showBalance} onClose={() => setShowBalance(false)} />
     </header>

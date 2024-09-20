@@ -1,11 +1,7 @@
-import { ArrowUpDown } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
-import Select from "react-select";
 import { useNavigate } from "react-router-dom";
 import TransactionModal from "./TransactionModal";
-import { customStyles } from "../styles";
 import TransactionCompleteModal from "./TransactionCompleteModal";
-
 import { parseEther } from "ethers";
 
 import { TOKENAddress, USDTAddress } from "../addresses";
@@ -61,8 +57,60 @@ const TokenSwap = ({ fee, setFee }) => {
       image:
         "https://w7.pngwing.com/pngs/113/18/png-transparent-tether-hd-logo-thumbnail.png",
     },
-    { value: "QMGT", label: "QMGT", image: "https://via.placeholder.com/20" },
+    { value: "QMGT", label: "QMGT", image: "../../public/tokenLogo.png" },
   ];
+
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      backgroundColor: "#2d2d2d",
+      border: "none",
+      minHeight: "40px",
+      height: "max-content",
+      outline: "none",
+      borderRadius: "12px",
+      cursor: "pointer",
+      width: "150px",
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      height: "40px",
+      display: "flex",
+      alignItems: "center",
+    }),
+    input: (provided) => ({
+      ...provided,
+      margin: "0px",
+    }),
+    indicatorsContainer: (provided) => ({
+      ...provided,
+      height: "50px",
+      borderColor: "#1E1E20",
+    }),
+    indicatorSeparator: (provided) => ({
+      display: "none", // Removes the left border line
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: "#1E1E20", // Background color of the menu
+      borderRadius: "5px",
+      marginTop: "0px",
+      padding: "5px",
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? "blue"
+        : state.isFocused
+        ? "lightblue"
+        : "white", // Background color on hover and selection
+      color: state.isSelected ? "white" : "black", // Text color
+      padding: "10px",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
+    }),
+  };
 
   const [transactionModal, setTransactionModal] = useState(false);
   const [transactionCompleteModal, setTransactionCompleteModal] =
@@ -70,8 +118,8 @@ const TokenSwap = ({ fee, setFee }) => {
   const [transactionData, setTransactionData] = useState({});
   const [tokenIn, setTokenIn] = useState("USDT");
   const [tokenOut, setTokenOut] = useState("QMGT");
-  const [amountIn, setAmountIn] = useState("");
-  const [amountOut, setAmountOut] = useState("");
+  const [amountIn, setAmountIn] = useState(0);
+  const [amountOut, setAmountOut] = useState(0);
   const [changeData, setChangeData] = useState("");
   const [tokenInBal, setTokenInBal] = useState("0");
   const [tokenOutBal, setTokenOutBal] = useState("0");
@@ -234,88 +282,69 @@ const TokenSwap = ({ fee, setFee }) => {
 
   return (
     <div className="mt-4">
-      <div className="w-full bg-accent rounded-md px-4 py-4 text-white flex items-center">
+      <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center">
         <div className="w-1/2">
-          <div className="flex gap-4 items-end">
-            <input
-              type="text"
-              value={amountIn}
-              className="w-[80px] bg-transparent border-0 outline-none text-3xl"
-              onChange={(e) => {
-                setChangeData("input");
-                setAmountIn(e.target.value);
-              }}
-            />
-            <button className="text-secondary text-sm">MAX</button>
-          </div>
-          <div className="mt-2 text-secondary text-xs">
-            Balance: {`${Number(tokenInBal).toFixed(4)}`}
+          <div className="flex items-start text-md flex-col gap-1 text-white">
+            <p>You sell</p>
+            <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
+              <img
+                src="https://w7.pngwing.com/pngs/113/18/png-transparent-tether-hd-logo-thumbnail.png"
+                className="w-8 rounded-full"
+                alt=""
+              />
+              <p>USDT</p>
+            </div>
+            <div className="mt-2 text-white text-xs flex gap-2">
+              <p>Balance: {`${Number(tokenInBal).toFixed(4)}`}</p>
+              <button className="border-none text-white font-semibold">
+                Max
+              </button>
+            </div>
           </div>
         </div>
         <div className="w-1/2 ">
-          <Select
-            options={options}
-            value={options.find((option) => option.value === tokenIn)} // Set value for select
-            components={{
-              Option: CustomOption,
-              SingleValue: CustomSingleValue,
-            }}
-            styles={customStyles}
-            placeholder="Select an option"
+          <input
+            type="number"
+            value={amountIn}
+            placeholder="0.00"
+            className="w-full text-right bg-transparent border-0 outline-none text-3xl"
             onChange={(e) => {
               setChangeData("input");
-              setTokenIn(e.value);
-              if (e.value == tokenOut) {
-                const otherTk = options.find((value) => value.value != e.value);
-                setTokenOut(otherTk.value);
-              }
+              setAmountIn(e.target.value);
             }}
           />
         </div>
       </div>
-      <button
-        className="p-1 -mt-2 m-auto border-primary border-2 rounded-full text-primary flex justify-between items-center absolute left-[50%] translate-x-[-50%]"
-        id="swaping-value"
-        onClick={handleSwap}
-      >
-        <ArrowUpDown />
-      </button>
-      <div className="w-full bg-accent rounded-md px-4 py-4 text-white flex items-center mt-4">
-        <div className="w-1/2">
-          <div className="flex gap-4 items-end">
-            <input
-              type="text"
-              value={amountOut}
-              className="w-[80px] bg-transparent border-0 outline-none text-3xl"
-              onChange={(e) => {
-                setChangeData("output");
-                setAmountOut(e.target.value);
-              }}
-            />
-            <button className="text-secondary text-sm">MAX</button>
-          </div>
-          <div className="mt-2 text-secondary text-xs">
-            Balance:{`${Number(tokenOutBal).toFixed(4)}`}
+      <div className="w-full  rounded-md px-4 py-4 text-white bg-silver/10 flex items-center mt-4">
+        <div className="w-1/2 flex flex-col ">
+          <div className="flex flex-col gap-2 text-md text-white items-start">
+            <p>You receive</p>
+            <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
+              <img src="/tokenLogo.png" className="w-8" alt="" />
+              <p>QMGT</p>
+            </div>
+            <div className="mt-2 text-white text-xs flex gap-2">
+              <p>Balance: {`${Number(tokenOutBal).toFixed(4)}`}</p>
+              <button className="border-none text-white font-semibold">
+                Max
+              </button>
+            </div>
           </div>
         </div>
         <div className="w-1/2 ">
-          <Select
-            options={options}
-            value={options.find((option) => option.value === tokenOut)} // Set value for select
-            components={{
-              Option: CustomOption,
-              SingleValue: CustomSingleValue,
+          <input
+            type="number"
+            value={amountOut}
+            placeholder="0.00"
+            style={{
+              WebkitAppearance: "none",
+              MozAppearance: "textfield",
             }}
-            styles={customStyles}
+            className="w-full text-right bg-transparent border-0 outline-none text-3xl"
             onChange={(e) => {
               setChangeData("output");
-              setTokenOut(e.value);
-              if (e.value == tokenIn) {
-                const otherTk = options.find((value) => value.value != e.value);
-                setTokenIn(otherTk.value);
-              }
+              setAmountOut(e.target.value);
             }}
-            placeholder="Select an option"
           />
         </div>
       </div>
@@ -324,8 +353,8 @@ const TokenSwap = ({ fee, setFee }) => {
           <span>Insufficient Balance</span>
         </p>
       )}
-      <div className="mt-4 bg-accent opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs">
-        <p className="flex justify-between">
+      <div className="mt-4 bg-accent border-2 border-ash/30 rounded-md opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs">
+        <p className="flex justify-between text-white">
           <span>Gold Price</span>
           <span className="text-white">
             1.002g per {Number(goldPriceUsd).toPrecision(4)} USDT
@@ -344,12 +373,12 @@ const TokenSwap = ({ fee, setFee }) => {
           </span>
         </p>
       </div>
-      <div>
+      <div className="mt-4">
         <button
-          className="w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary"
+          className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
           disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
           onClick={() => {
-            !auth.isAuthenticated
+            !auth?.isAuthenticated
               ? navigator("/signin")
               : setTransactionModal(true);
           }}
@@ -358,7 +387,7 @@ const TokenSwap = ({ fee, setFee }) => {
             ? "Login"
             : insufficientBalance
             ? "Insufficient Balance"
-            : "Swap"
+            : "Convert"
         }`}</button>
       </div>
 
@@ -382,6 +411,7 @@ const TokenSwap = ({ fee, setFee }) => {
         />
       )}
     </div>
+    // END*
   );
 };
 

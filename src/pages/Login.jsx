@@ -2,9 +2,9 @@ import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { authLogin } from "../services/auth.service";
 import { toast } from "react-toastify";
-import { Loader2 } from "lucide-react";
 import { AuthContext } from "../contexts/AuthContext";
-
+import Loading from "../components/Loading";
+import { Input } from "antd";
 const Login = () => {
   const [formData, setFormData] = useState({
     username: "",
@@ -37,68 +37,92 @@ const Login = () => {
   };
 
   return (
-    <div className="px-4 md:px-24 pt-4 min-h-screen">
-      <div className="border border-primary border-b-0 p-3 min-h-[100vh] flex justify-center items-center">
-        <div className="w-full max-w-[400px] bg-accent rounded-md p-4 md:p-8 text-white">
-          <h1 className="text-2xl mb-6 text-center">Login</h1>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block mb-2" htmlFor="username">
-                Email Address
-              </label>
-              <input
+    <div className="w-full  px-4 md:px-10 pb-5 flex flex-col  gap-5">
+      {isLoading && <Loading />}
+      <div className="w-full relative z-20">
+        <div className="flex flex-col gap-4 mb-7">
+          <h1 className="text-5xl  md:text-7xl text-white font-medium">
+            Log In
+          </h1>
+          <span className="text-xl md:text-2xl text-white font-semibold tracking-wide">
+            Welcome
+          </span>
+        </div>
+        <div className="flex   flex-col md:flex-row items-center justify-center gap-5 w-full ">
+          <div className="w-full flex  flex-col  md:flex-row  gap-14 md:gap-24">
+            {/* information */}
+            <div className="w-full md:w-1/2 py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
+              <h1 className="text-2xl text-gray-300 font-medium tracking-wider">
+                Information
+              </h1>
+              <Input
                 type="text"
-                id="username"
+                className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                placeholder="Username"
+                onChange={handleChange}
                 name="username"
-                value={formData.username}
-                onChange={handleChange}
-                className="w-full p-2 rounded bg-black text-white"
-                required
               />
-            </div>
-            <div>
-              <label className="block mb-2" htmlFor="password">
-                Password
-              </label>
-              <input
+              <Input.Password
                 type="password"
-                id="password"
-                name="password"
-                value={formData.password}
+                className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                placeholder="Password"
                 onChange={handleChange}
-                className="w-full p-2 rounded bg-black text-white"
-                required
+                name="password"
               />
-              <div className="text-right mt-2">
-                <Link to="/forget-password" className="text-primary underline">
-                  Forgot Password?
+
+              <button
+                disabled={isLoading}
+                onClick={handleSubmit}
+                className=" text-lg font-medium p-3 border  w-full bg-golden text-white rounded-lg"
+              >
+                Login
+              </button>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm tracking-wider">
+                    Don&rsquo;t have an Account?{" "}
+                  </span>{" "}
+                  <Link
+                    to="/signup"
+                    className="text-golden tracking-wider"
+                    href="/"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+                <Link
+                  to="/forget-password"
+                  className="text-sm text-white text-rights tracking-wider"
+                >
+                  Forgot Password
                 </Link>
               </div>
             </div>
-            <button
-              type="submit"
-              className="bg-primary w-full py-2 rounded text-dark mt-4 flex items-center justify-center"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                "Login"
-              )}
-            </button>
-          </form>
-          <div className="text-center mt-4">
-            <span>Don&apos;t have an account? </span>
-            <Link to="/signup" className="text-primary underline">
-              Sign up
-            </Link>
+            <div className="w-full md:w-1/2   flex flex-col gap-4 items-center md:items-start ">
+              <h1 className="text-white text-5xl md:text-8xl font-medium font tracking-wide whitespace-nowrap">
+                Buy & Sell
+              </h1>
+              <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+                The Ultimate currency.
+              </p>
+              <h1 className="text-white text-3xl md:text-7xl font-mediu tracking-wide mt-12">
+                Get Mobile Wallet
+              </h1>
+              <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+                Status: Developing
+              </p>
+              <div className="flex flex-col md:flex-row gap-3 mt-3 w-full">
+                <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
+                  Google Play
+                </button>
+                <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
+                  Apple Apps
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div className="hollow-text z-100 touch-none">LOGIN</div>
     </div>
   );
 };
