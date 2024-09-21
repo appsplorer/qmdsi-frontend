@@ -206,19 +206,19 @@ def post_personal_information(
 def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
     if swap.amount_in <= 0:
         raise exceptions.BadRequestException("Invalid amountIn")
-    # try:
-    res = core.swap(user.id, swap.token_in, swap.amount_in)
-    return {"hash": res}
-    # except Exception as e:
-    #     print(e)
-    #     raise exceptions.BadRequestException(f"Error occured {e}")
+    try:
+        res = core.swap(user.id, swap.token_in, swap.amount_in)
+        return {"hash": res}
+    except Exception as e:
+        print(e)
+        raise exceptions.BadRequestException(f"Error occured {e}")
 
 
 @app.post("/personal_information/images")
 async def upload_kyc_images(
     profilePic: UploadFile = File(...),
     personalId: UploadFile = File(...),
-    proofOfAddress:UploadFile = File(...),
+    proofOfAddress: UploadFile = File(...),
     user: DBUser = Depends(current_user),
 ):
     try:
@@ -234,11 +234,17 @@ async def upload_kyc_images(
             buffer.write(await personalId.read())
         fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
         if not fullname:
-            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+            raise exceptions.BadRequestException(
+                "Unable to extract info from ID,upload clean ID and try again"
+            )
         elif not dob:
-            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+            raise exceptions.BadRequestException(
+                "Unable to extract info from ID,upload clean ID and try again"
+            )
         elif not id_number:
-            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+            raise exceptions.BadRequestException(
+                "Unable to extract info from ID,upload clean ID and try again"
+            )
 
         id_card_dob = datetime.strptime(dob, date_format)
         user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
@@ -271,7 +277,7 @@ def get_personal_information(user: DBUser = Depends(current_user)):
 @app.post("/nominee")
 def post_user_nominee(nominee: Nominee, user: DBUser = Depends(current_user)):
     try:
-        
+
         existing_nominee = db.get_nominee(user.id)
 
         if existing_nominee:
@@ -285,8 +291,9 @@ def post_user_nominee(nominee: Nominee, user: DBUser = Depends(current_user)):
 
 
 @app.post("/nominee/image")
-async def upload_nominee_id_image(personalId: UploadFile = File(...),
-                            user: DBUser = Depends(current_user)):
+async def upload_nominee_id_image(
+    personalId: UploadFile = File(...), user: DBUser = Depends(current_user)
+):
     try:
         nominee_info = db.get_nominee(user.id)
         print(nominee_info)
@@ -301,17 +308,29 @@ async def upload_nominee_id_image(personalId: UploadFile = File(...),
             buffer.write(await personalId.read())
         fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
         if not fullname:
-            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+            raise exceptions.BadRequestException(
+                "Unable to extract info from ID,upload clean ID and try again"
+            )
         elif not dob:
-            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+            raise exceptions.BadRequestException(
+                "Unable to extract info from ID,upload clean ID and try again"
+            )
         elif not id_number:
-            raise exceptions.BadRequestException("Unable to extract info from ID,upload clean ID and try again")
+            raise exceptions.BadRequestException(
+                "Unable to extract info from ID,upload clean ID and try again"
+            )
 
         id_card_dob = datetime.strptime(dob, date_format)
         user_dob = datetime.strptime(nominee_info.date_of_birth, date_format)
-        nominee_fullname = nominee_info.first_name + " " + nominee_info.middle_name + " " + nominee_info.last_name
+        nominee_fullname = (
+            nominee_info.first_name
+            + " "
+            + nominee_info.middle_name
+            + " "
+            + nominee_info.last_name
+        )
         print(nominee_fullname)
-        
+
         if not name_contains(nominee_fullname, fullname):
             raise exceptions.BadRequestException(
                 "Your Nominee name doesn't match with the id card uploaded,update your Nominee information and try again"
@@ -333,7 +352,6 @@ async def upload_nominee_id_image(personalId: UploadFile = File(...),
         except Exception as e:
             print(e)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-        
 
     except Exception as e:
         print(e)

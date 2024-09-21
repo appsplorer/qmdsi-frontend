@@ -159,3 +159,15 @@ class ForgetPassowrd(BaseModel):
 class ResetUserPassword(BaseModel):
     password: str
     token: str
+
+
+class KycUser(BaseModel):
+    first_name: str
+    last_name: str
+    id_number: str
+
+
+class KycDoc(BaseModel):
+    number: str
+    type: str
+    country: str
