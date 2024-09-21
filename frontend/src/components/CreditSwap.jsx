@@ -1,5 +1,7 @@
 import React from "react";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowDown } from "lucide-react";
+import QMLogo from "../assets/token.png";
+import PHPLogo from "../assets/php.png";
 
 const CreditSwap = () => {
   return (
@@ -7,13 +9,9 @@ const CreditSwap = () => {
       <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center">
         <div className="w-1/2">
           <div className="flex items-start text-md flex-col gap-1 text-white">
-            <p>You sell</p>
+            <p>Convert Your</p>
             <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
-              <img
-                src="https://via.placeholder.com/20"
-                className="w-8 rounded-full"
-                alt=""
-              />
+              <img src={PHPLogo} className="w-8 rounded-full" alt="" />
               <p>PHP</p>
             </div>
             <div className="mt-2 text-white text-xs flex gap-2">
@@ -34,7 +32,7 @@ const CreditSwap = () => {
       </div>
       <div className="relative flex justify-center">
         <button className="absolute top-1/2 transform -translate-y-1/2 p-1 border-primary border-2 rounded-full text-primary">
-          <ArrowUpDown />
+          <ArrowDown />
         </button>
       </div>
       <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center mt-4">
@@ -42,7 +40,7 @@ const CreditSwap = () => {
           <div className="flex flex-col gap-2 text-md text-white items-start">
             <p>You receive</p>
             <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
-              <img src="/tokenLogo.png" className="w-8" alt="" />
+              <img src={QMLogo} className="w-8" alt="" />
               <p>QMGT</p>
             </div>
             <div className="mt-2 text-white text-xs flex gap-2">
@@ -85,7 +83,7 @@ const CreditSwap = () => {
       </div>
       <div className="mt-4">
         <button className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer">
-          Purchase with Credit Card
+          Purchase
         </button>
       </div>
     </div>
