@@ -14,7 +14,7 @@ const CreditSwap = () => {
                 className="w-8 rounded-full"
                 alt=""
               />
-              <p>USD</p>
+              <p>PHP</p>
             </div>
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>Balance: 99.29</p>
