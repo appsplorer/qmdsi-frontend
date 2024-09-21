@@ -6,7 +6,8 @@ import { Button, Divider } from "antd";
 import QMLogo from "../assets/au-logo.png";
 
 const Swap = () => {
-  const [tokenSwap, setTokenSwap] = useState(true);
+  const [swapType, setSwapType] = useState("token");
+  const [showImport, setShowImport] = useState(false);
   const [fee, setFee] = useState("0.1");
 
   const containerVariants = {
@@ -25,6 +26,11 @@ const Swap = () => {
       y: 0,
       opacity: 1,
     },
+  };
+
+  const handleBuyWithFiat = () => {
+    setSwapType("credit");
+    setShowImport(true);
   };
 
   return (
@@ -143,16 +149,29 @@ const Swap = () => {
                 0.1%
               </motion.button>
               <motion.button
-                className="w-20 md:w-24 text-xs rounded-full p-1 py-2 bg-charcoalBlue text-white"
+                className={`w-20 md:w-24 text-xs rounded-full p-1 py-2 ${
+                  swapType === "token" ? "bg-blue-600" : "bg-charcoalBlue"
+                } text-white`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => setSwapType("token")}
               >
-                Swap
+                Token
+              </motion.button>
+              <motion.button
+                className={`w-20 md:w-24 text-xs rounded-full p-1 py-2 ${
+                  swapType === "credit" ? "bg-blue-600" : "bg-charcoalBlue"
+                } text-white`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleBuyWithFiat}
+              >
+                Buy with Fiat
               </motion.button>
             </motion.div>
           </motion.div>
           <motion.div className="relative" variants={itemVariants}>
-            <TokenSwap />
+            {swapType === "token" ? <TokenSwap /> : <CreditSwap />}
           </motion.div>
           <motion.div className="mt-4" variants={itemVariants}>
             <Divider className="bg-gray-400 mb-1" />

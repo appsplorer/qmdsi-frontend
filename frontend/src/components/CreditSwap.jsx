@@ -1,172 +1,74 @@
+import React from "react";
 import { ArrowUpDown } from "lucide-react";
-import React, { useState, useEffect } from "react";
-import Select from "react-select";
-import axios from "axios";
-import { customStyles } from "../styles";
-
-// Fetch conversion rates function
-const fetchConversionRates = async () => {
-  try {
-    const usdToGoldResponse = await axios.get(
-      "API_URL_FOR_USD_TO_GOLD_CONVERSION"
-    );
-    return {
-      usdToGoldRate: usdToGoldResponse.data.rate,
-    };
-  } catch (error) {
-    console.error("Error fetching conversion rates:", error);
-    return { usdToGoldRate: 1 };
-  }
-};
 
 const CreditSwap = () => {
-  const [conversionRates, setConversionRates] = useState({ usdToGoldRate: 1 });
-  const [amount, setAmount] = useState(0.0);
-  const [fromCurrency, setFromCurrency] = useState("USD");
-  const [toCurrency, setToCurrency] = useState("USDT");
-
-  useEffect(() => {
-    const getRates = async () => {
-      const rates = await fetchConversionRates();
-      setConversionRates(rates);
-    };
-    getRates();
-  }, []);
-
-  const handleAmountChange = (e) => {
-    setAmount(e.target.value);
-  };
-
-  const handleCurrencyChange = (selectedOption, isFromCurrency) => {
-    if (isFromCurrency) {
-      setFromCurrency(selectedOption.value);
-    } else {
-      setToCurrency(selectedOption.value);
-    }
-  };
-
-  const handleSwap = () => {
-    setFromCurrency(toCurrency);
-    setToCurrency(fromCurrency);
-  };
-
-  const CustomOption = (props) => {
-    const { innerRef, innerProps, data } = props;
-    return (
-      <div ref={innerRef} {...innerProps} className="custom-option">
-        <img
-          src={data.image}
-          alt=""
-          style={{ width: "20px", marginRight: "10px" }}
-        />
-        {data.label}
-      </div>
-    );
-  };
-
-  const CustomSingleValue = (props) => {
-    const { data } = props;
-    return (
-      <div className="custom-single-value">
-        <img
-          src={data.image}
-          alt=""
-          style={{ width: "20px", marginRight: "10px" }}
-        />
-        {data.label}
-      </div>
-    );
-  };
-
-  const currencyOptions = [
-    { value: "USD", label: "USD", image: "https://via.placeholder.com/20" },
-    { value: "EUR", label: "EUR", image: "https://via.placeholder.com/20" },
-  ];
-
-  const assetOptions = [
-    {
-      value: "USDT",
-      label: "USDT",
-      image:
-        "https://w7.pngwing.com/pngs/113/18/png-transparent-tether-hd-logo-thumbnail.png",
-    },
-    { value: "QMGT", label: "QMGT", image: "https://via.placeholder.com/20" },
-    {
-      value: "ETHEREUM",
-      label: "ETHEREUM",
-      image: "https://via.placeholder.com/20",
-    },
-  ];
-
-  const usdToGold = conversionRates.usdToGoldRate;
-  const conversionAmount = amount * usdToGold;
-
   return (
     <div className="mt-4">
-      <div className="w-full bg-accent rounded-md px-4 py-4 text-white flex items-center">
+      <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center">
         <div className="w-1/2">
-          <div className="flex gap-4 items-end">
-            <input
-              type="text"
-              value={amount}
-              onChange={handleAmountChange}
-              className="w-[80px] bg-transparent border-0 outline-none text-3xl"
-            />
-            <button className="text-secondary text-sm">MAX</button>
+          <div className="flex items-start text-md flex-col gap-1 text-white">
+            <p>You sell</p>
+            <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
+              <img
+                src="https://via.placeholder.com/20"
+                className="w-8 rounded-full"
+                alt=""
+              />
+              <p>USD</p>
+            </div>
+            <div className="mt-2 text-white text-xs flex gap-2">
+              <p>Balance: 99.29</p>
+              <button className="border-none text-white font-semibold">
+                Max
+              </button>
+            </div>
           </div>
-          <div className="mt-2 text-secondary text-xs">Balance: $99.29</div>
         </div>
-        <div className="w-1/2">
-          <Select
-            options={currencyOptions}
-            components={{
-              Option: CustomOption,
-              SingleValue: CustomSingleValue,
-            }}
-            styles={customStyles}
-            placeholder="Select Currency"
-            onChange={(option) => handleCurrencyChange(option, true)}
-            value={currencyOptions.find((opt) => opt.value === fromCurrency)}
+        <div className="w-1/2 ">
+          <input
+            type="number"
+            placeholder="0.00"
+            className="w-full text-right bg-transparent border-0 outline-none text-3xl"
           />
         </div>
       </div>
-      <button
-        className="p-1 -mt-2 m-auto border-primary border-2 rounded-full text-primary flex justify-between items-center absolute left-[50%] translate-x-[-50%]"
-        onClick={handleSwap}
-      >
-        <ArrowUpDown />
-      </button>
-      <div className="w-full bg-accent rounded-md px-4 py-4 text-white flex items-center mt-4">
-        <div className="w-1/2">
-          <div className="flex gap-4 items-end">
-            <input
-              type="text"
-              value={amount}
-              onChange={handleAmountChange}
-              className="w-[80px] bg-transparent border-0 outline-none text-3xl"
-            />
-            <button className="text-secondary text-sm">MAX</button>
+      <div className="relative flex justify-center">
+        <button className="absolute top-1/2 transform -translate-y-1/2 p-1 border-primary border-2 rounded-full text-primary">
+          <ArrowUpDown />
+        </button>
+      </div>
+      <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center mt-4">
+        <div className="w-1/2 flex flex-col ">
+          <div className="flex flex-col gap-2 text-md text-white items-start">
+            <p>You receive</p>
+            <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
+              <img src="/tokenLogo.png" className="w-8" alt="" />
+              <p>QMGT</p>
+            </div>
+            <div className="mt-2 text-white text-xs flex gap-2">
+              <p>Balance: 0.00</p>
+              <button className="border-none text-white font-semibold">
+                Max
+              </button>
+            </div>
           </div>
-          <div className="mt-2 text-secondary text-xs">Balance: $99.29</div>
         </div>
-        <div className="w-1/2">
-          <Select
-            options={assetOptions}
-            components={{
-              Option: CustomOption,
-              SingleValue: CustomSingleValue,
+        <div className="w-1/2 ">
+          <input
+            type="number"
+            placeholder="0.00"
+            style={{
+              WebkitAppearance: "none",
+              MozAppearance: "textfield",
             }}
-            styles={customStyles}
-            placeholder="Select an option"
-            onChange={(option) => handleCurrencyChange(option, false)}
-            value={assetOptions.find((opt) => opt.value === toCurrency)}
+            className="w-full text-right bg-transparent border-0 outline-none text-3xl"
           />
         </div>
       </div>
-      <div className="mt-4 bg-accent opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs">
-        <p className="flex justify-between">
+      <div className="mt-4 bg-accent border-2 border-ash/30 rounded-md opacity-30 text-white p-2 px-4 text-xm font-montserrat text-xs">
+        <p className="flex justify-between text-white">
           <span>Gold Price</span>
-          <span className="text-white">{usdToGold}g per 1 USD</span>
+          <span className="text-white">1.002g per 1 USD</span>
         </p>
         <p className="flex justify-between mt-2">
           <span>Minimum Received</span>
@@ -180,13 +82,9 @@ const CreditSwap = () => {
           <span>Liquidity Provider Fee</span>
           <span className="text-white">0.000063 USDT</span>
         </p>
-        <p className="flex justify-between mt-2">
-          <span>Conversion Amount</span>
-          <span className="text-white">{conversionAmount.toFixed(4)} g</span>
-        </p>
       </div>
-      <div>
-        <button className="w-full h-[50px] bg-primary rounded mt-4 hover:bg-secondary">
+      <div className="mt-4">
+        <button className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer">
           Purchase with Credit Card
         </button>
       </div>
