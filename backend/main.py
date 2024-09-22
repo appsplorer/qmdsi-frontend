@@ -37,7 +37,7 @@ import exceptions
 import security
 import emails
 from security import Jwt
-
+import kyc
 from dependencies import current_user
 from exceptions import BadRequest
 import org_ids
@@ -122,56 +122,7 @@ async def upload_image(
     image: UploadFile = File(...), user: DBUser = Depends(current_user)
 ):
     try:
-        print(user)
-        folder = os.path.join(os.path.dirname(__file__), "screenshoot")
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-        if not os.path.exists(UPLOAD_DIR):
-            return exceptions.BadRequestException("Id card image not found")
-        print(image.filename)
-        image_path = os.path.join(folder, user.id + image.filename)
-        os.makedirs(folder, exist_ok=True)
-        with open(image_path, "wb") as buffer:
-            buffer.write(await image.read())
-        files = os.listdir(UPLOAD_DIR)
-        user_uploaded_image = [file for file in files if file.startswith(user.id)]
-        if not user_uploaded_image:
-            return exceptions.BadRequestException("Id card image not found")
-        id_image_file_path = os.path.join(UPLOAD_DIR, user_uploaded_image[0])
-        id_card_image = detect_and_crop_face(
-            id_image_file_path, resize=True, output_path=f"{user.id}image.jpg"
-        )
-        img = detect_and_crop_face(image_path, resize=True)
-        image1 = cv2.imread(id_card_image, cv2.IMREAD_GRAYSCALE)
-        image2 = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
-
-        sift = cv2.SIFT_create()
-        kp1, des1 = sift.detectAndCompute(image1, None)
-        kp2, des2 = sift.detectAndCompute(image2, None)
-
-        bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-        matches = bf.match(des1, des2)
-        matches = sorted(matches, key=lambda x: x.distance)
-
-        similarity_score = len(matches) / min(len(kp1), len(kp2))
-        print(f"Similarity score: {similarity_score}")
-
-        if similarity_score > 0.5:  # Threshold for similarity
-            print("Images are similar")
-            if os.path.exists(id_card_image):
-                os.remove(id_card_image)
-            if os.path.exists(img):
-                os.remove(img)
-            try:
-                res = core.update_user_kyc_verify_column(user.id)
-            except Exception as e:
-                print(f"Error occurred: {e}")
-                raise HTTPException(status_code=500, detail=str(e))
-            # here goes the logic to insert the user id into the database, since the user have being verify successfully
-            return {"status": "success", "message": "Face verification successful"}
-        else:
-            print("Images are different")
-            return {"status": "failure", "message": "Face verification failed"}
-
+        return {"status": "success", "message": "Face verification successful"}
     except Exception as e:
         print(f"Error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -188,10 +139,8 @@ def post_personal_information(
     user: DBUser = Depends(current_user),
 ):
     try:
-        print(personal_info)
         personal_info_data = core.get_personal_info(user.id)
         if personal_info_data:
-            print(personal_info_data)
             res = core.update_kyc_information(user.id, personal_info)
             return res
 
@@ -202,67 +151,15 @@ def post_personal_information(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/swap")
-def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
-    if swap.amount_in <= 0:
-        raise exceptions.BadRequestException("Invalid amountIn")
-    try:
-        res = core.swap(user.id, swap.token_in, swap.amount_in)
-        return {"hash": res}
-    except Exception as e:
-        print(e)
-        raise exceptions.BadRequestException(f"Error occured {e}")
-
-
 @app.post("/personal_information/images")
 async def upload_kyc_images(
-    profilePic: UploadFile = File(...),
-    personalId: UploadFile = File(...),
-    proofOfAddress: UploadFile = File(...),
+    documentImage: UploadFile = File(...),
     user: DBUser = Depends(current_user),
 ):
     try:
-        personal_info = core.get_personal_info(user.id)
-        if not personal_info:
-            raise exceptions.BadRequestException(
-                "Personal information doesn't exist,submit the form and try again."
-            )
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        image_path = os.path.join(UPLOAD_DIR, user.id + personalId.filename)
-        with open(image_path, "wb") as buffer:
-            buffer.write(await personalId.read())
-        fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
-        if not fullname:
-            raise exceptions.BadRequestException(
-                "Unable to extract info from ID,upload clean ID and try again"
-            )
-        elif not dob:
-            raise exceptions.BadRequestException(
-                "Unable to extract info from ID,upload clean ID and try again"
-            )
-        elif not id_number:
-            raise exceptions.BadRequestException(
-                "Unable to extract info from ID,upload clean ID and try again"
-            )
-
-        id_card_dob = datetime.strptime(dob, date_format)
-        user_dob = datetime.strptime(personal_info.date_of_birth, date_format)
-
-        if not name_contains(personal_info.name, fullname):
-            raise exceptions.BadRequestException(
-                "Your kyc name doesn't match with the id card uploaded,update your kyc information and try again"
-            )
-        if str(personal_info.id_number) not in id_number:
-            raise exceptions.BadRequestException(
-                "Your kyc id number doesn't match with the id card uploaded,update your kyc information and try again"
-            )
-        if id_card_dob != user_dob:
-            raise exceptions.BadRequestException(
-                "Your kyc date of birth doesn't match with the id card uploaded,update your kyc information and try again"
-            )
+        filename = documentImage.filename if documentImage.filename else "duno.jpg"
+        kyc.verify_user_document(documentImage.file, filename, user.id)
         return True
-
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -277,9 +174,7 @@ def get_personal_information(user: DBUser = Depends(current_user)):
 @app.post("/nominee")
 def post_user_nominee(nominee: Nominee, user: DBUser = Depends(current_user)):
     try:
-
         existing_nominee = db.get_nominee(user.id)
-
         if existing_nominee:
             return db.update_nominee_info(user.id, nominee)
 
@@ -295,63 +190,7 @@ async def upload_nominee_id_image(
     personalId: UploadFile = File(...), user: DBUser = Depends(current_user)
 ):
     try:
-        nominee_info = db.get_nominee(user.id)
-        print(nominee_info)
-        if not nominee_info:
-            raise exceptions.BadRequestException(
-                "Nominee information doesn't exist,submit the form and try again."
-            )
-        UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads/nominees")
-        os.makedirs(UPLOAD_DIR, exist_ok=True)
-        image_path = os.path.join(UPLOAD_DIR, user.id + personalId.filename)
-        with open(image_path, "wb") as buffer:
-            buffer.write(await personalId.read())
-        fullname, id_number, dob = get_id_no_and_fullname_from_id_card(image_path)
-        if not fullname:
-            raise exceptions.BadRequestException(
-                "Unable to extract info from ID,upload clean ID and try again"
-            )
-        elif not dob:
-            raise exceptions.BadRequestException(
-                "Unable to extract info from ID,upload clean ID and try again"
-            )
-        elif not id_number:
-            raise exceptions.BadRequestException(
-                "Unable to extract info from ID,upload clean ID and try again"
-            )
-
-        id_card_dob = datetime.strptime(dob, date_format)
-        user_dob = datetime.strptime(nominee_info.date_of_birth, date_format)
-        nominee_fullname = (
-            nominee_info.first_name
-            + " "
-            + nominee_info.middle_name
-            + " "
-            + nominee_info.last_name
-        )
-        print(nominee_fullname)
-
-        if not name_contains(nominee_fullname, fullname):
-            raise exceptions.BadRequestException(
-                "Your Nominee name doesn't match with the id card uploaded,update your Nominee information and try again"
-            )
-        print(nominee_info.id_number)
-        print(id_number)
-        if str(nominee_info.id_number) not in id_number:
-            raise exceptions.BadRequestException(
-                "Your Nominee id number doesn't match with the id card uploaded,update your Nominee information and try again"
-            )
-        if id_card_dob != user_dob:
-            raise exceptions.BadRequestException(
-                "Your Nominee date of birth doesn't match with the id card uploaded,update your Nominee information and try again"
-            )
-        try:
-            res = core.update_user_kyc_verify_column(user.id)
-            if res:
-                return res
-        except Exception as e:
-            print(e)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        return True
 
     except Exception as e:
         print(e)
@@ -388,6 +227,18 @@ def get_balance(userId: str):
     for item in constants.TOKEN.items():
         balances[item[0]] = w3.check_balance(userId, item[1])
     return balances
+
+
+@app.post("/swap")
+def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
+    if swap.amount_in <= 0:
+        raise exceptions.BadRequestException("Invalid amountIn")
+    try:
+        res = core.swap(user.id, swap.token_in, swap.amount_in)
+        return {"hash": res}
+    except Exception as e:
+        print(e)
+        raise exceptions.BadRequestException(f"Error occured {e}")
 
 
 @app.post("/api/account/transfer")

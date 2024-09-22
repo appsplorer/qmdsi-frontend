@@ -1,5 +1,5 @@
 import sqlite3
-from schemas import PersonalInformation, Nominee, DBUser, Refs
+from schemas import PersonalInformation, Nominee, DBUser, Refs, VerficationData
 
 
 def create_tables():
@@ -32,7 +32,9 @@ def create_tables():
     cur.execute(
         """ CREATE TABLE IF NOT EXISTS personal_information (
                 id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,    
+                first_name TEXT NOT NULL,
+                middle_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,    
                 employee_name  TEXT NOT NULL,
                 income_per_annum REAL NOT NULL,
                 date_of_birth TEXT NOT NULL,
@@ -76,6 +78,17 @@ def create_tables():
                 )
         """
     )
+
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS verifications (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                credentials_verified BOOLEAN DEFAULT FALSE,
+                completed BOOLEAN DEFAULT FALSE
+                )
+        """
+    )
+
     conn.commit()
     conn.close()
 
@@ -325,6 +338,55 @@ def get_binded_user(_id: str):
     bind_user = cur.execute("SELECT * from bind_users where id = ? ", (_id,)).fetchone()
     conn.close()
     return bind_user
+
+
+def get_user_verification(
+    _id: str,
+) -> VerficationData | None:
+    conn = sqlite3.connect("my_database.db")
+    cur = conn.cursor()
+    verification = cur.execute(
+        "SELECT * from verifications where user_id = ? ", (_id,)
+    ).fetchone()
+    if not verification:
+        return None
+    conn.close()
+    return VerficationData(
+        id=verification[0],
+        user_id=verification[1],
+        credentials_verified=bool(verification[2]),
+        completed=bool(verification[3]),
+    )
+
+
+def create_verification(
+    verification_id: str,
+    user_id: str,
+):
+    conn = sqlite3.connect("my_database.db")
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO verifications (id, user_id) VALUES (?, ?)",
+        (verification_id, user_id),
+    )
+    conn.commit()
+    conn.close()
+    return True
+
+
+def update_verification_info(_id: str, new_data: dict):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+   
+    set_clause = ", ".join([f"{key} = ?" for key in new_data.keys()])
+    values = list(new_data.values())
+    values.append(_id)
+    sql = f"UPDATE verifications SET {set_clause} WHERE id = ?"
+
+    cursor.execute(sql, values)
+    conn.commit()
+    conn.close()
+    return cursor.rowcount
 
 
 create_tables()

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, AliasChoices
 from enum import Enum
 import shortuuid
+from io import BytesIO
 
 
 class Tokens(str, Enum):
@@ -36,7 +37,9 @@ class DBUser(RegUser):
 
 
 class PersonalInformation(BaseModel):
-    name: str
+    first_name: str
+    middle_name: str
+    last_name: str
     employee_name: str = Field(
         ..., validation_alias=AliasChoices("employeeName", "employee_name")
     )
@@ -161,13 +164,16 @@ class ResetUserPassword(BaseModel):
     token: str
 
 
-class KycUser(BaseModel):
-    first_name: str
-    last_name: str
-    id_number: str
+class IdDocumentInfo(BaseModel):
+    first_name: str | None = None
+    middle_name: str | None = None
+    last_name: str | None = None
+    date_of_birth: str | None = None
+    front_image: bytes | None = None
 
 
-class KycDoc(BaseModel):
-    number: str
-    type: str
-    country: str
+class VerficationData(BaseModel):
+    id: str
+    user_id: str
+    credentials_verified : bool 
+    completed: bool
