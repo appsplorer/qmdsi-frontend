@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TransactionModal from "./TransactionModal";
+import Select from "react-select";
 import TransactionCompleteModal from "./TransactionCompleteModal";
 import { parseEther } from "ethers";
 
@@ -14,6 +15,8 @@ import {
   getTokenBalance,
   getTokenDecimals,
 } from "../services/swap.service";
+
+import { getUserBalances } from "../services/users.service";
 
 const tokens = {
   USDT: USDTAddress,
@@ -126,6 +129,7 @@ const TokenSwap = ({ fee, setFee }) => {
   const [goldPriceUsd, setGoldPriceUsd] = useState("0");
   const [feeAmount, setFeeAmount] = useState("0");
   const [amtReceived, setAmtReceived] = useState(0);
+  const [userBalances, setUserBalances] = useState({ qmgt: 0, usdt: 0 });
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const { profileData, auth } = useContext(AuthContext);
   const navigator = useNavigate();
@@ -158,6 +162,24 @@ const TokenSwap = ({ fee, setFee }) => {
     setAmountOut(amountIn);
     setChangeData("input");
   };
+
+  const fetchBalances = async (userId) => {
+    try {
+      const balances = await getUserBalances(userId);
+
+      if (balances) {
+        setUserBalances(balances);
+      }
+    } catch (error) {
+      console.error("Error fetching balances: ", error);
+    }
+  };
+
+  useEffect(() => {
+    if (profileData?.id) {
+      fetchBalances(profileData.id);
+    }
+  }, [profileData?.id, userBalances]);
 
   useEffect(() => {
     if (changeData !== "input") return;
@@ -286,16 +308,27 @@ const TokenSwap = ({ fee, setFee }) => {
         <div className="w-1/2">
           <div className="flex items-start text-md flex-col gap-1 text-white">
             <p>You sell</p>
-            <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
-              <img
-                src="https://w7.pngwing.com/pngs/113/18/png-transparent-tether-hd-logo-thumbnail.png"
-                className="w-8 rounded-full"
-                alt=""
-              />
-              <p>USDT</p>
-            </div>
+            <Select
+              options={options}
+              components={{
+                SingleValue: CustomSingleValue,
+                Option: CustomOption,
+              }}
+              onChange={(selectedOption) => {
+                setTokenIn(selectedOption.value);
+              }}
+              styles={customStyles}
+              defaultValue={options[0]}
+            />
             <div className="mt-2 text-white text-xs flex gap-2">
-              <p>Balance: {`${Number(tokenInBal).toFixed(4)}`}</p>
+              <p>
+                Balance:{" "}
+                {tokenOut === "USDT"
+                  ? userBalances.usdt
+                  : tokenOut === "QMGT"
+                  ? userBalances.qmgt
+                  : 0}
+              </p>
               <button className="border-none text-white font-semibold">
                 Max
               </button>
@@ -315,16 +348,32 @@ const TokenSwap = ({ fee, setFee }) => {
           />
         </div>
       </div>
-      <div className="w-full  rounded-md px-4 py-4 text-white bg-silver/10 flex items-center mt-4">
+
+      <div className="w-full rounded-md px-4 py-4 text-white bg-silver/10 flex items-center mt-4">
         <div className="w-1/2 flex flex-col ">
           <div className="flex flex-col gap-2 text-md text-white items-start">
             <p>You receive</p>
-            <div className="flex w-40 rounded-xl gap-4 px-2 py-3 bg-ash items-center">
-              <img src="/tokenLogo.png" className="w-8" alt="" />
-              <p>QMGT</p>
-            </div>
+            <Select
+              options={options}
+              components={{
+                SingleValue: CustomSingleValue,
+                Option: CustomOption,
+              }}
+              onChange={(selectedOption) => {
+                setTokenOut(selectedOption.value);
+              }}
+              styles={customStyles}
+              defaultValue={options[1]}
+            />
             <div className="mt-2 text-white text-xs flex gap-2">
-              <p>Balance: {`${Number(tokenOutBal).toFixed(4)}`}</p>
+              <p>
+                Balance:{" "}
+                {tokenOut === "USDT"
+                  ? userBalances.usdt
+                  : tokenOut === "QMGT"
+                  ? userBalances.qmgt
+                  : 0}
+              </p>
               <button className="border-none text-white font-semibold">
                 Max
               </button>

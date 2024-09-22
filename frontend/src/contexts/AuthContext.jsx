@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
         const userData = await getUser(auth.accessToken);
         console.log(userData);
         setProfile({
+          id: userData.id,
           fullName: userData.full_name,
           phoneNumber: userData.phone_number,
           country: userData.country,
