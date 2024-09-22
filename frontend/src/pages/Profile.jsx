@@ -11,26 +11,24 @@ import { TOKENAddress } from "../addresses";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
-  const [kycStatus, setKycstatus] = useState();
-  const [qmgtBalance, setQmgtBalance] = useState("")
-  const [goldPrice, setGoldPrice] = useState("")
+  const [kycStatus, setKycStatus] = useState();
+  const [qmgtBalance, setQmgtBalance] = useState("");
+  const [goldPrice, setGoldPrice] = useState("");
   const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     getGoldPrice().then((res) => {
-      setGoldPrice(res)
-    })
-  }, [])
+      setGoldPrice(res);
+    });
+  }, []);
 
   useEffect(() => {
-    const userId = profileData?.id
-    if(!userId) return 
-      getUserBalances(userId).then((res) => {
-        console.log(res)
-        setQmgtBalance(res.qmgt)
-      })
-    // const 
-  }, [profileData?.id])
+    const userId = profileData?.id;
+    if (!userId) return;
+    getUserBalances(userId).then((res) => {
+      setQmgtBalance(res.qmgt);
+    });
+  }, [profileData?.id]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,7 +40,7 @@ const Profile = () => {
           phoneNumber: userData.phone_number,
           country: userData.country,
           email: userData.email,
-          id : userData.id,
+          id: userData.id,
           kycStatus: userData.kyc_verified ? (
             <span style={{ color: "green", fontSize: "15px" }}>Verified</span>
           ) : (
@@ -52,16 +50,8 @@ const Profile = () => {
           walletAddress: userData.wallet_address,
           referralSignUps: userData.referral_sign_ups,
         });
-        userData.kyc_verified
-          ? ""
-          : setKycstatus(
-              <Link
-                to="/kyc"
-                className="bg-primary mt-2 md:mt-0 px-4 py-2 rounded text-dark text-center"
-              >
-                Verify Identity
-              </Link>
-            );
+
+        setKycStatus(userData.kyc_verified);
       } catch (error) {
         console.error("Error fetching profile data:", error);
       }
@@ -77,18 +67,16 @@ const Profile = () => {
     navigator.clipboard.writeText(refLink);
     toast.info("Referral link copied to clipboard!");
   };
-    const handleCopyAddress = () => {
-        navigator.clipboard.writeText(profileData.walletAddress);
-    toast.info("Waller Address copied to clipboard!");
-  };
-  
 
+  const handleCopyAddress = () => {
+    navigator.clipboard.writeText(profileData.walletAddress);
+    toast.info("Wallet Address copied to clipboard!");
+  };
 
   if (!profileData) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <FaSpinner className="animate-spin text-primary text-4xl" />{" "}
-        {/* Spinner */}
+        <FaSpinner className="animate-spin text-primary text-4xl" />
       </div>
     );
   }
@@ -140,6 +128,16 @@ const Profile = () => {
             <p>
               <strong>KYC Status:</strong> {profileData.kycStatus}
             </p>
+
+            {!kycStatus && (
+              <Link
+                to="/kyc"
+                className="bg-primary mt-4 max-w-xs px-4 py-2 rounded text-white block"
+                style={{ display: "inline-block" }}
+              >
+                Verify Identity
+              </Link>
+            )}
           </div>
         </motion.div>
 
@@ -158,12 +156,17 @@ const Profile = () => {
               </li>
             ))}
           </ul>
-          <Button className="rounded-full mt-4" onClick={handleCopyReferralLink}>Copy</Button>
+          <Button
+            className="rounded-full mt-4"
+            onClick={handleCopyReferralLink}
+          >
+            Copy
+          </Button>
         </motion.div>
       </motion.div>
 
       <motion.div
-        className="flex-1 justify-center flex items-centermt-8 md:mt-0 px-4"
+        className="flex-1 justify-center flex items-center mt-8 md:mt-0 px-4"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2 }}
@@ -189,7 +192,7 @@ const Profile = () => {
               <p>Address</p>
               <p className="break-words">{profileData.walletAddress}</p>
               <div className="flex justify-end">
-                <Button onClick={handleCopyAddress} >Copy</Button>
+                <Button onClick={handleCopyAddress}>Copy</Button>
               </div>
             </div>
           </motion.div>

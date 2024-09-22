@@ -316,9 +316,10 @@ const TokenSwap = ({ fee, setFee }) => {
               }}
               onChange={(selectedOption) => {
                 setTokenIn(selectedOption.value);
+                setTokenOut(selectedOption.value === "USDT" ? "QMGT" : "USDT");
               }}
               styles={customStyles}
-              defaultValue={options[0]}
+              value={options.find((option) => option.value === tokenIn)}
             />
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>
@@ -361,9 +362,10 @@ const TokenSwap = ({ fee, setFee }) => {
               }}
               onChange={(selectedOption) => {
                 setTokenOut(selectedOption.value);
+                setTokenIn(selectedOption.value === "USDT" ? "QMGT" : "USDT");
               }}
               styles={customStyles}
-              defaultValue={options[1]}
+              value={options.find((option) => option.value === tokenOut)}
             />
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>
