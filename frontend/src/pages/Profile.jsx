@@ -1,16 +1,36 @@
 import { useState, useEffect, useContext } from "react";
-import { getUser } from "../services/users.service";
+import { getUser, getUserBalances } from "../services/users.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { Button } from "antd";
+import { getGoldPrice, getTokenBalance } from "../services/swap.service";
+import { TOKENAddress } from "../addresses";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [kycStatus, setKycstatus] = useState();
+  const [qmgtBalance, setQmgtBalance] = useState("")
+  const [goldPrice, setGoldPrice] = useState("")
   const { auth } = useContext(AuthContext);
+
+  useEffect(() => {
+    getGoldPrice().then((res) => {
+      setGoldPrice(res)
+    })
+  }, [])
+
+  useEffect(() => {
+    const userId = profileData?.id
+    if(!userId) return 
+      getUserBalances(userId).then((res) => {
+        console.log(res)
+        setQmgtBalance(res.qmgt)
+      })
+    // const 
+  }, [profileData?.id])
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -22,6 +42,7 @@ const Profile = () => {
           phoneNumber: userData.phone_number,
           country: userData.country,
           email: userData.email,
+          id : userData.id,
           kycStatus: userData.kyc_verified ? (
             <span style={{ color: "green", fontSize: "15px" }}>Verified</span>
           ) : (
@@ -52,10 +73,16 @@ const Profile = () => {
   }, [auth?.accessToken]);
 
   const handleCopyReferralLink = () => {
-    const refLink = `${window.location.host}/signup?ref=${profileData.referralLink}`;
+    const refLink = `${window.location.protocol}//${window.location.host}/signup?ref=${profileData.referralLink}`;
     navigator.clipboard.writeText(refLink);
     toast.info("Referral link copied to clipboard!");
   };
+    const handleCopyAddress = () => {
+        navigator.clipboard.writeText(profileData.walletAddress);
+    toast.info("Waller Address copied to clipboard!");
+  };
+  
+
 
   if (!profileData) {
     return (
@@ -131,7 +158,7 @@ const Profile = () => {
               </li>
             ))}
           </ul>
-          <Button className="rounded-full mt-4">Copy</Button>
+          <Button className="rounded-full mt-4" onClick={handleCopyReferralLink}>Copy</Button>
         </motion.div>
       </motion.div>
 
@@ -152,7 +179,7 @@ const Profile = () => {
           >
             <div className="bg-silver/20 flex flex-col justify-between text-white p-4 w-full h-28 md:h-36 lg:h-40 rounded-lg">
               <p>Balance</p>
-              <p>5678.25 QMGT</p>
+              <p>{qmgtBalance} QMGT</p>
               <div className="flex justify-end">
                 <Button>Transactions</Button>
               </div>
@@ -162,7 +189,7 @@ const Profile = () => {
               <p>Address</p>
               <p className="break-words">{profileData.walletAddress}</p>
               <div className="flex justify-end">
-                <Button>Copy</Button>
+                <Button onClick={handleCopyAddress} >Copy</Button>
               </div>
             </div>
           </motion.div>
@@ -174,7 +201,7 @@ const Profile = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
           >
             <p>Gold Price</p>
-            <p>1.002g per 81.27 USDT</p>
+            <p>1.002g per {goldPrice} USDT</p>
           </motion.div>
 
           <motion.div

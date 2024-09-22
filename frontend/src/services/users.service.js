@@ -100,6 +100,6 @@ export const swapToken = async (accessToken, tokenIn, amountIn) => {
 
 
 export const getUserBalances = async (userId) => {
-  const res = await api.get(`/api/account/balance?userId]${userId}`)
-  console.log(res.data)
+  const res = await api.get(`/api/account/balance?userId=${userId}`)
+  return res.data
 }

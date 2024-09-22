@@ -34,5 +34,5 @@ export const getTokenDecimals = async (tokenAddress) => {
 export const getGoldPrice = async () => {
     const res = await priceFeedContract.latestRoundData()
     const goldPrice = formatUnits(res[1] / 31n, 18);
-    return goldPrice
+    return parseFloat(goldPrice).toFixed(2)
 }

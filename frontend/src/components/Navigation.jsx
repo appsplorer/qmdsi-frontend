@@ -47,11 +47,13 @@ const Navigation = () => {
     >
       <div className={`container mx-auto px-0 md:px-10 text-white w-full`}>
         {/* Brand and Logo */}
-        <div className="flex items-center justify-between gap-8 md:gap-[4vw] w-full relative">
+        <div className="flex items-center justify-between gap-8 md:gap-[4vw] w-full relative" >
+          <Link to="/">
           <h1 className="flex items-center text-2xl text-yellow-400 my-4 font-thin tracking-wider pl-4 md:pl-4">
             <img src="/aurun_favi.png" className="w-10 pr-2" alt="Aurum Logo" />
             au<span className="text-gray-400">rum</span>
           </h1>
+          </Link>
 
           {/* Mobile Menu Toggle Button */}
           <div className="md:hidden mr-4 z-50">
