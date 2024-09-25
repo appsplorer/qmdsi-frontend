@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-
 import { authSignup } from "../services/auth.service";
 import { toast } from "react-toastify";
-import { FaSpinner, FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
+import { FaSpinner } from "react-icons/fa";
 import { countryOptions } from "../data/countries";
 import { Button, Input } from "antd";
-import { FiArrowLeft } from "react-icons/fi";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
@@ -23,12 +21,13 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     pin: "",
+    confirmPin: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [confirmPinError, setConfirmPinError] = useState("");
   const [passwordValid, setPasswordValid] = useState(false);
 
   const navigate = useNavigate();
@@ -38,9 +37,11 @@ const Register = () => {
     const hasNumber = /\d/.test(password);
     const hasSpecialChar = /[@#,!]/.test(password);
     const isLongEnough = password.length >= 8;
+
     setPasswordValid(
       hasUppercase && hasNumber && hasSpecialChar && isLongEnough
     );
+
     if (!isLongEnough) {
       setPasswordError("Password must be at least 8 characters long");
     } else if (!hasUppercase) {
@@ -56,6 +57,17 @@ const Register = () => {
     }
   };
 
+  const validatePin = (pin) => {
+    const isNumeric = /^\d+$/.test(pin);
+    if (!isNumeric) {
+      setPinError("PIN must contain only numbers");
+    } else if (pin.length !== 4) {
+      setPinError("PIN must be exactly 4 digits");
+    } else {
+      setPinError("");
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -65,7 +77,6 @@ const Register = () => {
 
     if (name === "password") {
       validatePassword(value);
-
       if (value !== formData.confirmPassword) {
         setConfirmPasswordError("Passwords do not match");
       } else {
@@ -80,6 +91,23 @@ const Register = () => {
         setConfirmPasswordError("");
       }
     }
+
+    if (name === "pin") {
+      validatePin(value);
+      if (value !== formData.confirmPin) {
+        setConfirmPinError("PINs do not match");
+      } else {
+        setConfirmPinError("");
+      }
+    }
+
+    if (name === "confirmPin") {
+      if (value !== formData.pin) {
+        setConfirmPinError("PINs do not match");
+      } else {
+        setConfirmPinError("");
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -92,9 +120,19 @@ const Register = () => {
       return;
     }
 
- 
+    if (formData.pin !== formData.confirmPin) {
+      setConfirmPinError("PINs do not match");
+      setIsLoading(false);
+      return;
+    }
+
+    if (pinError || passwordError || confirmPinError) {
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await authSignup(formData );
+      await authSignup(formData);
       toast.success("Registration successful!");
       navigate("/signin");
       setFormData({
@@ -108,6 +146,7 @@ const Register = () => {
         password: "",
         confirmPassword: "",
         pin: "",
+        confirmPin: "",
       });
     } catch (err) {
       console.log(err);
@@ -118,7 +157,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full px-4 md:px-10 pb-5 flex flex-col  gap-5">
+    <div className="w-full px-4 md:px-10 pb-5 flex flex-col gap-5">
       <div className="w-full relative z-20">
         <div className="flex flex-col gap-2 mb-7">
           <h1 className="text-5xl  md:text-7xl text-white font-medium">
@@ -128,9 +167,9 @@ const Register = () => {
             Hi. Guest
           </span>
         </div>
-        <form className="flex   flex-col md:flex-row items-center justify-center gap-5 w-full ">
-          <div className="w-full flex  flex-col  md:flex-row  gap-5">
-            {/* information */}
+        <form className="flex flex-col md:flex-row items-center justify-center gap-5 w-full">
+          <div className="w-full flex flex-col md:flex-row gap-5">
+            {/* Information */}
             <div className="w-full md:w-1/2 py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
               <h1 className="text-2xl text-gray-300 tracking-wider">
                 Information
@@ -143,6 +182,7 @@ const Register = () => {
                   onChange={handleChange}
                   name="firstName"
                   value={formData.firstName}
+                  required
                 />
                 <Input
                   type="text"
@@ -159,6 +199,7 @@ const Register = () => {
                   onChange={handleChange}
                   name="lastName"
                   value={formData.lastName}
+                  required
                 />
               </div>
               <div className="flex flex-col md:flex-row gap-3">
@@ -167,19 +208,12 @@ const Register = () => {
                   name="country"
                   value={formData.country}
                   onChange={handleChange}
-                  className=" text-lg rounded-lg w-full p-3 bg-smoke"
+                  className="text-lg rounded-lg w-full p-3 bg-smoke"
                   required
-                  placeholder="test"
                 >
-                  <option value="" className="">
-                    Select a country
-                  </option>
+                  <option value="">Select a country</option>
                   {countryOptions.map((country) => (
-                    <option
-                      key={country.value}
-                      value={country.value}
-                      className="text-charcoalBlue bg-smoke"
-                    >
+                    <option key={country.value} value={country.value}>
                       {country.label}
                     </option>
                   ))}
@@ -191,6 +225,7 @@ const Register = () => {
                   onChange={handleChange}
                   name="phoneNumber"
                   value={formData.phoneNumber}
+                  required
                 />
               </div>
               <div className="flex flex-col md:flex-row gap-3">
@@ -201,61 +236,98 @@ const Register = () => {
                   onChange={handleChange}
                   name="email"
                   value={formData.email}
+                  required
                 />
                 <Input
                   type="text"
                   className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Reffered By"
+                  placeholder="Referred By"
                   onChange={handleChange}
                   name="refBy"
                   value={formData.refBy}
                 />
               </div>
             </div>
-            {/* security */}
-            <div className="w-full md:w-1/2   flex flex-col gap-3">
-              <div className="py-7 px-5 blur-bg border border-ash/20 rounded-md  flex flex-col gap-3">
+
+            {/* Security */}
+            <div className="w-full md:w-1/2 flex flex-col gap-3">
+              <div className="py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-3">
                 <h1 className="text-2xl text-gray-300 tracking-wider">
                   Security
                 </h1>
                 <div className="flex flex-col md:flex-row gap-3">
                   <Input.Password
-                    type="password"
                     className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
                     placeholder="Password"
                     onChange={handleChange}
                     name="password"
                     value={formData.password}
+                    required
                   />
+                  {passwordError && (
+                    <span className="text-red-500 text-sm">
+                      {passwordError}
+                    </span>
+                  )}
                   <Input.Password
-                    type="password"
                     className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
                     placeholder="Confirm Password"
                     onChange={handleChange}
                     name="confirmPassword"
                     value={formData.confirmPassword}
+                    required
                   />
+                  {confirmPasswordError && (
+                    <span className="text-red-500 text-sm">
+                      {confirmPasswordError}
+                    </span>
+                  )}
                 </div>
-                <Input
-                  type="text"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Enter PIN"
-                  onChange={handleChange}
-                  name="pin"
-                  value={formData.pin}
-                />
+                <div className="flex flex-col md:flex-row gap-3">
+                  <Input
+                    type="password"
+                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                    placeholder="Enter a 4-Digit PIN"
+                    onChange={handleChange}
+                    name="pin"
+                    value={formData.pin}
+                    required
+                  />
+                  {pinError && (
+                    <span className="text-red-500 text-sm">{pinError}</span>
+                  )}
+                  <Input
+                    type="password"
+                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                    placeholder="Confirm 4-Digit PIN"
+                    onChange={handleChange}
+                    name="confirmPin"
+                    value={formData.confirmPin}
+                    required
+                  />
+                  {confirmPinError && (
+                    <span className="text-red-500 text-sm">
+                      {confirmPinError}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="w-full px-5">
-                <button
-                  onClick={handleSubmit}
-                  className=" text-lg font-medium p-3 border  w-full bg-golden text-white rounded-lg"
-                >
-                  Register
-                </button>
-              </div>
+              <button
+                onClick={handleSubmit}
+                className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
+                loading={isLoading}
+              >
+                {isLoading ? <FaSpinner /> : "Register"}
+              </button>
             </div>
           </div>
         </form>
+        <p className="text-center text-slate-500 text-base mt-5">
+          Already have an account?{" "}
+          <Link to="/signin" className="text-primary hover:underline">
+            Sign In
+          </Link>
+        </p>
       </div>
     </div>
   );

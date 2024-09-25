@@ -31,50 +31,52 @@ const ForgetPassword = () => {
   };
 
   return (
-    <div className="relative w-full px-4 md:px-24 flex flex-wrap justify-between items-top gap-5">
-      <div className="max-w-lg w-full blur-bg border py-7 px-5 border-ash/20 rounded-md  flex flex-col items-center justify-center gap-7 relative z-20">
-        <h1 className="text-xl  md:text-3xl font-normal text-white">
+    <div className="w-full min-h-screen flex flex-col md:flex-row items-center justify-center p-5 md:px-24">
+      {/* Left Side - Form */}
+      <div className="w-full md:w-1/2 max-w-lg blur-bg border py-7 px-5 border-ash/20 rounded-md flex flex-col items-center justify-center gap-7">
+        <h1 className="text-xl md:text-3xl font-normal text-white">
           Forgot Password
         </h1>
-        <p className="text-white">
-          Enter the email address associated with your account and we&rsquo;ll
-          send you a link to reset your password
+        <p className="text-white text-center">
+          Enter the email address associated with your account and we’ll send
+          you a link to reset your password.
         </p>
         <Input
           type="text"
           className="bg-gray-200 text-base p-4 md:p-3 rounded-lg w-full"
           placeholder="Email Address"
-          onChange={(e) => handleChange(e)}
+          onChange={handleChange}
         />
         <button
           onClick={handleSubmit}
-          className=" text-lg font-medium p-3 border  w-full bg-golden text-white rounded-lg"
+          className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
+          disabled={isLoading}
         >
-          Submit
+          {isLoading ? "Submitting..." : "Submit"}
         </button>
         <div className="flex gap-2 items-center justify-center">
-          <p className="text-gray-500 flex justify-center">
-            Remember your password?
-          </p>
-          <Link to="/signin" className="text-golden">
+          <p className="text-gray-500">Remember your password?</p>
+          <Link to="/signin" className="text-golden hover:underline">
             Login
           </Link>
         </div>
       </div>
-      <div className="w-full md:w-1/2   flex flex-col gap-4 items-center md:items-start ">
-        <h1 className="text-white text-5xl md:text-8xl font-medium font tracking-wide whitespace-nowrap">
+
+      {/* Right Side - Promo Section */}
+      <div className="w-full md:w-1/2 mt-10 md:mt-0 flex flex-col items-center md:items-start text-center md:text-left gap-5">
+        <h1 className="text-white text-5xl md:text-8xl font-medium tracking-wide">
           Buy & Sell
         </h1>
-        <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+        <p className="text-xl md:text-3xl font-normal text-white tracking-wide">
           The Ultimate currency.
         </p>
-        <h1 className="text-white text-3xl md:text-7xl font-mediu tracking-wide mt-12">
+        <h1 className="text-white text-3xl md:text-7xl font-medium tracking-wide mt-12">
           Get Mobile Wallet
         </h1>
-        <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+        <p className="text-xl md:text-3xl font-normal text-white tracking-wide">
           Status: Developing
         </p>
-        <div className="flex flex-col md:flex-row gap-3 mt-3 w-full">
+        <div className="flex flex-col md:flex-row gap-3 mt-3 w-full justify-center md:justify-start">
           <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
             Google Play
           </button>
