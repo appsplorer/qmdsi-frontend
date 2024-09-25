@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, AliasChoices
 from enum import Enum
 import shortuuid
 from io import BytesIO
+from datetime import datetime
 
 
 class Tokens(str, Enum):
@@ -10,7 +11,14 @@ class Tokens(str, Enum):
 
 
 class BaseUser(BaseModel):
-    full_name: str = Field(..., validation_alias=AliasChoices("fullName", "full_name"))
+    first_name: str = Field(
+        ..., validation_alias=AliasChoices("firstName", "first_name")
+    )
+    last_name: str = Field(..., validation_alias=AliasChoices("lastName", "last_name"))
+    middle_name: str = Field(
+        ..., validation_alias=AliasChoices("middleName", "middle_name")
+    )
+
     country: str
     phone_number: str = Field(
         ..., validation_alias=AliasChoices("phoneNumber", "phone_number")
@@ -26,6 +34,7 @@ class LoginUser(BaseModel):
 
 class RegUser(BaseUser):
     password: str
+    pin: int
 
 
 class DBUser(RegUser):
@@ -37,9 +46,13 @@ class DBUser(RegUser):
 
 
 class PersonalInformation(BaseModel):
-    first_name: str
-    middle_name: str
-    last_name: str
+    first_name: str = Field(
+        ..., validation_alias=AliasChoices("firstName", "first_name")
+    )
+    middle_name: str = Field(
+        ..., validation_alias=AliasChoices("middleName", "middle_name")
+    )
+    last_name: str = Field(..., validation_alias=AliasChoices("lastName", "last_name"))
     employee_name: str = Field(
         ..., validation_alias=AliasChoices("employeeName", "employee_name")
     )
@@ -168,12 +181,12 @@ class IdDocumentInfo(BaseModel):
     first_name: str | None = None
     middle_name: str | None = None
     last_name: str | None = None
-    date_of_birth: str | None = None
+    date_of_birth: datetime | None = None
     front_image: bytes | None = None
 
 
 class VerficationData(BaseModel):
     id: str
     user_id: str
-    credentials_verified : bool 
+    credentials_verified: bool
     completed: bool

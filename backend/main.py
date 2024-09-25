@@ -1,13 +1,5 @@
-from fastapi import (
-    FastAPI,
-    Header,
-    UploadFile,
-    File,
-    Depends,
-    HTTPException,
-    status,
-    Request,
-)
+from fastapi import FastAPI, Header, UploadFile, File, Depends, HTTPException, status
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from schemas import (
@@ -24,14 +16,8 @@ from schemas import (
     ForgetPassowrd,
     ResetUserPassword,
 )
-import cv2
-import os
+
 import core, db, w3
-from authkyc import (
-    get_id_no_and_fullname_from_id_card,
-    name_contains,
-    detect_and_crop_face,
-)
 import constants
 import exceptions
 import security
@@ -42,7 +28,7 @@ from dependencies import current_user
 from exceptions import BadRequest
 import org_ids
 import config
-from datetime import datetime
+from PIL import Image
 
 app = FastAPI()
 
@@ -117,17 +103,6 @@ def get_a_user(user: DBUser = Depends(current_user)):
     return raw_user
 
 
-@app.post("/verify")
-async def upload_image(
-    image: UploadFile = File(...), user: DBUser = Depends(current_user)
-):
-    try:
-        return {"status": "success", "message": "Face verification successful"}
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @app.get("/refs")
 def get_user_ref(user: DBUser = Depends(current_user)):
     return db.user_refs(user.ref_link)
@@ -163,6 +138,21 @@ async def upload_kyc_images(
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@app.post("/verify")
+async def upload_image(
+    image: UploadFile = File(...),
+    user: DBUser = Depends(current_user),
+):
+    try:
+        face_path = kyc.save_user_face(image.file, user.id)
+        with open(face_path, "rb") as user_face:
+            kyc.verify_user_face(user_face, user.id, user.email)
+        return {"status": "success", "message": "Face verification successful"}
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/personal_information")

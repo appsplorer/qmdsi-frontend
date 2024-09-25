@@ -92,13 +92,9 @@ const Register = () => {
       return;
     }
 
-    const { firstName, middleName, lastName, ...rest } = formData;
-    const fullName = `${firstName} ${
-      middleName ? middleName + " " : ""
-    }${lastName}`;
-
+ 
     try {
-      await authSignup({ ...rest, fullName });
+      await authSignup(formData );
       toast.success("Registration successful!");
       navigate("/signin");
       setFormData({

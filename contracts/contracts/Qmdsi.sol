@@ -9,8 +9,7 @@ contract UserAccount {
 
     string internal _user;
     address internal _admin;
-    QMGTSwap internal swap;
-
+ 
 
     struct TransferStruct {
         address token;
@@ -24,16 +23,13 @@ contract UserAccount {
         _;
     }
 
-
-
     constructor() {
         _admin  = msg.sender;
     } 
 
 
-    function config(string calldata user, address _swap) external onlyAdmin {
+    function config(string calldata user) external onlyAdmin {
         _user = user;
-        swap = QMGTSwap(_swap);
     } 
 
 
@@ -42,16 +38,19 @@ contract UserAccount {
     }
 
 
-    function buyQmgt(uint usdAmount) external onlyAdmin() returns(uint amount) {
+    function buyQmgt(address swapAddress, uint usdAmount) external onlyAdmin() returns(uint amount) {
+        QMGTSwap swap = QMGTSwap(swapAddress);
+
         address usdt = swap.getUsdtAddress();
-        ERC20(usdt).approve(address(swap), usdAmount);
+        ERC20(usdt).approve(swapAddress, usdAmount);
         amount = swap.buyQmgt(usdAmount);
     } 
 
 
-    function sellQmgt(uint tokenAmount) external onlyAdmin returns(uint amount) {
+    function sellQmgt(address swapAddress, uint tokenAmount) external onlyAdmin returns(uint amount) {
+        QMGTSwap swap = QMGTSwap(swapAddress);
         address token = swap.getTokenAddress();
-        ERC20(token).approve(address(swap), tokenAmount);
+        ERC20(token).approve(swapAddress, tokenAmount);
         amount = swap.sellQmgt(tokenAmount);
         
     }
@@ -65,11 +64,6 @@ contract UserAccount {
             ERC20(transfer.token).transfer(transfer.to, transfer.amount);
         }
     }
-
-
-    function changeSwapAddress(address _swap) onlyAdmin external {
-        swap = QMGTSwap(_swap);
-    } 
 
 
 }
@@ -139,7 +133,7 @@ contract QMDSIAdmin {
 
     function setupUserAccount (string calldata user) internal returns(address accountAddress) {
         accountAddress = initUserAccount(user);
-        UserAccount(accountAddress).config(user, _swapAddress);
+        UserAccount(accountAddress).config(user);
     }
 
 
@@ -158,12 +152,12 @@ contract QMDSIAdmin {
 
     function buyQmgt(string calldata user, uint usdAmount) external onlyWhitelisted checkAndDeploy(user) {
         address accountAddress = getUserAccount(user);
-        UserAccount(accountAddress).buyQmgt(usdAmount);
+        UserAccount(accountAddress).buyQmgt(_swapAddress, usdAmount);
     }
 
     function sellQmgt(string calldata user, uint tokenAmount) external onlyWhitelisted checkAndDeploy(user) {
         address accountAddress = getUserAccount(user);
-        UserAccount(accountAddress).sellQmgt(tokenAmount);
+        UserAccount(accountAddress).sellQmgt(_swapAddress, tokenAmount);
     }
 
 
@@ -173,6 +167,10 @@ contract QMDSIAdmin {
             codeSize := extcodesize(_addr)
         }
         return codeSize > 0;
+    }
+
+    function changeSwapAddress(address _addr) external onlyOwner {
+        _swapAddress = _addr;
     }
 
 }

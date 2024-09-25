@@ -146,7 +146,7 @@ const Swap = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                0.1%
+                {fee}%
               </motion.button>
               <motion.button
                 className={`w-20 md:w-24 text-xs rounded-full p-1 py-2 ${
@@ -171,7 +171,7 @@ const Swap = () => {
             </motion.div>
           </motion.div>
           <motion.div className="relative" variants={itemVariants}>
-            {swapType === "token" ? <TokenSwap /> : <CreditSwap />}
+            {swapType === "token" ? <TokenSwap fee={fee} setFee={setFee} /> : <CreditSwap />}
           </motion.div>
           <motion.div className="mt-4" variants={itemVariants}>
             <Divider className="bg-gray-400 mb-1" />

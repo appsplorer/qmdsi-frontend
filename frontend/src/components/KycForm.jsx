@@ -27,27 +27,19 @@ const KycForm = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const { auth, profile } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const splitFullName = (fullName) => {
-    const nameParts = fullName.split(" ");
-    return {
-      firstName: nameParts[0] || "",
-      middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "",
-      lastName: nameParts.length > 1 ? nameParts[nameParts.length - 1] : "",
-    };
-  };
+  console.log(profile)
+  
 
   useEffect(() => {
     const fetchPersonalInfo = async () => {
       try {
-        const data = await getUserPersonalInfo(auth.accessToken);
-        const { firstName, middleName, lastName } = splitFullName(
-          profile.fullName
-        );
+        let data = await getUserPersonalInfo(auth.accessToken);
+        data = data ? data : {}
+        console.log(data)
         setDefaultValues({
-          firstName,
-          middleName,
-          lastName,
+          firstName : profile.firstName || "",
+          middleName : profile.middleName || "" ,
+          lastName : profile.lastName || "",
           employeeName: data.employee_name || "",
           income: data.income_per_annum?.toString() || "",
           dateOfBirth: data.date_of_birth || "",
@@ -84,9 +76,11 @@ const KycForm = () => {
     event.preventDefault();
     setIsPersonalInfoLoading(true);
     try {
-      console.log(defaultValues.firstName + " " + defaultValues.middleName + " " + defaultValues.lastName)
       const personalInfoData = {
-        name:String(defaultValues.firstName + " " + defaultValues.middleName + " " + defaultValues.lastName),
+        firstName : profile.firstName,
+        middleName : profile.middleName,
+        lastName : profile.lastName,
+        
         employeeName: defaultValues.employeeName,
         incomePerAnnum: parseFloat(defaultValues.income),
         dateOfBirth: defaultValues.dateOfBirth,
@@ -132,7 +126,7 @@ const KycForm = () => {
         defaultValues.proofOfAddress
       );
       toast.success("Images uploaded successfully!");
-      navigate("/nominee");
+      navigate("/verify");
     } catch (error) {
       console.error("Error uploading images:", error.response.data.detail);
       toast.error(error.response.data.detail);
@@ -187,6 +181,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter First Name"
+                    disabled
                     required
                   />
                 </div>
@@ -203,6 +198,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter middle Name"
+                    disabled
                     required
                   />
                 </div>
@@ -219,6 +215,7 @@ const KycForm = () => {
                       }))
                     }
                     placeholder="Enter Last Name"
+                    disabled
                     required
                   />
                 </div>

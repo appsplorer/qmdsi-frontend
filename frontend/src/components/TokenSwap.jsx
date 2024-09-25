@@ -131,7 +131,7 @@ const TokenSwap = ({ fee, setFee }) => {
   const [amtReceived, setAmtReceived] = useState(0);
   const [userBalances, setUserBalances] = useState({ qmgt: 0, usdt: 0 });
   const [insufficientBalance, setInsufficientBalance] = useState(false);
-  const { profileData, auth } = useContext(AuthContext);
+  const { profile, auth } = useContext(AuthContext);
   const navigator = useNavigate();
 
   const closeModal = () => {
@@ -176,10 +176,10 @@ const TokenSwap = ({ fee, setFee }) => {
   };
 
   useEffect(() => {
-    if (profileData?.id) {
-      fetchBalances(profileData.id);
+    if (profile?.id) {
+      fetchBalances(profile.id);
     }
-  }, [profileData?.id, userBalances]);
+  }, [profile?.id, userBalances]);
 
   useEffect(() => {
     if (changeData !== "input") return;
@@ -239,13 +239,13 @@ const TokenSwap = ({ fee, setFee }) => {
   }, [tokenOut, amountOut]);
 
   useEffect(() => {
-    if (!tokenIn || !amountIn || !profileData?.walletAddress) {
+    if (!tokenIn || !amountIn || !profile?.walletAddress) {
       setInsufficientBalance(false);
       return;
     }
     const token = tokens[tokenIn];
 
-    getTokenBalance(token, profileData.walletAddress).then((balance) => {
+    getTokenBalance(token, profile.walletAddress).then((balance) => {
       if (parseEther(amountIn) > balance) {
         setInsufficientBalance(true);
       } else {
@@ -255,35 +255,52 @@ const TokenSwap = ({ fee, setFee }) => {
   }, [tokenIn, amountIn]);
 
   useEffect(() => {
-    if (!tokenIn || !profileData?.walletAddress) return;
+    if (!tokenIn || !profile?.walletAddress) return;
     const tokenAddress = tokens[tokenIn];
+
+    Promise.all([
+        getTokenBalance(tokenAddress, profile.walletAddress),
+        getTokenDecimals(tokenAddress),
+      ]).then((data) => {
+        const [balance, decimals] = data
+      setTokenInBal(formatUnits(balance, decimals));
+      });
+      
 
     const interValId = setInterval(async () => {
       const [balance, decimals] = await Promise.all([
-        getTokenBalance(tokenAddress, profileData.walletAddress),
+        getTokenBalance(tokenAddress, profile.walletAddress),
         getTokenDecimals(tokenAddress),
       ]);
       setTokenInBal(formatUnits(balance, decimals));
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(interValId);
-  }, [tokenIn, profileData?.walletAddress]);
+  }, [tokenIn, profile?.walletAddress]);
 
   useEffect(() => {
-    if (!tokenOut || !profileData?.walletAddress) return;
+    if (!tokenOut || !profile?.walletAddress) return;
 
     const tokenAddress = tokens[tokenOut];
 
+    Promise.all([
+        getTokenBalance(tokenAddress, profile.walletAddress),
+        getTokenDecimals(tokenAddress),
+      ]).then((res) => {
+      const [balance, decimals] = res  
+      setTokenOutBal(formatUnits(balance, decimals));
+    });
+      
     const interValId = setInterval(async () => {
       const [balance, decimals] = await Promise.all([
-        getTokenBalance(tokenAddress, profileData.walletAddress),
+        getTokenBalance(tokenAddress, profile.walletAddress),
         getTokenDecimals(tokenAddress),
       ]);
       setTokenOutBal(formatUnits(balance, decimals));
     }, 3000);
 
     return () => clearInterval(interValId);
-  }, [tokenOut, profileData?.walletAddress]);
+  }, [tokenOut, profile?.walletAddress]);
 
   useEffect(() => {
     if (!feeAmount) {
@@ -323,10 +340,10 @@ const TokenSwap = ({ fee, setFee }) => {
             />
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>
-                Balance:{" "}
-                {tokenOut === "USDT"
+                Balance: {" "}
+                {tokenIn === "USDT"
                   ? userBalances.usdt
-                  : tokenOut === "QMGT"
+                  : tokenIn === "QMGT"
                   ? userBalances.qmgt
                   : 0}
               </p>

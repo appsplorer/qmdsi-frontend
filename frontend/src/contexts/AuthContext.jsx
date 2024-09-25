@@ -27,7 +27,9 @@ export const AuthProvider = ({ children }) => {
         console.log(userData);
         setProfile({
           id: userData.id,
-          fullName: userData.full_name,
+          firstName : userData.first_name,
+          lastName : userData.last_name,
+          middleName : userData.middle_name,
           phoneNumber: userData.phone_number,
           country: userData.country,
           email: userData.email,

@@ -106,5 +106,5 @@ def swap(user_id: str, token_in: str, amount_in: int):
     signed_tx = admin_account.sign_transaction(tx_params)
     hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
     print(f"Transfer Transaction hash  {hash.hex()}")
-    # w3.eth.wait_for_transaction_receipt(hash)
+    w3.eth.wait_for_transaction_receipt(hash)
     return hash.hex()

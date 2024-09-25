@@ -7,12 +7,12 @@ key = "vfg98uu47jqgbuurr5u1eb67k20dv7d3"
 
 
 def init_payment():
-    url = "https://test.e-mango.ph/cashier/pay.do"
+    url = "https://test.e-mango.ph/cashier/qrPayB.do"
     data = {
         "signType": "SHA256",
         "timestamp": timestamp(),
         "merchSeq": "300000064604",
-        "orderSeq": "Dunsds2sds",
+        "orderSeq": "Dusdnsds2sds",
         "orderDate": "2024-09-21",
         "amount": "2.00",
         "fee": "0.00",
@@ -21,14 +21,15 @@ def init_payment():
         "dueTime": "0",
         "busiType": "1",
         "notifyUrl": "https://test.e-mango.ph/cashier/pushtest",
-        "isRedirect": "1",
+        "isRedirect": "0",
         "redirectUrl": "https://www.e-mango.ph/",
-        "additionInfo": {},
+        "additionInfo": json.dumps({}),
         "remark": "buy",
     }
     signature = gen_signature(data)
     data["sign"] = signature
-    res = requests.post(url, data=json.dumps(data))
+    headers = {"Content-Type": "application/json"}
+    res = requests.post(url, data=json.dumps(data), headers=headers)
     print(res.json())
 
 

@@ -9,9 +9,8 @@ export const updateProfileImages = async (
   try {
     const formData = new FormData();
     formData.append("profilePic", profilePic);
-    formData.append("personalId", personalId);
+    formData.append("documentImage", personalId);
     formData.append("proofOfAddress", proofOfAddress);
-    console.log(formData);
     const response = await api.post("/personal_information/images", formData, {
       headers: {
         Authorization: `Bearer ${accessToken}`,

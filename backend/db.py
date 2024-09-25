@@ -13,7 +13,10 @@ def create_tables():
             phone_number TEXT NOT NULL UNIQUE,
             ref_link TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
-            full_name TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            middle_name TEXT NOT NULL,
+            pin REAL NOT NULL,
             ref_by TEXT,
             created_at DATE DEFAULT (DATE('now')),
             email_verified BOOLEAN DEFAULT false,
@@ -47,7 +50,7 @@ def create_tables():
                 mother_name TEXT NOT NULL,
                 income_tax_no TEXT NOT NULL,
                 id_type TEXT NOT NULL,
-                id_number INTGER NOT NULL,
+                id_number TEXT NOT NULL,
                 industry TEXT NOT NULL,
                 occupation TEXT NOT NULL,
                 source_of_income TEXT NOT NULL,
@@ -219,22 +222,6 @@ def update_user(email: str, update: dict):
     return cursor.rowcount
 
 
-# def update_nominee_info(_id: str, update: dict):
-#     conn = sqlite3.connect("my_database.db")
-#     cursor = conn.cursor()
-
-#     set_clause = ", ".join([f"{key} = ?" for key in update.keys()])
-#     values = list(update.values())
-#     values.append(email)
-#     sql = f"UPDATE users SET {set_clause} WHERE email = ?"
-
-#     cursor.execute(sql, values)
-#     conn.commit()
-#     conn.close()
-
-#     return cursor.rowcount
-
-
 def get_nominee(_id: str) -> Nominee | None:
     conn = sqlite3.connect("my_database.db")
 
@@ -377,7 +364,7 @@ def create_verification(
 def update_verification_info(_id: str, new_data: dict):
     conn = sqlite3.connect("my_database.db")
     cursor = conn.cursor()
-   
+
     set_clause = ", ".join([f"{key} = ?" for key in new_data.keys()])
     values = list(new_data.values())
     values.append(_id)

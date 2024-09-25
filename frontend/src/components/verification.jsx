@@ -9,7 +9,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 
 const Verification = () => {
-const {address} = useWeb3ModalAccount()
+
   const { auth } = useContext(AuthContext);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -17,10 +17,12 @@ const {address} = useWeb3ModalAccount()
   const [testState, setTestState] = useState(false);
   const webcamRef = useRef(null);
   const navigate = useNavigate();
+  
   const handleCapture = async () => {
     try{
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
+      
       if (imageSrc) {
         // Convert Base64 to Blob
         const byteString = atob(imageSrc.split(',')[1]);
@@ -37,8 +39,7 @@ const {address} = useWeb3ModalAccount()
         // Create FormData and append the Blob
         const screenShot = new FormData();
         screenShot.append("image", blob, "screenshot.png"); // Optionally, give the file a name
-        screenShot.append("walletAddress", address)
-        console.log(address)
+        
         // Send the form data with axios
         const response = await api.post("/verify", screenShot, {
           headers: {
@@ -46,22 +47,17 @@ const {address} = useWeb3ModalAccount()
             "Content-Type": "multipart/form-data",
           },
         });
-        // axios.post("http://127.0.0.1:8000/verify", screenShot, {
-        //   headers: {
-        //     'Content-Type': 'multipart/form-data'
-        //   }
-        // })
-        // .then((response) => {
-        //     console.log(response.data.status)
+        
           if (response.data.status === "success") {
             setIsVerified(true);
             setStatusMessage("Verification Successful!");
             toast.success("Face verification Successful!");
+            setIsCapturing(false);
             setTimeout(() => {
-              setIsCapturing(false);
+              navigate("/");  
             //   setStatusMessage("");
             }, 1000); 
-            navigate("/");
+            
 
         }
           else if(response.data.status === "notFound"){
@@ -103,7 +99,7 @@ const {address} = useWeb3ModalAccount()
             <Webcam
               audio={false}
               ref={webcamRef}
-              screenshotFormat="image/jpeg"
+              screenshotFormat="image/jpg"
               className="w-full rounded-lg"
               videoConstraints={{
                 width: 500,
@@ -144,9 +140,10 @@ const {address} = useWeb3ModalAccount()
         <>
         {
         isVerified ? "" :
+    
     <button
     onClick={handleStartCapture}
-    className="bg-yellow-500 text-white py-2 px-6 rounded hover:bg-yellow-600"
+    className="bg-yellow-500 text-white py-4 px-6 rounded hover:bg-yellow-600"
     >
 
             {statusMessage ? "Capture Again" : "Start Verification"}

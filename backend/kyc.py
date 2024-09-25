@@ -6,7 +6,8 @@ from PIL import Image
 from schemas import IdDocumentInfo, PersonalInformation
 import shutil
 from typing import BinaryIO
-import db
+import db, json
+from datetime import datetime
 
 # url = "https://b2b-dev.idmetagroup.com/api/v1/verification/biometricsverification"
 url = "https://integrate.idmetagroup.com/api/v1/verification/create-verification"
@@ -17,7 +18,7 @@ headers = {
     "accept": "application/json",
 }
 
-template_id = 54
+template_id = 94
 face_comparison_threshold = 70
 
 
@@ -45,8 +46,9 @@ def verify_document(
     try:
         data2 = {
             "returnFaceImage": True,
+            "returnFullDocumentImage": False,
             "document_verify": True,
-            "template_id": 54,
+            "template_id": template_id,
             "verification_id": verification_id,
         }
         files = {
@@ -60,11 +62,12 @@ def verify_document(
             files=files,
         )
         data = res.json()
+        # print(data)
         visual_check = data["result"]["data"]["extractionResult"]
         return extract_info(visual_check)
     except Exception as e:
         print(e)
-        raise Exception("Unable to verify document")
+        raise Exception("Unable to verify document, ensure it's a valid document")
 
 
 def compare_faces(
@@ -89,6 +92,7 @@ def compare_faces(
     data = res.json()
     if not data.get("status", False):
         erro_msg = data.get("message", "Error comparing faces")
+        print(erro_msg)
         raise Exception(erro_msg)
     result = data["result"]
     if isinstance(result, dict):
@@ -113,20 +117,44 @@ def complete_verification(
 
 
 def extract_info(document_info: dict) -> IdDocumentInfo:
-    given_names = document_info.get("firstName")
+    full_name = document_info.get("fullName")
+    first_name = document_info.get("firstName")
     last_name_obj = document_info.get("lastName")
     date_of_birth_obj = document_info.get("dateOfBirth")
     face_image_base64_string = document_info.get("faceImageBase64")
     result = IdDocumentInfo()
 
-    if given_names:
-        firstname, middle_name = given_names["latin"].strip().split("\n")
-        result.first_name = firstname.strip()
-        result.middle_name = middle_name.strip()
+    if full_name:
+
+        first_name, *middle_name, last_name = full_name["latin"].split(" ")
+        middle_name = " ".join(middle_name)
+        if first_name.endswith(","):
+            result.last_name = first_name.strip(",")
+            result.first_name = middle_name
+            result.middle_name = last_name
+        else:
+            result.first_name = first_name.strip()
+            result.middle_name = middle_name.strip()
+            result.last_name = last_name.strip()
+
+    elif first_name:
+        names = first_name["latin"].split("\n")
+        if len(names) == 2:
+            first_name, middle_name = names
+            result.first_name = first_name.strip()
+            result.middle_name = middle_name.strip()
+        else:
+            result.first_name = first_name.strip()
+
     if last_name_obj:
         result.last_name = last_name_obj["latin"].strip()
     if date_of_birth_obj:
-        result.date_of_birth = f"{date_of_birth_obj['year']}-{date_of_birth_obj['month']}-{date_of_birth_obj['day']}"
+        date_of_birth = datetime(
+            year=int(date_of_birth_obj["year"]),
+            month=int(date_of_birth_obj["month"]),
+            day=int(date_of_birth_obj["day"]),
+        )
+        result.date_of_birth = date_of_birth
 
     if face_image_base64_string:
         image_data = base64.b64decode(face_image_base64_string)
@@ -142,6 +170,9 @@ def verify_user_document(
     id_file_path = save_user_document(document_image, filename, user_id)
     verification_id = init_verification(user_id)
     document_info = verify_document(verification_id, id_file_path)
+    print(f"Document first name {document_info.first_name}")
+    print(f"Document middle name {document_info.middle_name}")
+    print(f"Document last name {document_info.last_name}")
     _check_document_fields(document_info)
     personal_info = db.get_personal_information(user_id)
     if not personal_info:
@@ -209,8 +240,8 @@ def _check_document_fields(
         raise Exception("Unable to extract last name")
     elif not data.last_name:
         raise Exception("Unable to extract last name")
-    elif not data.date_of_birth:
-        raise Exception("Unable to extract date of birth")
+    # elif not data.date_of_birth:
+    #     raise Exception("Unable to extract date of birth")
     elif not data.front_image:
         raise Exception("Unable to extract front image")
 
@@ -222,15 +253,17 @@ def _verify_document_data(
     assert document_info.first_name
     assert document_info.last_name
     assert document_info.middle_name
+    year, month, day = personal_info.date_of_birth.split("-")
+    date_of_birth = datetime(year=int(year), month=int(month), day=int(day))
 
     if document_info.first_name.lower() != personal_info.first_name.lower():
-        raise Exception("First name doesn't match")
+        raise Exception("User first name doesn't match id first name")
     elif document_info.last_name.lower() != personal_info.last_name.lower():
-        raise Exception("Last name doesn't match")
+        raise Exception("User last name doesn't match id last name")
     elif document_info.middle_name.lower() != personal_info.middle_name.lower():
-        raise Exception("Middle name doesn't match")
-    elif document_info.date_of_birth != personal_info.date_of_birth:
-        raise Exception("Birth of birth doesn't match")
+        raise Exception("User middle name doesn't match id middle name")
+    elif document_info.date_of_birth and document_info.date_of_birth != date_of_birth:
+        raise Exception("User date of birth doesn't match id date of birth")
 
 
 def verify_user_face(
@@ -245,6 +278,7 @@ def verify_user_face(
         raise Exception("Verification Credentials not verified")
 
     id_face = get_user_id_front_image_path(user_id)
+
     if not id_face:
         raise Exception("If front image not found")
 
@@ -253,5 +287,32 @@ def verify_user_face(
 
     if score < face_comparison_threshold:
         raise Exception("Face mismatch")
+    print(score)
     complete_verification(verification.id)
     db.update_user(user_email, {"kyc_verified": True})
+
+
+def save_user_face(image: BinaryIO, user_id):
+    user_upload_dir = f"{upload_dir}/{user_id}"
+    os.makedirs(user_upload_dir, exist_ok=True)
+    files = os.listdir(user_upload_dir)
+    for file in files:
+        if file.startswith("user_face"):
+            os.remove(f"{user_upload_dir}/{file}")
+
+    img = Image.open(image)
+    _format = img.format
+    img_format = _format.lower() if _format else ".jpg"
+    path = f"{upload_dir}/{user_id}/user_face.{img_format}"
+    img.save(path)
+    return path
+
+
+# verification_id = init_verification("ddssdme")
+# print(verification_id)
+# res = verify_document("b136e75b-65a1-40b2-898c-89e8605ac442", "7.jpg")
+# print(res)
+# with open("8.json", "w") as f:
+#     json.dump(res, f, indent=4)
+# with open("uploads/8w6A833Lb3aiVP2wj8j78G/id.jpg", "rb") as file:
+#     verify_user_face(file, "8w6A833Lb3aiVP2wj8j78G", "ejemplo@ejemplo.mx")

@@ -33,9 +33,9 @@ const balances = [
 const Balance = ({ isOpen, onClose }) => {
   const modalRef = useRef(null);
   const { profile } = useContext(AuthContext);
-  const [tokenBalance, setTokenBalance] = useState("0");
-  const [usdtBalance, setUsdtBalance] = useState("0");
-
+  const [tokenBalance, setTokenBalance] = useState("0")
+  const [usdtBalance, setUsdtBalance] = useState("0")
+  // console.log("Opened")
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -53,17 +53,19 @@ const Balance = ({ isOpen, onClose }) => {
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    if (!profile) return;
 
-    getTokenBalance(TOKENAddress, profile.walletAddress).then(
-      (tokenBalance) => {
-        setTokenBalance(formatEther(tokenBalance));
-      }
-    );
+    if(!profile) return 
+
+    getTokenBalance(TOKENAddress, profile.walletAddress).then((tokenBalance) => {
+      setTokenBalance(parseFloat(formatEther(tokenBalance)).toFixed(4))
+    })
     getTokenBalance(USDTAddress, profile.walletAddress).then((tokenBalance) => {
-      setUsdtBalance(formatEther(tokenBalance));
-    });
-  }, [profile]);
+      setUsdtBalance(parseFloat(formatEther(tokenBalance)).toFixed(4))
+    })
+
+  }, [isOpen, profile])
+
+
 
   if (!isOpen) return null;
 

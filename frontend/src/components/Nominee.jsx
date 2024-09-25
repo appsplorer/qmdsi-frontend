@@ -34,7 +34,6 @@ const Nominee = () => {
     const fetchNomineeData = async () => {
       try {
         const data = await getUserNominee(auth.accessToken);
-        console.log(auth.accessToken);
         setFormValues({
           firstName: data.firstName || null,
           middleName: data.middleName || null,
