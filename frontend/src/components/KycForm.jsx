@@ -27,19 +27,17 @@ const KycForm = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const { auth, profile } = useContext(AuthContext);
   const navigate = useNavigate();
-  console.log(profile)
-  
 
   useEffect(() => {
     const fetchPersonalInfo = async () => {
       try {
         let data = await getUserPersonalInfo(auth.accessToken);
-        data = data ? data : {}
-        console.log(data)
+        data = data ? data : {};
+        console.log(data);
         setDefaultValues({
-          firstName : profile.firstName || "",
-          middleName : profile.middleName || "" ,
-          lastName : profile.lastName || "",
+          firstName: profile.first_name || "",
+          middleName: profile.middle_name || "",
+          lastName: profile.last_name || "",
           employeeName: data.employee_name || "",
           income: data.income_per_annum?.toString() || "",
           dateOfBirth: data.date_of_birth || "",
@@ -77,10 +75,10 @@ const KycForm = () => {
     setIsPersonalInfoLoading(true);
     try {
       const personalInfoData = {
-        firstName : profile.firstName,
-        middleName : profile.middleName,
-        lastName : profile.lastName,
-        
+        firstName: profile.firstName,
+        middleName: profile.middleName,
+        lastName: profile.lastName,
+
         employeeName: defaultValues.employeeName,
         incomePerAnnum: parseFloat(defaultValues.income),
         dateOfBirth: defaultValues.dateOfBirth,
@@ -103,13 +101,15 @@ const KycForm = () => {
         maritalStatus: defaultValues.marital,
         gender: defaultValues.gender,
       };
-      console.log(personalInfoData)
+      console.log(personalInfoData);
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated!");
       setSelectedTab(1);
     } catch (error) {
       console.error("Error updating personal info:", error);
-      toast.error(error.response.data.detail|| "Failed to update personal information");
+      toast.error(
+        error.response.data.detail || "Failed to update personal information"
+      );
     } finally {
       setIsPersonalInfoLoading(false);
     }
@@ -119,8 +119,8 @@ const KycForm = () => {
     event.preventDefault();
     setIsImageUploadLoading(true);
     try {
-
-      await updateProfileImages(auth.accessToken, 
+      await updateProfileImages(
+        auth.accessToken,
         defaultValues.profilePic,
         defaultValues.personalId,
         defaultValues.proofOfAddress

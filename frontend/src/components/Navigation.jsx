@@ -1,5 +1,5 @@
 import { LogOut, User, Wallet } from "lucide-react";
-import { useContext, useState, useMemo, useEffect } from "react";
+import { useContext, useState, useMemo, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { GiHamburgerMenu } from "react-icons/gi";
@@ -16,6 +16,7 @@ const Navigation = () => {
   const [showBalance, setShowBalance] = useState(false);
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const navRef = useRef(null);
 
   const closeModal = () => setShowModal(false);
 
@@ -46,9 +47,20 @@ const Navigation = () => {
       }
     };
 
+    const handleClickOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target) && navShow) {
+        setNavShow(false);
+      }
+    };
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [navShow]);
 
   const handleLogin = () => {
     setShowModal(true);
@@ -87,6 +99,7 @@ const Navigation = () => {
           </div>
 
           <nav
+            ref={navRef}
             className={`
             fixed md:static top-0 right-0 w-64 md:w-auto h-full md:h-auto
             transition-all duration-300 ease-in-out
