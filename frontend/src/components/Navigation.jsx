@@ -90,34 +90,37 @@ const Navigation = () => {
                 Login
               </Link>
             )}
-            <button
-              className="text-white text-2xl cursor-pointer"
-              onClick={() => setNavShow(!navShow)}
-            >
-              {navShow ? <IoClose size={36} /> : <GiHamburgerMenu size={32} />}
-            </button>
+            {/* Show Hamburger Menu Only When Authenticated */}
+            {auth.isAuthenticated && (
+              <button
+                className="text-white text-2xl cursor-pointer"
+                onClick={() => setNavShow(!navShow)}
+              >
+                {navShow ? (
+                  <IoClose size={36} />
+                ) : (
+                  <GiHamburgerMenu size={32} />
+                )}
+              </button>
+            )}
           </div>
 
+          {/* Desktop Navigation */}
           <nav
-            ref={navRef}
             className={`
-            fixed md:static top-0 right-0 w-64 md:w-auto h-full md:h-auto
-            transition-all duration-300 ease-in-out
-            ${navShow ? "translate-x-0" : "translate-x-full md:translate-x-0"}
-            flex flex-col md:flex-row items-start md:items-center justify-start md:justify-end
-            bg-charcoalBlue md:bg-transparent
-            z-50 md:z-auto
-            overflow-y-auto md:overflow-visible
-          `}
+              hidden md:flex md:items-center md:justify-end
+              bg-charcoalBlue md:bg-transparent
+              z-50 md:z-auto
+            `}
           >
-            <ul className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 w-full md:w-auto p-6 md:p-0">
+            <ul className="flex items-center gap-6">
               {links.map((link, idx) => (
-                <li key={idx} className="w-full md:w-auto">
+                <li key={idx}>
                   {link.to ? (
                     <Link
                       to={link.to}
                       onClick={() => setNavShow(false)}
-                      className="text-white hover:text-golden duration-300 flex items-center gap-2 w-full md:w-auto"
+                      className="text-white hover:text-golden duration-300 flex items-center gap-2"
                     >
                       {link.icon} {link.label}
                     </Link>
@@ -127,7 +130,46 @@ const Navigation = () => {
                         link.action?.();
                         setNavShow(false);
                       }}
-                      className="text-white hover:text-golden duration-300 flex items-center gap-2 w-full md:w-auto"
+                      className="text-white hover:text-golden duration-300 flex items-center gap-2"
+                    >
+                      {link.icon} {link.label}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Mobile Navigation */}
+          <nav
+            ref={navRef}
+            className={`
+              fixed top-0 right-0 w-64 h-auto
+              transition-all duration-300 ease-in-out
+              ${navShow ? "translate-x-0" : "translate-x-full"}
+              flex flex-col items-start justify-start
+              bg-primary z-50
+              overflow-y-auto p-6
+            `}
+          >
+            <ul className="flex flex-col items-start gap-6 w-full">
+              {links.map((link, idx) => (
+                <li key={idx} className="w-full">
+                  {link.to ? (
+                    <Link
+                      to={link.to}
+                      onClick={() => setNavShow(false)}
+                      className="text-white hover:text-golden duration-300 flex items-center gap-2 w-full"
+                    >
+                      {link.icon} {link.label}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        link.action?.();
+                        setNavShow(false);
+                      }}
+                      className="text-white hover:text-golden duration-300 flex items-center gap-2 w-full"
                     >
                       {link.icon} {link.label}
                     </button>
@@ -149,6 +191,17 @@ const Navigation = () => {
         </div>
       </div>
 
+      {/* Close Button for Mobile Nav */}
+      {navShow && (
+        <button
+          className="fixed top-4 right-4 text-white text-2xl z-50 md:hidden"
+          onClick={() => setNavShow(false)}
+        >
+          <IoClose size={36} />
+        </button>
+      )}
+
+      {/* Modals */}
       {showModal && <LoginModal closeModal={closeModal} />}
       <Balance isOpen={showBalance} onClose={() => setShowBalance(false)} />
     </header>
