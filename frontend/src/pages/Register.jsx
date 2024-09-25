@@ -24,10 +24,7 @@ const Register = () => {
     confirmPin: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
-  const [pinError, setPinError] = useState("");
-  const [confirmPinError, setConfirmPinError] = useState("");
+  const [errors, setErrors] = useState({});
   const [passwordValid, setPasswordValid] = useState(false);
 
   const navigate = useNavigate();
@@ -43,29 +40,25 @@ const Register = () => {
     );
 
     if (!isLongEnough) {
-      setPasswordError("Password must be at least 8 characters long");
+      return "Password must be at least 8 characters long";
     } else if (!hasUppercase) {
-      setPasswordError("Password must contain at least one uppercase letter");
+      return "Password must contain at least one uppercase letter";
     } else if (!hasNumber) {
-      setPasswordError("Password must contain at least one number");
+      return "Password must contain at least one number";
     } else if (!hasSpecialChar) {
-      setPasswordError(
-        "Password must contain at least one special character (@, #, !)"
-      );
-    } else {
-      setPasswordError("");
+      return "Password must contain at least one special character (@, #, !)";
     }
+    return "";
   };
 
   const validatePin = (pin) => {
     const isNumeric = /^\d+$/.test(pin);
     if (!isNumeric) {
-      setPinError("PIN must contain only numbers");
+      return "PIN must contain only numbers";
     } else if (pin.length !== 4) {
-      setPinError("PIN must be exactly 4 digits");
-    } else {
-      setPinError("");
+      return "PIN must be exactly 4 digits";
     }
+    return "";
   };
 
   const handleChange = (e) => {
@@ -75,58 +68,65 @@ const Register = () => {
       [name]: value,
     }));
 
+    let newErrors = { ...errors };
+
     if (name === "password") {
-      validatePassword(value);
+      newErrors.password = validatePassword(value);
       if (value !== formData.confirmPassword) {
-        setConfirmPasswordError("Passwords do not match");
+        newErrors.confirmPassword = "Passwords do not match";
       } else {
-        setConfirmPasswordError("");
+        delete newErrors.confirmPassword;
       }
     }
 
     if (name === "confirmPassword") {
       if (value !== formData.password) {
-        setConfirmPasswordError("Passwords do not match");
+        newErrors.confirmPassword = "Passwords do not match";
       } else {
-        setConfirmPasswordError("");
+        delete newErrors.confirmPassword;
       }
     }
 
     if (name === "pin") {
-      validatePin(value);
+      newErrors.pin = validatePin(value);
       if (value !== formData.confirmPin) {
-        setConfirmPinError("PINs do not match");
+        newErrors.confirmPin = "PINs do not match";
       } else {
-        setConfirmPinError("");
+        delete newErrors.confirmPin;
       }
     }
 
     if (name === "confirmPin") {
       if (value !== formData.pin) {
-        setConfirmPinError("PINs do not match");
+        newErrors.confirmPin = "PINs do not match";
       } else {
-        setConfirmPinError("");
+        delete newErrors.confirmPin;
       }
     }
+
+    setErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
+    const newErrors = {};
     if (formData.password !== formData.confirmPassword) {
-      setConfirmPasswordError("Passwords do not match");
-      setIsLoading(false);
-      return;
+      newErrors.confirmPassword = "Passwords do not match";
     }
-
     if (formData.pin !== formData.confirmPin) {
-      setConfirmPinError("PINs do not match");
-      setIsLoading(false);
-      return;
+      newErrors.confirmPin = "PINs do not match";
     }
 
-    if (pinError || passwordError || confirmPinError) {
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) newErrors.password = passwordError;
+
+    const pinError = validatePin(formData.pin);
+    if (pinError) newErrors.pin = pinError;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       setIsLoading(false);
       return;
     }
@@ -156,19 +156,46 @@ const Register = () => {
     }
   };
 
+  const InputWithError = ({
+    type,
+    name,
+    placeholder,
+    value,
+    onChange,
+    error,
+  }) => (
+    <div className="flex flex-col w-full">
+      <Input
+        type={type}
+        className={`text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke ${
+          error ? "border-red-500" : ""
+        }`}
+        placeholder={placeholder}
+        onChange={onChange}
+        name={name}
+        value={value}
+        required
+      />
+      {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
+    </div>
+  );
+
   return (
     <div className="w-full px-4 md:px-10 pb-5 flex flex-col gap-5">
       {isLoading && <Loading />}
       <div className="w-full relative z-20">
         <div className="flex flex-col gap-2 mb-7">
-          <h1 className="text-5xl  md:text-7xl text-white font-medium">
+          <h1 className="text-4xl md:text-5xl lg:text-7xl text-white font-medium">
             Register
           </h1>
-          <span className="text-2xl font-normal text-white mb-6 mt-2">
+          <span className="text-xl md:text-2xl font-normal text-white mb-6 mt-2">
             Hi. Guest
           </span>
         </div>
-        <form className="flex flex-col md:flex-row items-center justify-center gap-5 w-full">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col md:flex-row items-start justify-center gap-5 w-full"
+        >
           <div className="w-full flex flex-col md:flex-row gap-5">
             {/* Information */}
             <div className="w-full md:w-1/2 py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
@@ -176,76 +203,81 @@ const Register = () => {
                 Information
               </h1>
               <div className="flex flex-col md:flex-row gap-3">
-                <Input
+                <InputWithError
                   type="text"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="First Name"
-                  onChange={handleChange}
                   name="firstName"
+                  placeholder="First Name"
                   value={formData.firstName}
-                  required
-                />
-                <Input
-                  type="text"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Middle Name"
                   onChange={handleChange}
+                  error={errors.firstName}
+                />
+                <InputWithError
+                  type="text"
                   name="middleName"
+                  placeholder="Middle Name"
                   value={formData.middleName}
-                />
-                <Input
-                  type="text"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Last Name"
                   onChange={handleChange}
+                  error={errors.middleName}
+                />
+                <InputWithError
+                  type="text"
                   name="lastName"
+                  placeholder="Last Name"
                   value={formData.lastName}
-                  required
+                  onChange={handleChange}
+                  error={errors.lastName}
                 />
               </div>
               <div className="flex flex-col md:flex-row gap-3">
-                <select
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="text-lg rounded-lg w-full p-3 bg-smoke"
-                  required
-                >
-                  <option value="">Select a country</option>
-                  {countryOptions.map((country) => (
-                    <option key={country.value} value={country.value}>
-                      {country.label}
-                    </option>
-                  ))}
-                </select>
-                <Input
+                <div className="flex flex-col w-full">
+                  <select
+                    id="country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className={`text-lg rounded-lg w-full p-3 bg-smoke ${
+                      errors.country ? "border-red-500" : ""
+                    }`}
+                    required
+                  >
+                    <option value="">Select a country</option>
+                    {countryOptions.map((country) => (
+                      <option key={country.value} value={country.value}>
+                        {country.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.country && (
+                    <span className="text-red-500 text-sm mt-1">
+                      {errors.country}
+                    </span>
+                  )}
+                </div>
+                <InputWithError
                   type="number"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Phone Number"
-                  onChange={handleChange}
                   name="phoneNumber"
+                  placeholder="Phone Number"
                   value={formData.phoneNumber}
-                  required
+                  onChange={handleChange}
+                  error={errors.phoneNumber}
                 />
               </div>
               <div className="flex flex-col md:flex-row gap-3">
-                <Input
+                <InputWithError
                   type="email"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Email"
-                  onChange={handleChange}
                   name="email"
+                  placeholder="Email"
                   value={formData.email}
-                  required
-                />
-                <Input
-                  type="text"
-                  className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                  placeholder="Referred By"
                   onChange={handleChange}
+                  error={errors.email}
+                />
+                <InputWithError
+                  type="text"
                   name="refBy"
+                  placeholder="Referred By"
                   value={formData.refBy}
+                  onChange={handleChange}
+                  error={errors.refBy}
                 />
               </div>
             </div>
@@ -257,64 +289,44 @@ const Register = () => {
                   Security
                 </h1>
                 <div className="flex flex-col md:flex-row gap-3">
-                  <Input.Password
-                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                    placeholder="Password"
-                    onChange={handleChange}
+                  <InputWithError
+                    type="password"
                     name="password"
+                    placeholder="Password"
                     value={formData.password}
-                    required
-                  />
-                  {passwordError && (
-                    <span className="text-red-500 text-sm">
-                      {passwordError}
-                    </span>
-                  )}
-                  <Input.Password
-                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                    placeholder="Confirm Password"
                     onChange={handleChange}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    required
+                    error={errors.password}
                   />
-                  {confirmPasswordError && (
-                    <span className="text-red-500 text-sm">
-                      {confirmPasswordError}
-                    </span>
-                  )}
+                  <InputWithError
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    error={errors.confirmPassword}
+                  />
                 </div>
                 <div className="flex flex-col md:flex-row gap-3">
-                  <Input
+                  <InputWithError
                     type="password"
-                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                    placeholder="Enter a 4-Digit PIN"
-                    onChange={handleChange}
                     name="pin"
+                    placeholder="Enter a 4-Digit PIN"
                     value={formData.pin}
-                    required
-                  />
-                  {pinError && (
-                    <span className="text-red-500 text-sm">{pinError}</span>
-                  )}
-                  <Input
-                    type="password"
-                    className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                    placeholder="Confirm 4-Digit PIN"
                     onChange={handleChange}
-                    name="confirmPin"
-                    value={formData.confirmPin}
-                    required
+                    error={errors.pin}
                   />
-                  {confirmPinError && (
-                    <span className="text-red-500 text-sm">
-                      {confirmPinError}
-                    </span>
-                  )}
+                  <InputWithError
+                    type="password"
+                    name="confirmPin"
+                    placeholder="Confirm 4-Digit PIN"
+                    value={formData.confirmPin}
+                    onChange={handleChange}
+                    error={errors.confirmPin}
+                  />
                 </div>
               </div>
               <button
-                onClick={handleSubmit}
+                type="submit"
                 className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
                 disabled={isLoading}
               >

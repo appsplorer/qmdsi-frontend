@@ -88,26 +88,23 @@ const Navigation = () => {
 
           <nav
             className={`
-            absolute md:static top-0 left-0 w-full h-screen md:h-auto
+            fixed md:static top-0 right-0 w-64 md:w-auto h-full md:h-auto
             transition-all duration-300 ease-in-out
-            ${
-              navShow
-                ? "opacity-100 visible"
-                : "opacity-0 invisible md:opacity-100 md:visible"
-            }
-            flex flex-col md:flex-row items-center justify-center md:justify-end
+            ${navShow ? "translate-x-0" : "translate-x-full md:translate-x-0"}
+            flex flex-col md:flex-row items-start md:items-center justify-start md:justify-end
             bg-charcoalBlue md:bg-transparent
-            z-10 md:z-auto
+            z-50 md:z-auto
+            overflow-y-auto md:overflow-visible
           `}
           >
-            <ul className="flex flex-col md:flex-row items-center gap-6 md:gap-4">
+            <ul className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-4 w-full md:w-auto p-6 md:p-0">
               {links.map((link, idx) => (
-                <li key={idx}>
+                <li key={idx} className="w-full md:w-auto">
                   {link.to ? (
                     <Link
                       to={link.to}
                       onClick={() => setNavShow(false)}
-                      className="text-white hover:text-golden duration-300 flex items-center gap-2"
+                      className="text-white hover:text-golden duration-300 flex items-center gap-2 w-full md:w-auto"
                     >
                       {link.icon} {link.label}
                     </Link>
@@ -117,7 +114,7 @@ const Navigation = () => {
                         link.action?.();
                         setNavShow(false);
                       }}
-                      className="text-white hover:text-golden duration-300 flex items-center gap-2"
+                      className="text-white hover:text-golden duration-300 flex items-center gap-2 w-full md:w-auto"
                     >
                       {link.icon} {link.label}
                     </button>

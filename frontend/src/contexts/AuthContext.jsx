@@ -24,12 +24,17 @@ export const AuthProvider = ({ children }) => {
     const fetchUserData = async () => {
       try {
         const userData = await getUser(auth.accessToken);
-        console.log(userData);
+        const fullName = [
+          userData.first_name,
+          userData.middle_name,
+          userData.last_name,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
         setProfile({
           id: userData.id,
-          firstName : userData.first_name,
-          lastName : userData.last_name,
-          middleName : userData.middle_name,
+          fullName: fullName,
           phoneNumber: userData.phone_number,
           country: userData.country,
           email: userData.email,
