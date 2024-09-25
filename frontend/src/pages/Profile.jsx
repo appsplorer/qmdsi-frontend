@@ -1,19 +1,19 @@
 import { useState, useEffect, useContext } from "react";
-import { getUserBalances } from "../services/users.service";
+import { getUser, getUserBalances } from "../services/users.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { Button } from "antd";
-import { getGoldPrice } from "../services/swap.service";
+import { getGoldPrice, getTokenBalance } from "../services/swap.service";
+import { TOKENAddress } from "../addresses";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [kycStatus, setKycStatus] = useState();
   const [qmgtBalance, setQmgtBalance] = useState("");
   const [goldPrice, setGoldPrice] = useState("");
-  const [isConnecting, setIsConnecting] = useState(false);
   const { profile } = useContext(AuthContext);
 
   useEffect(() => {
@@ -66,14 +66,6 @@ const Profile = () => {
       </div>
     );
   }
-
-  const handleConnect = () => {
-    setIsConnecting(true);
-    setTimeout(() => {
-      setIsConnecting(false);
-      alert("Connected successfully!");
-    }, 3000);
-  };
 
   return (
     <motion.div
@@ -173,26 +165,40 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
             >
-              <div className="bg-silver/20 flex flex-col justify-between text-white/60 px-6 py-3 rounded-md">
-                <h3 className="text-lg">Wallet Address</h3>
-                <p className="text-white text-lg mb-4">
+              <div className="bg-silver/20 flex flex-col justify-between text-white p-4 h-32 md:h-40 rounded-lg">
+                <p className="text-sm md:text-base">Balance</p>
+                <p className="text-lg md:text-xl">{qmgtBalance} QMGT</p>
+                <div className="flex justify-end">
+                  <Button className="text-sm md:text-base">Transactions</Button>
+                </div>
+              </div>
+
+              <div className="bg-silver/20 flex flex-col justify-between text-white p-4 h-32 md:h-40 rounded-lg">
+                <p className="text-sm md:text-base">Address</p>
+                <p className="break-all text-xs md:text-sm">
                   {profileData.walletAddress}
                 </p>
-                <Button
-                  className="rounded-full mt-4 text-sm md:text-base"
-                  onClick={handleCopyAddress}
-                >
-                  Copy
-                </Button>
+                <div className="flex justify-end">
+                  <Button
+                    onClick={handleCopyAddress}
+                    className="text-sm md:text-base"
+                  >
+                    Copy
+                  </Button>
+                </div>
               </div>
-              <div className="bg-silver/20 flex flex-col justify-between text-white/60 px-6 py-3 rounded-md">
-                <h3 className="text-lg">Gold Balance</h3>
-                <p className="text-white text-lg">{qmgtBalance}</p>
-              </div>
-              <div className="bg-silver/20 flex flex-col justify-between text-white/60 px-6 py-3 rounded-md">
-                <h3 className="text-lg">Gold Price</h3>
-                <p className="text-white text-lg">${goldPrice}</p>
-              </div>
+            </motion.div>
+
+            <motion.div
+              className="flex justify-between items-center my-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              <p className="text-sm md:text-base">Gold Price</p>
+              <p className="text-sm md:text-base">
+                1.002g per {goldPrice} USDT
+              </p>
             </motion.div>
 
             <motion.div
