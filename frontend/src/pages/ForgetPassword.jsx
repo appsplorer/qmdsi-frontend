@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { forgetPassword } from "../services/auth.service";
 import { toast } from "react-toastify";
+import Loading from "../components/Loading";
 import { Input } from "antd";
 
 const ForgetPassword = () => {
@@ -33,6 +34,7 @@ const ForgetPassword = () => {
   return (
     <div className="w-full min-h-screen flex flex-col md:flex-row items-center justify-center p-5 md:px-24">
       {/* Left Side - Form */}
+      {isLoading && <Loading />}
       <div className="w-full md:w-1/2 max-w-lg blur-bg border py-7 px-5 border-ash/20 rounded-md flex flex-col items-center justify-center gap-7">
         <h1 className="text-xl md:text-3xl font-normal text-white">
           Forgot Password
@@ -52,7 +54,7 @@ const ForgetPassword = () => {
           className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
           disabled={isLoading}
         >
-          {isLoading ? "Submitting..." : "Submit"}
+          Proceed
         </button>
         <div className="flex gap-2 items-center justify-center">
           <p className="text-gray-500">Remember your password?</p>

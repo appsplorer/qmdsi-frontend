@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { authSignup } from "../services/auth.service";
 import { toast } from "react-toastify";
-import { FaSpinner } from "react-icons/fa";
+import Loading from "../components/Loading";
 import { countryOptions } from "../data/countries";
-import { Button, Input } from "antd";
+import { Input } from "antd";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
@@ -158,6 +158,7 @@ const Register = () => {
 
   return (
     <div className="w-full px-4 md:px-10 pb-5 flex flex-col gap-5">
+      {isLoading && <Loading />}
       <div className="w-full relative z-20">
         <div className="flex flex-col gap-2 mb-7">
           <h1 className="text-5xl  md:text-7xl text-white font-medium">
@@ -315,9 +316,9 @@ const Register = () => {
               <button
                 onClick={handleSubmit}
                 className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
-                loading={isLoading}
+                disabled={isLoading}
               >
-                {isLoading ? <FaSpinner /> : "Register"}
+                Register
               </button>
             </div>
           </div>
