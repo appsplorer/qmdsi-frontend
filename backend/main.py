@@ -25,6 +25,7 @@ from schemas import (
     ForgetPassowrd,
     ResetUserPassword,
     DepositReq,
+    TransferResponse,
 )
 
 import core, db, w3
@@ -34,7 +35,7 @@ import security
 import emails
 from security import Jwt
 import kyc
-from dependencies import current_user
+from dependencies import current_user, current_org
 from exceptions import BadRequest
 import org_ids
 import config
@@ -253,7 +254,7 @@ def get_user_nominee(user: DBUser = Depends(current_user)):
 @app.get("/api/account/bind")
 def get_bind_status(
     user_id: str,
-    x_token: str = Header(...),
+    x_token: str = Depends(current_org),
 ):
     return bool(db.get_binded_user(user_id))
 
@@ -261,7 +262,7 @@ def get_bind_status(
 @app.post("/api/account/binding")
 def bind_account(
     data: BindRequestSchema,
-    x_token: str = Header(...),
+    x_token: str = Depends(current_org),
 ):
     org_id = org_ids.get_ord_id(x_token)
     if not org_id:
@@ -289,29 +290,69 @@ def swap_token(swap: SwapParams, user: DBUser = Depends(current_user)):
         raise exceptions.BadRequestException(f"Error occured {e}")
 
 
-@app.post("/api/account/transfer")
-def transfer_token(data: TransferSchema, x_token: str = Header(...)):
-    hash = core.transfer(x_token, data)
-    return {"hash": hash}
+@app.post(
+    "/api/account/transfer",
+    response_model=TransferResponse,
+    responses={
+        400: {"description": "Invalid token"},
+    },
+)
+def transfer_token(
+    data: TransferSchema,
+    x_token: str = Depends(current_org),
+):
+    response = core.transfer(x_token, data)
+    return response
 
 
-@app.post("/api/account/debit")
-def debit_user(data: DebitSchema, x_token: str = Header(...)):
-    hash = core.debit_user(x_token, data)
-    return {"hash": hash}
+@app.get(
+    "/api/account/transfer",
+    # response_model=,
+    responses={
+        400: {"description": "Invalid token"},
+    },
+)
+def get_token_transfers(
+    transfer_id: str,
+    x_token: str = Depends(current_org),
+):
+    transfers = db.get_transfers("id", transfer_id)
+    if transfers:
+        return transfers[0]
+    return None
 
 
-@app.post("/api/account/deposit")
-def deposit_to_user(info: DebitSchema, x_token: str = Header(...)):
-    hash = core.deposit_to_user(x_token, info)
-    return {"hash": hash}
+@app.get("/api/user/transfers")
+def get_user_transfers(
+    user_account: str,
+    x_token: str = Depends(current_org),
+):
+    return db.get_transfers("user_account", user_account)
+
+
+# @app.post("/api/account/debit")
+# def debit_user(data: DebitSchema, x_token: str = Header(...)):
+#     hash = core.debit_user(x_token, data)
+#     return {"hash": hash}
+
+
+# @app.post("/api/account/deposit")
+# def deposit_to_user(info: DebitSchema, x_token: str = Header(...)):
+#     hash = core.deposit_to_user(x_token, info)
+#     return {"hash": hash}
 
 
 @app.post("/api/gold/buy")
-def buy_gold(data: BuyGoldSchema, x_token: str = Header(...)):
+def buy_gold(
+    data: BuyGoldSchema,
+    x_token: str = Depends(current_org),
+):
     return core.buy_gold(data, x_token)
 
 
 @app.post("/api/gold/sell")
-def sell_gold(data: SellGoldSchema, x_token: str = Header(...)):
+def sell_gold(
+    data: SellGoldSchema,
+    x_token: str = Depends(current_org),
+):
     return core.sell_gold(data, x_token)

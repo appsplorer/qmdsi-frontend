@@ -11,6 +11,9 @@ from schemas import (
     SellGoldSchema,
     ResetUserPassword,
     TransferParams,
+    TransferResponse,
+    TransferStatus,
+    TransferData,
 )
 import w3, db
 from constants import TOKEN
@@ -165,10 +168,66 @@ def swap(user_id: str, token_in: str, amount_in: float):
     return w3.swap(user_id, token_in, amount_in_wei)
 
 
-def transfer(org_token: str, data: TransferSchema):
+def transfer(
+    org_token: str,
+    data: TransferSchema,
+) -> TransferResponse:
     _org_id = org_ids.get_ord_id(org_token)
+
     if not _org_id:
         raise BadRequestException("Invalid token")
+
+    user = db.get_user(data.userAccount)
+
+    if not user:
+        return TransferResponse(
+            status=TransferStatus.failed, errorMsg="toAccount user does not exists"
+        )
+    user_address = w3.get_user_account(data.userAccount)
+    org_wallet = w3.get_user_account(_org_id)
+    token_address = w3.to_checkum(TOKEN["qmgt"])
+    qmgt_amount = w3.convert_usd_to_qmdt(data.amountInUSD)
+
+    if data.type == "credit":
+        params = TransferParams(
+            to=user_address, token=token_address, amount=qmgt_amount
+        )
+        balance = w3.get_token_balance(org_wallet, token_address)
+        if balance < qmgt_amount:
+            return TransferResponse(
+                status=TransferStatus.failed, errorMsg="Insufficient balance"
+            )
+        from_id = _org_id
+
+    else:
+        if not data.userPin:
+            return TransferResponse(
+                status=TransferStatus.failed, errorMsg="userPin required"
+            )
+
+        if int(user.pin) != data.userPin:
+            return TransferResponse(
+                status=TransferStatus.failed, errorMsg="Incorrect user pin"
+            )
+        balance = w3.get_token_balance(user_address, token_address)
+        if balance < qmgt_amount:
+            return TransferResponse(
+                status=TransferStatus.failed, errorMsg="Insufficient balance"
+            )
+        params = TransferParams(to=org_wallet, token=token_address, amount=qmgt_amount)
+        from_id = data.userAccount
+
+    hash = w3.make_transfers(from_id, [params])
+    hash = f"0x{hash}"
+    transaction_id = shortuuid.uuid()
+    tk_amt = qmgt_amount / 10**18
+    db.create_transfer(
+        transaction_id, data.userAccount, data.type, data.amountInUSD, tk_amt, hash
+    )
+    res = TransferResponse(
+        status=TransferStatus.success, data=TransferData(id=transaction_id, hash=hash)
+    )
+    return res
 
 
 def buy_gold(data: BuyGoldSchema, x_token: str):
@@ -235,10 +294,9 @@ def process_deposit(deposit_id: str):
 
     elif response["transState"] == "06":
         return True
-    
+
     else:
         state = transaction_states[response["transState"]]
         updates = {"processed": True, "state": state}
         db.update_deposit(deposit_id, updates)
         return True
-        

@@ -11,6 +11,21 @@ class Tokens(str, Enum):
     usdt = "usdt"
 
 
+class TransferType(str, Enum):
+    debit = "debit"
+    credit = "credit"
+
+
+class TransferStatus(str, Enum):
+    failed = "failed"
+    success = "success"
+
+
+class TransferData(BaseModel):
+    id: str
+    hash: str
+
+
 class BaseUser(BaseModel):
     first_name: str = Field(
         ..., validation_alias=AliasChoices("firstName", "first_name")
@@ -147,9 +162,10 @@ class DebitSchema(BaseModel):
 
 
 class TransferSchema(BaseModel):
-    toAccount: str
-    fromAccount: str
-    amountInUSD: str
+    type: TransferType
+    userPin: int | None = None
+    userAccount: str
+    amountInUSD: float
 
 
 class BindRequestSchema(BaseModel):
@@ -212,3 +228,18 @@ class TransferParams(BaseModel):
     token: ChecksumAddress
     to: ChecksumAddress
     amount: int
+
+
+class TransferResponse(BaseModel):
+    status: TransferStatus
+    data: TransferData | None = None
+    errorMsg: str | None = None
+
+
+class Transfer(BaseModel):
+    id: str
+    userAccount: str
+    type: TransferType
+    usdtAmount: float
+    qmgtAmount: float
+    hash: str

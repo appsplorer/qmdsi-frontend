@@ -1,5 +1,13 @@
 import sqlite3
-from schemas import PersonalInformation, Nominee, DBUser, Refs, VerficationData, Deposit
+from schemas import (
+    PersonalInformation,
+    Nominee,
+    DBUser,
+    Refs,
+    VerficationData,
+    Deposit,
+    Transfer,
+)
 
 
 def create_tables():
@@ -16,7 +24,7 @@ def create_tables():
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
             middle_name TEXT NOT NULL,
-            pin REAL NOT NULL,
+            pin INTEGER NOT NULL,
             ref_by TEXT,
             created_at DATE DEFAULT (DATE('now')),
             email_verified BOOLEAN DEFAULT false,
@@ -106,6 +114,18 @@ def create_tables():
         """
     )
 
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS transfers(
+            id TEXT PRIMARY KEY,
+            user_account TEXT,
+            type TEXT,
+            usd_amount REAL,
+            qmgt_amount REAL,
+            hash TEXT
+        )
+    """
+    )
     conn.commit()
     conn.close()
 
@@ -478,6 +498,67 @@ def update_deposit(deposit_id: str, updates: dict):
     conn.commit()
     conn.close()
     return cursor.rowcount
+
+
+def create_transfer(
+    transfer_id: str,
+    user_account: str,
+    transfer_type: str,
+    usd_amount: float,
+    qmgt_amount: float,
+    hash: str,
+):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+    try:
+
+        values = (
+            transfer_id,
+            user_account,
+            transfer_type,
+            usd_amount,
+            qmgt_amount,
+            hash,
+        )
+        cursor.execute("INSERT INTO transfers VALUES (?, ?, ?, ?, ?, ?)", values)
+        conn.commit()
+        created = cursor.rowcount > 0
+        conn.close()
+        return created
+    except Exception as e:
+        print(e)
+        conn.close()
+        return False
+
+
+def get_transfers(
+    field: str,
+    value,
+) -> list[Transfer]:
+
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+
+    try:
+        query = f"SELECT * from transfers WHERE {field} = ?"
+        transfers = cursor.execute(query, (value,)).fetchall()
+        res = [
+            Transfer(
+                id=t[0],
+                userAccount=t[1],
+                type=t[2],
+                usdtAmount=t[3],
+                qmgtAmount=t[4],
+                hash=t[5],
+            )
+            for t in transfers
+        ]
+        return res
+    except Exception as e:
+        print(e)
+        conn.close()
+        return []
+
 
 
 create_tables()
