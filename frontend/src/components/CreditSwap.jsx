@@ -15,10 +15,8 @@ const CreditSwap = () => {
               <p>PHP</p>
             </div>
             <div className="mt-2 text-white text-xs flex gap-2">
-              <p>Balance: 99.29</p>
-              <button className="border-none text-white font-semibold">
-                Max
-              </button>
+             
+             
             </div>
           </div>
         </div>
@@ -45,9 +43,7 @@ const CreditSwap = () => {
             </div>
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>Balance: 0.00</p>
-              <button className="border-none text-white font-semibold">
-                Max
-              </button>
+              
             </div>
           </div>
         </div>

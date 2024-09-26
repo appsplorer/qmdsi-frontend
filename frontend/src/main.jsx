@@ -16,9 +16,11 @@ import Verify from "./pages/verify.jsx";
 import Login from "./pages/Login.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import Verification from "./components/verification.jsx";
+import Deposit from "./pages/Deposit.jsx";
 import ForgetPassword from "./pages/ForgetPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
+
 const router = createBrowserRouter([
   {
     element: <App />,
@@ -47,6 +49,10 @@ const router = createBrowserRouter([
       {
         path: "/reset_password",
         element: <ResetPassword />,
+      },
+      {
+        path: "/deposits/:id",
+        element: <Deposit />,
       },
       {
         path: "/pool",
