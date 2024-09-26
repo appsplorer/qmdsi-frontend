@@ -1,24 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowDown } from "lucide-react";
 import QMLogo from "../assets/token.png";
 import PHPLogo from "../assets/php.png";
 import { toast } from "react-toastify";
 import Loading from "./Loading";
-import { depositFiat } from "../services/deposit.service";
+import { depositFiat, getRate } from "../services/deposit.service";
 import { getAmountOut } from "../services/swap.service";
 
 const CreditSwap = () => {
   const [phpAmount, setPhpAmount] = useState("");
+  const [qmgtAmount, setQmgtAmount] = useState("0.00");
   const [loading, setLoading] = useState(false);
+  const [rate, setRate] = useState(0);
 
-  const handlePhpAmountChange = (e) => {
-    setPhpAmount(e.target.value);
+  useEffect(() => {
+    fetchRate();
+  }, []);
+
+  const fetchRate = async () => {
+    try {
+      const rateResponse = await getRate();
+      setRate(rateResponse.rate);
+    } catch (error) {
+      console.error("Error fetching rate:", error);
+      toast.error("Failed to fetch exchange rate");
+    }
   };
 
   const getQmgtAmount = async (usdtAmount) => {
-      const qmgtAmount = await getAmountOut("usdt", usdtAmount)
-      return qmgtAmount
-  }
+    const qmgtAmount = await getAmountOut("usdt", usdtAmount);
+    return qmgtAmount;
+  };
+
+  const handlePhpAmountChange = async (e) => {
+    const amount = e.target.value;
+    setPhpAmount(amount);
+    if (amount && parseFloat(amount) > 0) {
+      const usdtAmount = (parseFloat(amount) * rate).toString();
+      try {
+        const calculatedQmgtAmount = await getQmgtAmount(usdtAmount);
+        setQmgtAmount(calculatedQmgtAmount);
+      } catch (error) {
+        toast.error("Failed to calculate QMGT amount");
+        setQmgtAmount("0.00");
+      }
+    } else {
+      setQmgtAmount("0.00");
+    }
+  };
 
   const handlePurchase = async () => {
     if (!phpAmount || parseFloat(phpAmount) <= 0) {
@@ -30,8 +59,11 @@ const CreditSwap = () => {
     try {
       const response = await depositFiat({ amount: parseFloat(phpAmount) });
       console.log("Deposit response:", response);
-      toast.success("Initiated, You will be redirected in few minutes!");
+      toast.success(
+        "Payment initiated, You will be redirected in few minutes!"
+      );
       setPhpAmount("");
+      setQmgtAmount("0.00");
 
       if (response.url) {
         window.location.href = response.url;
@@ -88,7 +120,7 @@ const CreditSwap = () => {
         <div className="w-1/2 ">
           <input
             type="number"
-            placeholder="0.00"
+            value={qmgtAmount}
             readOnly
             style={{
               WebkitAppearance: "none",
