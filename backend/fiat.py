@@ -2,13 +2,12 @@ import json
 import requests
 import hashlib
 from datetime import datetime
-import yfinance as yf  # type: ignore
+
+# import yfinance as yf  # type: ignore
 from cache import CacheWithTTL
 from config import FRONTEND_URL, NOTIFY_URL
 
 cache = CacheWithTTL(ttl_seconds=300)
-# Merchant key for signing
-
 
 key = "vfg98uu47jqgbuurr5u1eb67k20dv7d3"
 url = "https://test.e-mango.ph/cashier/qrPay.do"
@@ -20,9 +19,10 @@ def get_rate():
     cached = cache.get("rate")
     if cached:
         return float(cached)
-
-    data = yf.Ticker("PHPUSD=X")
-    current_rate = data.history(period="1d")["Close"].iloc[-1]
+    res = requests.get(
+        "https://v6.exchangerate-api.com/v6/85d5633526ca42450dd655b2/latest/PHP"
+    )
+    current_rate = res.json()["conversion_rates"]["USD"]
     cache.set("rate", float(current_rate))
     return float(current_rate)
 

@@ -41,6 +41,7 @@ import org_ids
 import config
 from PIL import Image
 import json
+import fiat
 
 app = FastAPI()
 
@@ -58,6 +59,11 @@ date_format = "%Y-%m-%d"
 @app.get("/")
 async def read_root():
     return {"status": "up"}
+
+
+@app.get("/rate")
+def get_php_rate():
+    return {"rate": fiat.get_rate()}
 
 
 @app.post("/signup")
