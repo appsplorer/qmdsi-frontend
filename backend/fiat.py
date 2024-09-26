@@ -47,7 +47,7 @@ def init_payment(
     orderId: str,
     amount: float,
 ):
-
+    print(NOTIFY_URL)
     data = {
         "signType": "SHA256",
         "timestamp": timestamp(),
