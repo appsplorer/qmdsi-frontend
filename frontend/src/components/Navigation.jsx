@@ -108,10 +108,10 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <nav
             className={`
-              hidden md:flex md:items-center md:justify-end
-              bg-charcoalBlue md:bg-transparent
-              z-50 md:z-auto
-            `}
+    hidden md:flex md:items-center md:justify-end
+    bg-charcoalBlue md:bg-transparent
+    z-50 md:z-auto
+  `}
           >
             <ul className="flex items-center gap-6">
               {links.map((link, idx) => (
@@ -137,6 +137,16 @@ const Navigation = () => {
                   )}
                 </li>
               ))}
+              {!auth.isAuthenticated && (
+                <li className="hidden md:block">
+                  <Link
+                    to="/signin"
+                    className="text-white hover:text-golden duration-300 text-sm font-medium"
+                  >
+                    Login
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
 

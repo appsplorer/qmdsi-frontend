@@ -132,7 +132,7 @@ const TokenSwap = ({ fee, setFee }) => {
   const [userBalances, setUserBalances] = useState({ qmgt: 0, usdt: 0 });
   const [insufficientBalance, setInsufficientBalance] = useState(false);
   const { profile, auth } = useContext(AuthContext);
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   const closeModal = () => {
     setTransactionModal(false);
@@ -259,13 +259,12 @@ const TokenSwap = ({ fee, setFee }) => {
     const tokenAddress = tokens[tokenIn];
 
     Promise.all([
-        getTokenBalance(tokenAddress, profile.walletAddress),
-        getTokenDecimals(tokenAddress),
-      ]).then((data) => {
-        const [balance, decimals] = data
+      getTokenBalance(tokenAddress, profile.walletAddress),
+      getTokenDecimals(tokenAddress),
+    ]).then((data) => {
+      const [balance, decimals] = data;
       setTokenInBal(formatUnits(balance, decimals));
-      });
-      
+    });
 
     const interValId = setInterval(async () => {
       const [balance, decimals] = await Promise.all([
@@ -284,13 +283,13 @@ const TokenSwap = ({ fee, setFee }) => {
     const tokenAddress = tokens[tokenOut];
 
     Promise.all([
-        getTokenBalance(tokenAddress, profile.walletAddress),
-        getTokenDecimals(tokenAddress),
-      ]).then((res) => {
-      const [balance, decimals] = res  
+      getTokenBalance(tokenAddress, profile.walletAddress),
+      getTokenDecimals(tokenAddress),
+    ]).then((res) => {
+      const [balance, decimals] = res;
       setTokenOutBal(formatUnits(balance, decimals));
     });
-      
+
     const interValId = setInterval(async () => {
       const [balance, decimals] = await Promise.all([
         getTokenBalance(tokenAddress, profile.walletAddress),
@@ -319,6 +318,10 @@ const TokenSwap = ({ fee, setFee }) => {
     }
   }, [feeAmount]);
 
+  const handleLogin = () => {
+    navigate("/signin");
+  };
+
   return (
     <div className="mt-4">
       <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center">
@@ -340,7 +343,7 @@ const TokenSwap = ({ fee, setFee }) => {
             />
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>
-                Balance: {" "}
+                Balance:{" "}
                 {tokenIn === "USDT"
                   ? userBalances.usdt
                   : tokenIn === "QMGT"
@@ -446,17 +449,15 @@ const TokenSwap = ({ fee, setFee }) => {
           className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
           disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
           onClick={() => {
-            !auth?.isAuthenticated
-              ? navigator("/signin")
-              : setTransactionModal(true);
+            !auth?.isAuthenticated ? handleLogin() : setTransactionModal(true);
           }}
-        >{`${
-          !auth?.isAuthenticated
+        >
+          {!auth?.isAuthenticated
             ? "Login"
             : insufficientBalance
             ? "Insufficient Balance"
-            : "Convert"
-        }`}</button>
+            : "Convert"}
+        </button>
       </div>
 
       {transactionModal && (
