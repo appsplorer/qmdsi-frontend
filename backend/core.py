@@ -1,7 +1,6 @@
 from schemas import (
     PersonalInformation,
     Nominee,
-    BaseUser,
     DBUser,
     BindResult,
     DebitSchema,
@@ -11,13 +10,15 @@ from schemas import (
     Tokens,
     SellGoldSchema,
     ResetUserPassword,
+    TransferParams,
 )
 import w3, db
-from pydantic import EmailStr
 from constants import TOKEN
 import org_ids
 from exceptions import BadRequestException
-import security
+import security, shortuuid
+import fiat
+from constants import transaction_states
 
 
 def get_personal_info(_id: str):
@@ -101,26 +102,27 @@ def debit_user(client_secret: str, info: DebitSchema, convert_to_wei: bool = Tru
     if not tokenAddress:
         raise BadRequestException(f"Unsupported token: {info.token}")
 
-    tokenAddress = w3.to_checkum(tokenAddress)
-
     if not tokenAddress:
         raise BadRequestException(f"Unsupported token: {info.token}")
 
+    tokenAddress_ = w3.to_checkum(tokenAddress)
     client_wallet_account = w3.get_user_account(org_id)
     balance = w3.get_token_balance(w3.get_user_account(info.id), tokenAddress)
 
     if convert_to_wei:
         amount_wei = w3.token_amount_to_wei(tokenAddress, info.amount)
     else:
-        amount_wei = info.amount
+        amount_wei = int(info.amount)
 
     if balance < amount_wei:
         raise BadRequestException("Insufficient User Balance")
-
-    transfer_param = [
-        {"token": tokenAddress, "to": client_wallet_account, "amount": amount_wei}
-    ]
-    res = w3.make_transfers(info.id, transfer_param)
+    param = TransferParams(
+        token=tokenAddress_, to=client_wallet_account, amount=amount_wei
+    )
+    # transfer_param = [
+    #     {"token": tokenAddress, "to": client_wallet_account, "amount": amount_wei}
+    # ]
+    res = w3.make_transfers(info.id, [param])
     return res
 
 
@@ -135,11 +137,7 @@ def deposit_to_user(client_secret: str, info: DebitSchema):
     if not tokenAddress:
         raise BadRequestException(f"Unsupported token: {info.token}")
 
-    tokenAddress = w3.to_checkum(tokenAddress)
-
-    if not tokenAddress:
-        raise BadRequestException(f"Unsupported token: {info.token}")
-
+    tokenAddress_ = w3.to_checkum(tokenAddress)
     balance = w3.get_token_balance(w3.get_user_account(client_id), tokenAddress)
     amount_wei = w3.token_amount_to_wei(tokenAddress, info.amount)
 
@@ -149,9 +147,9 @@ def deposit_to_user(client_secret: str, info: DebitSchema):
         )
 
     user_address = w3.get_user_account(info.id)
-
-    transfer_param = [{"token": tokenAddress, "to": user_address, "amount": amount_wei}]
-    res = w3.make_transfers(client_id, transfer_param)
+    param = TransferParams(token=tokenAddress_, to=user_address, amount=amount_wei)
+    # transfer_param = [{"token": tokenAddress, "to": user_address, "amount": amount_wei}]
+    res = w3.make_transfers(client_id, [param])
     return res
 
 
@@ -197,3 +195,50 @@ def reset_password(data: ResetUserPassword):
     update["password"] = security.hash_password(data.password)
     res = db.update_user(email, update)
     return bool(res)
+
+
+def deposit_fiat(user_id: str, amount: float):
+    deposit_id = shortuuid.uuid()
+    rate = fiat.get_rate()
+    usd_amount = rate * amount
+    url = fiat.init_payment(deposit_id, amount)
+    db.insert_deposit(deposit_id, user_id, amount, usd_amount, url)
+    return db.get_deposit(deposit_id)
+
+
+def get_deposit(deposit_id: str):
+    deposit = db.get_deposit(deposit_id)
+    return deposit
+
+
+def process_deposit(deposit_id: str):
+    deposit = db.get_deposit(deposit_id)
+    if not deposit:
+        raise Exception("Invalid deposit id")
+    if deposit.processed:
+        raise Exception("Payment already processed")
+
+    response = fiat.get_payment_status(deposit_id)
+
+    if response["transState"] == "00":
+        token_amount = w3.convert_usd_to_qmdt(deposit.usd_amount)
+        user_address = w3.get_user_account(deposit.user_id)
+        token_address = TOKEN["qmgt"]
+        tk = w3.to_checkum(token_address)
+        param = TransferParams(token=tk, to=user_address, amount=token_amount)
+        client_id = list(org_ids.ORG_IDS.keys())[0]
+        res = w3.make_transfers(client_id, [param])
+        state = transaction_states[response["transState"]]
+        updates = {"processed": True, "state": state}
+        db.update_deposit(deposit_id, updates)
+        return res
+
+    elif response["transState"] == "06":
+        return True
+    
+    else:
+        state = transaction_states[response["transState"]]
+        updates = {"processed": True, "state": state}
+        db.update_deposit(deposit_id, updates)
+        return True
+        

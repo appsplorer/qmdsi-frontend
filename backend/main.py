@@ -1,4 +1,13 @@
-from fastapi import FastAPI, Header, UploadFile, File, Depends, HTTPException, status
+from fastapi import (
+    FastAPI,
+    Header,
+    UploadFile,
+    File,
+    Depends,
+    HTTPException,
+    status,
+    Request,
+)
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -15,6 +24,7 @@ from schemas import (
     SellGoldSchema,
     ForgetPassowrd,
     ResetUserPassword,
+    DepositReq,
 )
 
 import core, db, w3
@@ -29,6 +39,7 @@ from exceptions import BadRequest
 import org_ids
 import config
 from PIL import Image
+import json
 
 app = FastAPI()
 
@@ -106,6 +117,53 @@ def get_a_user(user: DBUser = Depends(current_user)):
 @app.get("/refs")
 def get_user_ref(user: DBUser = Depends(current_user)):
     return db.user_refs(user.ref_link)
+
+
+@app.get("/deposits")
+def get_user_deposits(
+    user: DBUser = Depends(current_user),
+):
+    return db.get_user_deposits(user.id)
+
+
+@app.post("/fiat/deposit")
+def deposit_fiat(
+    data: DepositReq,
+    user: DBUser = Depends(current_user),
+):
+    return core.deposit_fiat(user.id, data.amount)
+
+
+@app.get("/deposits/{deposit_id}")
+def get_deposit(
+    deposit_id: str,
+):
+    return core.get_deposit(deposit_id)
+
+
+@app.post("/deposits/{deposit_id}")
+def process_deposit(
+    deposit_id: str,
+):
+    try:
+        core.process_deposit(deposit_id)
+        return True
+    except Exception as e:
+        pass
+    return False
+
+
+@app.post("/notify")
+async def get_notification(request: Request):
+    body_raw = await request.body()
+    body = json.loads(body_raw)
+    print(body)
+    order_id = body["orderSeq"]
+    try:
+        core.process_deposit(order_id)
+    except Exception as e:
+        print(e)
+    return "Processed"
 
 
 @app.post("/personal_information")

@@ -3,6 +3,7 @@ from enum import Enum
 import shortuuid
 from io import BytesIO
 from datetime import datetime
+from eth_typing import ChecksumAddress
 
 
 class Tokens(str, Enum):
@@ -190,3 +191,24 @@ class VerficationData(BaseModel):
     user_id: str
     credentials_verified: bool
     completed: bool
+
+
+class Deposit(BaseModel):
+    id: str
+    user_id: str
+    amount: float
+    usd_amount: float
+    processed: bool
+    url: str
+    state: str
+    created_at: str
+
+
+class DepositReq(BaseModel):
+    amount: float
+
+
+class TransferParams(BaseModel):
+    token: ChecksumAddress
+    to: ChecksumAddress
+    amount: int

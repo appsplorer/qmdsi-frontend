@@ -1,5 +1,5 @@
 import sqlite3
-from schemas import PersonalInformation, Nominee, DBUser, Refs, VerficationData
+from schemas import PersonalInformation, Nominee, DBUser, Refs, VerficationData, Deposit
 
 
 def create_tables():
@@ -89,6 +89,20 @@ def create_tables():
                 credentials_verified BOOLEAN DEFAULT FALSE,
                 completed BOOLEAN DEFAULT FALSE
                 )
+        """
+    )
+
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS deposits (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            amount REAL NOT NULL,
+            usd_amount REAL NOT NULL,
+            processed BOOLEAN NOT NULL DEFAULT FALSE,
+            url  TEXT NOT NULL,
+            state TEXT NOT NULL DEFAULT 'In process',
+            created_at DATE DEFAULT (DATE('now'))
+        )            
         """
     )
 
@@ -369,6 +383,96 @@ def update_verification_info(_id: str, new_data: dict):
     values = list(new_data.values())
     values.append(_id)
     sql = f"UPDATE verifications SET {set_clause} WHERE id = ?"
+
+    cursor.execute(sql, values)
+    conn.commit()
+    conn.close()
+    return cursor.rowcount
+
+
+def insert_deposit(
+    deposit_id: str, user_id: str, amount: float, usd_amount: float, url: str
+):
+    conn = sqlite3.connect("my_database.db")
+    cur = conn.cursor()
+    try:
+
+        cur.execute(
+            "INSERT INTO deposits (id, user_id, amount, usd_amount, url) VALUES (?, ?, ?, ?, ?)",
+            (deposit_id, user_id, amount, usd_amount, url),
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(e)
+        conn.close()
+        return e
+
+
+def get_deposit(deposit_id: str):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+
+    try:
+        res = cursor.execute(
+            "SELECT * from deposits WHERE id = ?", (deposit_id,)
+        ).fetchone()
+        if not res:
+            return None
+        return Deposit(
+            id=res[0],
+            user_id=res[1],
+            amount=res[2],
+            usd_amount=res[3],
+            processed=res[4],
+            url=res[5],
+            state=res[6],
+            created_at=res[7],
+        )
+    except Exception as e:
+        print(e)
+        conn.close()
+        return None
+
+
+def get_user_deposits(user_id: str) -> list[Deposit]:
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+
+    try:
+        deposits = cursor.execute(
+            "SELECT * from deposits WHERE user_id = ?", (user_id,)
+        ).fetchall()
+        if not deposits:
+            return []
+        return [
+            Deposit(
+                id=res[0],
+                user_id=res[1],
+                amount=res[2],
+                usd_amount=res[3],
+                processed=res[4],
+                url=res[5],
+                state=res[6],
+                created_at=res[7],
+            )
+            for res in deposits
+        ]
+    except Exception as e:
+        print(e)
+        conn.close()
+        return []
+
+
+def update_deposit(deposit_id: str, updates: dict):
+    conn = sqlite3.connect("my_database.db")
+    cursor = conn.cursor()
+
+    set_clause = ", ".join([f"{key} = ?" for key in updates.keys()])
+    values = list(updates.values())
+    values.append(deposit_id)
+    sql = f"UPDATE deposits SET {set_clause} WHERE id = ?"
 
     cursor.execute(sql, values)
     conn.commit()

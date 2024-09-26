@@ -2,35 +2,37 @@ import json
 import requests
 import hashlib
 from datetime import datetime
+import yfinance as yf  # type: ignore
+from cache import CacheWithTTL
+from config import FRONTEND_URL, NOTIFY_URL
+
+cache = CacheWithTTL(ttl_seconds=300)
+# Merchant key for signing
+
 
 key = "vfg98uu47jqgbuurr5u1eb67k20dv7d3"
+url = "https://test.e-mango.ph/cashier/qrPay.do"
+query_url = "https://test.e-mango.ph/cashier/qryOrder.do"
+headers = {"Content-Type": "application/json"}
 
 
-def init_payment():
-    url = "https://test.e-mango.ph/cashier/qrPayB.do"
-    data = {
-        "signType": "SHA256",
-        "timestamp": timestamp(),
-        "merchSeq": "300000064604",
-        "orderSeq": "Dusdnsds2sds",
-        "orderDate": "2024-09-21",
-        "amount": "2.00",
-        "fee": "0.00",
-        "currency": "PHP",
-        "busiName": "Quantum Metal",
-        "dueTime": "0",
-        "busiType": "1",
-        "notifyUrl": "https://test.e-mango.ph/cashier/pushtest",
-        "isRedirect": "0",
-        "redirectUrl": "https://www.e-mango.ph/",
-        "additionInfo": json.dumps({}),
-        "remark": "buy",
-    }
-    signature = gen_signature(data)
-    data["sign"] = signature
-    headers = {"Content-Type": "application/json"}
-    res = requests.post(url, data=json.dumps(data), headers=headers)
-    print(res.json())
+def get_rate():
+    cached = cache.get("rate")
+    if cached:
+        return float(cached)
+
+    data = yf.Ticker("PHPUSD=X")
+    current_rate = data.history(period="1d")["Close"].iloc[-1]
+    cache.set("rate", float(current_rate))
+    return float(current_rate)
+
+
+def current_date():
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def timestamp():
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def gen_signature(data):
@@ -41,10 +43,61 @@ def gen_signature(data):
     return signature
 
 
-def timestamp():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def init_payment(
+    orderId: str,
+    amount: float,
+):
+
+    data = {
+        "signType": "SHA256",
+        "timestamp": timestamp(),
+        "merchSeq": "300000064604",
+        "orderSeq": orderId,
+        "orderDate": current_date(),
+        "amount": str(amount),
+        "fee": "0.00",
+        "currency": "PHP",
+        "busiName": "Quantum Metal",
+        "dueTime": "30",
+        "busiType": "1",
+        "notifyUrl": NOTIFY_URL,
+        "isRedirect": "1",
+        "redirectUrl": f"{FRONTEND_URL}/deposits/{orderId}",
+        "additionInfo": json.dumps({}),
+        "remark": "Fiat deposit",
+    }
+
+    signature = gen_signature(data)
+    data["sign"] = signature
+
+    res = requests.post(url, data=json.dumps(data), headers=headers)
+
+    if res.status_code == 200:
+        data = res.json()
+        if data["respCode"] != "00000000":
+            raise Exception(data.get("respMessage"))
+        return data["url"]
+    else:
+        raise Exception("Error initializing payment")
 
 
-init_payment()
-# data = {"OrderSeq": "200124531", "MerchSeq": "3000001", "OrderDate": "20230727"}
-# gen_signature(data)
+def get_payment_status(
+    payment_id: str,
+):
+    data = {
+        "signType": "SHA256",
+        "merchSeq": "300000064604",
+        "orderSeq": payment_id,
+        "timestamp": timestamp(),
+    }
+    signature = gen_signature(data)
+    data["sign"] = signature
+    res = requests.post(query_url, data=json.dumps(data), headers=headers)
+
+    if res.status_code == 200:
+        data = res.json()
+        if data["respCode"] != "00000000":
+            raise Exception(data.get("respMessage"))
+        return data
+    else:
+        raise Exception("Error getting payment status")

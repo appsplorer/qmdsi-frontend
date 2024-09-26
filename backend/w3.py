@@ -2,9 +2,11 @@ from web3 import Web3
 from abis.qmdsi_admin import qmdsi_admin_abi
 from abis.token_abi import token_abi
 from abis.swap_abi import swap_abi
+from schemas import TransferParams
 
 url = "https://bsc-testnet-rpc.publicnode.com"
 w3 = Web3(Web3.HTTPProvider(url))
+
 admin_key = "af7c3b6a2c12efea7a84eb56500845c9bf35b06e0ef74ee61bbaa7af4fbdb811"
 usdt_ddress = w3.to_checksum_address("0xbf5564f8799566784d4031839613aeeb5b7bba5a")
 token_address = "0x1359899ab37623c8ddf07dcd2295a50cd6db549a"
@@ -68,12 +70,12 @@ def to_checkum(address: str):
     return w3.to_checksum_address(address)
 
 
-def make_transfers(from_id: str, transfer_params: list[dict]):
+def make_transfers(from_id: str, transfer_params: list[TransferParams]):
     gas_price = w3.eth.gas_price
-
+    params = [param.model_dump() for param in transfer_params]
     nonce = w3.eth.get_transaction_count(admin_account.address)
     tx_params = qmdsi_admin_contract.functions.transferTokens(
-        from_id, transfer_params
+        from_id, params
     ).build_transaction(
         {
             "from": admin_account.address,
