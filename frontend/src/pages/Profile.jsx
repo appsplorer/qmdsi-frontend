@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { getUser, getUserBalances } from "../services/users.service";
+import { getUserBalances } from "../services/users.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
@@ -74,6 +74,16 @@ const Profile = () => {
       transition={{ duration: 1 }}
       className="container mx-auto px-4 py-8 mt-20 md:mt-24"
     >
+      {/* New navigation buttons */}
+      <div className="flex justify-end space-x-4 mb-6">
+        <Button className="bg-primary text-white">
+          <Link to="/deposits">Deposits</Link>
+        </Button>
+        <Button className="bg-primary text-white">
+          <Link to="/me">View Profile</Link>
+        </Button>
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-8">
         <motion.div
           className="text-gray-300 w-full lg:w-1/2"
@@ -168,7 +178,10 @@ const Profile = () => {
               <div className="bg-silver/20 flex flex-col justify-between text-white p-4 h-32 md:h-40 rounded-lg">
                 <p className="text-sm md:text-base">Balance</p>
                 <p className="text-lg md:text-xl">{qmgtBalance} QMGT</p>
-                <div className="flex justify-end">
+                <div className="flex justify-between">
+                  <Button className="text-sm md:text-base">
+                    <Link to="/deposits">Deposits</Link>
+                  </Button>
                   <Button className="text-sm md:text-base">Transactions</Button>
                 </div>
               </div>

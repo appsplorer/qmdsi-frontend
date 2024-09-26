@@ -53,13 +53,9 @@ export const getUserPersonalInfo = async (accessToken) => {
   }
 };
 
-export const getUser = async (accessToken) => {
+export const getUser = async () => {
   try {
-    const response = await api.get("/user", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await api.get("/user");
 
     return response.data;
   } catch (error) {

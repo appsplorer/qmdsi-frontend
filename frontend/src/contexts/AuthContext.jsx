@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { getUser } from "../services/users.service";
+import { setAuthToken } from "../services/api.service";
 
 export const AuthContext = createContext({});
 
@@ -17,13 +18,14 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: true,
         accessToken: token,
       });
+      setAuthToken(token);
     }
   }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const userData = await getUser(auth.accessToken);
+        const userData = await getUser();
         const fullName = [
           userData.first_name,
           userData.middle_name,
@@ -62,6 +64,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: true,
       accessToken: token,
     });
+    setAuthToken(token);
   };
 
   const logout = () => {
@@ -70,6 +73,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: false,
       accessToken: null,
     });
+    setAuthToken(null);
   };
 
   return (

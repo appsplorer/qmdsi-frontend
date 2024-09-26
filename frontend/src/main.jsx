@@ -17,9 +17,11 @@ import Login from "./pages/Login.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import Verification from "./components/verification.jsx";
 import Deposit from "./pages/Deposit.jsx";
+import Deposits from "./pages/Deposits.jsx";
 import ForgetPassword from "./pages/ForgetPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 
 const router = createBrowserRouter([
   {
@@ -51,10 +53,6 @@ const router = createBrowserRouter([
         element: <ResetPassword />,
       },
       {
-        path: "/deposits/:id",
-        element: <Deposit />,
-      },
-      {
         path: "/pool",
         element: <Swap />,
       },
@@ -82,13 +80,24 @@ const router = createBrowserRouter([
             element: <Profile />,
           },
           {
+            path: "/me",
+            element: <UserProfile />,
+          },
+          {
             path: "/kyc",
             element: <KYC />,
           },
-
           {
             path: "/nominee",
             element: <Nom />,
+          },
+          {
+            path: "/deposits",
+            element: <Deposits />,
+          },
+          {
+            path: "/deposits/:id",
+            element: <Deposit />,
           },
           {
             path: "/verify",

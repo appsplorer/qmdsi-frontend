@@ -60,7 +60,7 @@ const TokenSwap = ({ fee, setFee }) => {
       image:
         "https://w7.pngwing.com/pngs/113/18/png-transparent-tether-hd-logo-thumbnail.png",
     },
-    { value: "QMGT", label: "QMGT", image: "../../public/tokenLogo.png" },
+    { value: "QMGT", label: "QMGT", image: "../../aurun_favi.png" },
   ];
 
   const customStyles = {

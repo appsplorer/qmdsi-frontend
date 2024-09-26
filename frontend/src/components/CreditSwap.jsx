@@ -1,9 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { ArrowDown } from "lucide-react";
 import QMLogo from "../assets/token.png";
 import PHPLogo from "../assets/php.png";
+import { toast } from "react-toastify";
+import Loading from "./Loading";
+import { depositFiat } from "../services/deposit.service";
 
 const CreditSwap = () => {
+  const [phpAmount, setPhpAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handlePhpAmountChange = (e) => {
+    setPhpAmount(e.target.value);
+  };
+
+  const handlePurchase = async () => {
+    if (!phpAmount || parseFloat(phpAmount) <= 0) {
+      toast.error("Please enter a valid PHP amount");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await depositFiat({ amount: parseFloat(phpAmount) });
+      console.log("Deposit response:", response);
+      toast.success("Purchase successful!");
+      setPhpAmount("");
+    } catch (error) {
+      toast.error(error?.detail || "Deposit failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="mt-4">
       <div className="w-full bg-silver/10 rounded-md px-4 py-4 text-white flex items-center">
@@ -14,16 +43,14 @@ const CreditSwap = () => {
               <img src={PHPLogo} className="w-8 rounded-full" alt="" />
               <p>PHP</p>
             </div>
-            <div className="mt-2 text-white text-xs flex gap-2">
-             
-             
-            </div>
           </div>
         </div>
         <div className="w-1/2 ">
           <input
             type="number"
             placeholder="0.00"
+            value={phpAmount}
+            onChange={handlePhpAmountChange}
             className="w-full text-right bg-transparent border-0 outline-none text-3xl"
           />
         </div>
@@ -43,7 +70,6 @@ const CreditSwap = () => {
             </div>
             <div className="mt-2 text-white text-xs flex gap-2">
               <p>Balance: 0.00</p>
-              
             </div>
           </div>
         </div>
@@ -51,6 +77,7 @@ const CreditSwap = () => {
           <input
             type="number"
             placeholder="0.00"
+            readOnly
             style={{
               WebkitAppearance: "none",
               MozAppearance: "textfield",
@@ -78,8 +105,12 @@ const CreditSwap = () => {
         </p>
       </div>
       <div className="mt-4">
-        <button className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer">
-          Purchase
+        <button
+          onClick={handlePurchase}
+          disabled={loading}
+          className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
+        >
+          {loading ? <Loading /> : "Purchase"}
         </button>
       </div>
     </div>
