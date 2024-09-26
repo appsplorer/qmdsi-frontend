@@ -5,6 +5,7 @@ import PHPLogo from "../assets/php.png";
 import { toast } from "react-toastify";
 import Loading from "./Loading";
 import { depositFiat } from "../services/deposit.service";
+import { getAmountOut } from "../services/swap.service";
 
 const CreditSwap = () => {
   const [phpAmount, setPhpAmount] = useState("");
@@ -13,6 +14,11 @@ const CreditSwap = () => {
   const handlePhpAmountChange = (e) => {
     setPhpAmount(e.target.value);
   };
+
+  const getQmgtAmount = async (usdtAmount) => {
+      const qmgtAmount = await getAmountOut("usdt", usdtAmount)
+      return qmgtAmount
+  }
 
   const handlePurchase = async () => {
     if (!phpAmount || parseFloat(phpAmount) <= 0) {
