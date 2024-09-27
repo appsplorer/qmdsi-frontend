@@ -6,8 +6,7 @@ import { FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { Button } from "antd";
-import { getGoldPrice, getTokenBalance } from "../services/swap.service";
-import { TOKENAddress } from "../addresses";
+import { getGoldPrice } from "../services/swap.service";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);

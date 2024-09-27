@@ -1,6 +1,6 @@
-import QcaUsdt from "../components/QcaUsdt";
-import QcaCrypto from "../components/QcaCrypto";
-import QcaRwb from "../components/QcaRwb";
+import QcaUsdt from "./QcaUsdt";
+import QcaCrypto from "./QcaCrypto";
+import QcaRwb from "./QcaRwb";
 
 export const conversionTabs = [
   {

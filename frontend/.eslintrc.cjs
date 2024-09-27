@@ -21,4 +21,12 @@ module.exports = {
     "react/prop-types": "off",
     "react-hooks/exhaustive-deps": "off",
   },
+  overrides: [
+    {
+      files: ["*.jsx", "*.js"],
+      rules: {
+        "react-refresh/only-export-components": "off",
+      },
+    },
+  ],
 };
