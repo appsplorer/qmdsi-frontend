@@ -6,6 +6,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoClose } from "react-icons/io5";
 import LoginModal from "./LoginModal";
 import Balance from "./Balance";
+import LogoutConfirmation from "./LogoutConfirmation";
 
 const shortenAddress = (address) =>
   `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -14,15 +15,21 @@ const Navigation = () => {
   const [showModal, setShowModal] = useState(false);
   const [navShow, setNavShow] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const { auth, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const navRef = useRef(null);
 
   const closeModal = () => setShowModal(false);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirmation(true);
+  };
+
+  const handleLogoutConfirm = () => {
     logout();
     navigate("/");
+    setShowLogoutConfirmation(false);
   };
 
   const links = useMemo(() => {
@@ -34,7 +41,11 @@ const Navigation = () => {
           icon: <Wallet size={16} />,
           action: () => setShowBalance(true),
         },
-        { label: "Logout", icon: <LogOut size={16} />, action: handleLogout },
+        {
+          label: "Logout",
+          icon: <LogOut size={16} />,
+          action: handleLogoutClick,
+        },
       ];
     }
     return [];
@@ -214,6 +225,13 @@ const Navigation = () => {
       {/* Modals */}
       {showModal && <LoginModal closeModal={closeModal} />}
       <Balance isOpen={showBalance} onClose={() => setShowBalance(false)} />
+
+      {/* Logout Confirmation */}
+      <LogoutConfirmation
+        isOpen={showLogoutConfirmation}
+        onClose={() => setShowLogoutConfirmation(false)}
+        onConfirm={handleLogoutConfirm}
+      />
     </header>
   );
 };

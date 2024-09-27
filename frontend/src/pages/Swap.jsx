@@ -171,7 +171,11 @@ const Swap = () => {
             </motion.div>
           </motion.div>
           <motion.div className="relative" variants={itemVariants}>
-            {swapType === "token" ? <TokenSwap fee={fee} setFee={setFee} /> : <CreditSwap />}
+            {swapType === "token" ? (
+              <TokenSwap fee={fee} setFee={setFee} />
+            ) : (
+              <CreditSwap />
+            )}
           </motion.div>
           <motion.div className="mt-4" variants={itemVariants}>
             <Divider className="bg-gray-400 mb-1" />

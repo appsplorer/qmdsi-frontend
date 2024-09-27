@@ -185,10 +185,10 @@ const Register = () => {
       {isLoading && <Loading />}
       <div className="w-full relative z-20">
         <div className="flex flex-col gap-2 mb-7">
-          <h1 className="text-4xl md:text-5xl lg:text-7xl text-white font-medium">
+          <h1 className="text-5xl  md:text-7xl text-white font-medium">
             Register
           </h1>
-          <span className="text-xl md:text-2xl font-normal text-white mb-6 mt-2">
+          <span className="text-2xl font-normal text-white mb-6 mt-2">
             Hi. Guest
           </span>
         </div>
@@ -242,7 +242,11 @@ const Register = () => {
                   >
                     <option value="">Select a country</option>
                     {countryOptions.map((country) => (
-                      <option key={country.value} value={country.value}>
+                      <option
+                        key={country.value}
+                        value={country.value}
+                        className="text-charcoalBlue bg-smoke"
+                      >
                         {country.label}
                       </option>
                     ))}

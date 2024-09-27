@@ -1,7 +1,6 @@
 import { Spin } from "antd";
 import React from "react";
 import { BarLoader } from "react-spinners";
-
 const Loading = () => {
   return (
     <div className="fixed top-0 left-0 h-screen w-screen bg-[rgba(0,0,0,0.6)] flex items-center justify-center z-50">

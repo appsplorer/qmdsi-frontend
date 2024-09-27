@@ -1,0 +1,8 @@
+.ant-tabs-ink-bar {
+    background: #dca955 !important;
+}
+
+.ant-tabs-nav-list {
+    display: flex !important;
+    gap: 20px !important;
+}

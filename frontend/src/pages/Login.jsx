@@ -38,80 +38,88 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-screen px-4 md:px-10 py-8 flex flex-col gap-5 overflow-x-hidden">
+    <div className="w-full  px-4 md:px-10 pb-5 flex flex-col  gap-5">
       {isLoading && <Loading />}
       <div className="w-full relative z-20">
         <div className="flex flex-col gap-4 mb-7">
-          <h1 className="text-4xl md:text-7xl text-white font-medium">
+          <h1 className="text-5xl  md:text-7xl text-white font-medium">
             Log In
           </h1>
           <span className="text-xl md:text-2xl text-white font-semibold tracking-wide">
             Welcome
           </span>
         </div>
-        <div className="flex flex-col md:flex-row items-start justify-center gap-8 w-full">
-          <div className="w-full md:w-1/2 py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
-            <h1 className="text-2xl text-gray-300 font-medium tracking-wider">
-              Information
-            </h1>
-            <Input
-              type="text"
-              className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-              placeholder="Username"
-              onChange={handleChange}
-              name="username"
-            />
-            <Input.Password
-              type="password"
-              className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-              placeholder="Password"
-              onChange={handleChange}
-              name="password"
-            />
-            <button
-              disabled={isLoading}
-              onClick={handleSubmit}
-              className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
-            >
-              Login
-            </button>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-white text-sm tracking-wider">
-                  Don&rsquo;t have an Account?{" "}
-                </span>
-                <Link to="/signup" className="text-golden tracking-wider">
-                  Sign Up
+        <div className="flex   flex-col md:flex-row items-center justify-center gap-5 w-full ">
+          <div className="w-full flex  flex-col  md:flex-row  gap-14 md:gap-24">
+            {/* information */}
+            <div className="w-full md:w-1/2 py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
+              <h1 className="text-2xl text-gray-300 font-medium tracking-wider">
+                Information
+              </h1>
+              <Input
+                type="text"
+                className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                placeholder="Username"
+                onChange={handleChange}
+                name="username"
+              />
+              <Input.Password
+                type="password"
+                className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
+                placeholder="Password"
+                onChange={handleChange}
+                name="password"
+              />
+
+              <button
+                disabled={isLoading}
+                onClick={handleSubmit}
+                className=" text-lg font-medium p-3 border  w-full bg-golden text-white rounded-lg"
+              >
+                Login
+              </button>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm tracking-wider">
+                    Don&rsquo;t have an Account?{" "}
+                  </span>{" "}
+                  <Link
+                    to="/signup"
+                    className="text-golden tracking-wider"
+                    href="/"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+                <Link
+                  to="/forget-password"
+                  className="text-sm text-white text-rights tracking-wider"
+                >
+                  Forgot Password
                 </Link>
               </div>
-              <Link
-                to="/forget-password"
-                className="text-sm text-white text-left tracking-wider"
-              >
-                Forgot Password
-              </Link>
             </div>
-          </div>
-          <div className="w-full md:w-1/2 flex flex-col gap-4 items-start mt-8 md:mt-0">
-            <h1 className="text-white text-4xl md:text-7xl font-medium tracking-wide">
-              Buy & Sell
-            </h1>
-            <p className="text-xl md:text-3xl font-normal text-white tracking-wide">
-              The Ultimate currency.
-            </p>
-            <h1 className="text-white text-3xl md:text-6xl font-medium tracking-wide mt-8">
-              Get Mobile Wallet
-            </h1>
-            <p className="text-xl md:text-2xl font-normal text-white tracking-wide">
-              Status: Developing
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 mt-3 w-full">
-              <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
-                Google Play
-              </button>
-              <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
-                Apple Apps
-              </button>
+            <div className="w-full md:w-1/2   flex flex-col gap-4 items-center md:items-start ">
+              <h1 className="text-white text-5xl md:text-8xl font-medium font tracking-wide whitespace-nowrap">
+                Buy & Sell
+              </h1>
+              <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+                The Ultimate currency.
+              </p>
+              <h1 className="text-white text-3xl md:text-7xl font-mediu tracking-wide mt-12">
+                Get Mobile Wallet
+              </h1>
+              <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+                Status: Developing
+              </p>
+              <div className="flex flex-col md:flex-row gap-3 mt-3 w-full">
+                <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
+                  Google Play
+                </button>
+                <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
+                  Apple Apps
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -121,3 +129,5 @@ const Login = () => {
 };
 
 export default Login;
+
+// end

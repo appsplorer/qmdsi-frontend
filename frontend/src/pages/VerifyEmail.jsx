@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { verifyOtp } from "../services/auth.service";
 import { toast } from "react-toastify";
-import { Loader2 } from "lucide-react";
+import Loading from "../components/Loading";
+import { Input } from "antd";
 
 const VerifyEmail = () => {
   const [otp, setOtp] = useState("");
@@ -38,41 +39,34 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="px-4 md:px-24 pt-4 min-h-screen">
-      <div className="border border-primary border-b-0 p-3 min-h-[100vh] flex justify-center items-center">
-        <div className="w-full max-w-[400px] bg-accent rounded-md p-4 md:p-8 text-white">
-          <h1 className="text-2xl mb-6 text-center">Verify Your Email</h1>
-          <p className="text-center mb-6">
-            Enter the 6-digit OTP sent to your email.
+    <div className="relative w-full px-4 flex flex-col justify-between items-top mb-12">
+      {isLoading && <Loading />}
+      <div className="flex justify-start items-start h-max">
+        <div className="flex flex-col gap-4 mb-7">
+          <h1 className="text-5xl  md:text-7xl text-white font-medium">
+            OTP Verification
+          </h1>
+          <span className="text-xl md:text-2xl text-white font-semibold tracking-wide">
+            Please Verify
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 md:gap-24">
+        <div className="w-full md:w-1/2 blur-bg border py-7 px-5 border-ash/20 rounded-md  flex flex-col justify-center  gap-7 relative z-20">
+          <p className="text-white">
+            Please enter the OTP(One-Time Password) sent to your registered
+            email/phone number to complete your verification
           </p>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <input
-                type="text"
-                maxLength="6"
-                value={otp}
-                onChange={handleOtpChange}
-                className="w-full p-3 rounded bg-black text-white text-center text-xl tracking-widest"
-                placeholder="Enter OTP"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="bg-primary w-full py-2 rounded text-dark mt-4 flex items-center justify-center"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                "Verify OTP"
-              )}
-            </button>
-          </form>
-          <div className="text-center mt-4">
+          <Input.OTP size="large" className="p-4" onChange={handleOtpChange} />
+          <button
+            onClick={handleSubmit}
+            className=" text-lg font-medium p-3 border  w-full bg-golden text-white rounded-lg"
+            disabled={isLoading}
+          >
+            Verify OTP
+          </button>
+          <div className="flex gap-2 items-center justify-center">
             <p className="text-white">
               Didn’t receive the code?{" "}
               <Link to="#" className="text-primary underline">
@@ -81,8 +75,29 @@ const VerifyEmail = () => {
             </p>
           </div>
         </div>
+        <div className="w-full md:w-1/2 flex flex-col gap-4 items-center md:items-start ">
+          <h1 className="text-white text-5xl md:text-8xl font-medium font tracking-wide whitespace-nowrap">
+            Buy & Sell
+          </h1>
+          <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+            The Ultimate currency.
+          </p>
+          <h1 className="text-white text-3xl md:text-7xl font-mediu tracking-wide mt-12">
+            Get Mobile Wallet
+          </h1>
+          <p className="text-xl  md:text-3xl font-normal text-white tracking-wide">
+            Status: Developing
+          </p>
+          <div className="flex flex-col md:flex-row gap-3 mt-3 w-full">
+            <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
+              Google Play
+            </button>
+            <button className="text-white text-base tracking-wider py-3 px-7 rounded-full border">
+              Apple Apps
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="hollow-text z-100 touch-none">VERIFY EMAIL</div>
     </div>
   );
 };
