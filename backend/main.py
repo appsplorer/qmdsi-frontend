@@ -336,18 +336,6 @@ def get_user_transfers(
     return db.get_transfers("user_account", user_account)
 
 
-# @app.post("/api/account/debit")
-# def debit_user(data: DebitSchema, x_token: str = Header(...)):
-#     hash = core.debit_user(x_token, data)
-#     return {"hash": hash}
-
-
-# @app.post("/api/account/deposit")
-# def deposit_to_user(info: DebitSchema, x_token: str = Header(...)):
-#     hash = core.deposit_to_user(x_token, info)
-#     return {"hash": hash}
-
-
 @app.post("/api/gold/buy")
 def buy_gold(
     data: BuyGoldSchema,

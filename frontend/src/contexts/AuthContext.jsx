@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
     isAuthenticated: false,
     accessToken: null,
+    isLoaded : false,
   });
   const [profile, setProfile] = useState(null);
 
@@ -17,8 +18,15 @@ export const AuthProvider = ({ children }) => {
       setAuth({
         isAuthenticated: true,
         accessToken: token,
+        isLoaded : true
       });
       setAuthToken(token);
+    }else{
+      setAuth({
+    isAuthenticated: false,
+    accessToken: null,
+    isLoaded : true,
+  })
     }
   }, []);
 
