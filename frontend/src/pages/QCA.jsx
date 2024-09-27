@@ -1,28 +1,9 @@
 import React, { useState } from "react";
-import QcaUsdt from "../components/QcaUsdt";
-import QcaCrypto from "../components/QcaCrypto";
-import QcaRwb from "../components/QcaRwb";
+import { conversionTabs } from "../constants/conversionTabs";
 
 const QCA = () => {
-  // Default active tab index
   const [active, setActive] = useState(0);
 
-  const conversionTabs = [
-    {
-      label: "Convert to USDT",
-      component: <QcaUsdt />,
-    },
-    {
-      label: "Convert to CRYPTO",
-      component: <QcaCrypto />,
-    },
-    {
-      label: "Convert to RWB",
-      component: <QcaRwb />,
-    },
-  ];
-
-  // Get the currently selected tab's component
   const renderActiveComponent = () => {
     return conversionTabs[active]?.component;
   };
@@ -34,7 +15,7 @@ const QCA = () => {
         {conversionTabs.map((tab, index) => (
           <button
             key={index}
-            onClick={() => setActive(index)} // Set the active tab
+            onClick={() => setActive(index)}
             className={`${
               active === index && "bg-golden border border-[#c4c4c2]"
             } text-lg text-white tracking-wider py-4 rounded-full w-1/3 transition-all duration-200 ease-in-out`}

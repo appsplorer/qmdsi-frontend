@@ -85,7 +85,7 @@ const Login = () => {
                   </span>{" "}
                   <Link
                     to="/signup"
-                    className="text-golden tracking-wider"
+                    className="text-primary tracking-wider"
                     href="/"
                   >
                     Sign Up

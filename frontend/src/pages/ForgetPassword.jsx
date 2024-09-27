@@ -68,7 +68,7 @@ const ForgetPassword = () => {
             <p className="text-gray-500 flex justify-center">
               Remember your password?
             </p>
-            <Link to="/signin" className="text-golden">
+            <Link to="/signin" className="text-primary">
               Login
             </Link>
           </div>
