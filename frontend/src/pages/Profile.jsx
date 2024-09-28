@@ -1,19 +1,20 @@
 import { useState, useEffect, useContext } from "react";
 import { getUserBalances } from "../services/users.service";
 import { AuthContext } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { Button } from "antd";
+import CustomButton from "../components/ui/button";
 import { getGoldPrice } from "../services/swap.service";
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
-  const [kycStatus, setKycStatus] = useState();
   const [qmgtBalance, setQmgtBalance] = useState("");
   const [goldPrice, setGoldPrice] = useState("");
   const { profile } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getGoldPrice().then((res) => {
@@ -42,8 +43,6 @@ const Profile = () => {
         walletAddress: profile.walletAddress,
         referralSignUps: profile.referralSignUps,
       });
-
-      setKycStatus(profile.kycStatus === "Verified");
     }
   }, [profile]);
 
@@ -66,6 +65,10 @@ const Profile = () => {
     );
   }
 
+  const handleNavigateToSwap = () => {
+    navigate("/");
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -73,16 +76,6 @@ const Profile = () => {
       transition={{ duration: 1 }}
       className="container mx-auto px-4 py-8 mt-20 md:mt-24"
     >
-      {/* New navigation buttons */}
-      <div className="flex justify-end space-x-4 mb-6">
-        <Button className="bg-primary text-white">
-          <Link to="/deposits">Deposits</Link>
-        </Button>
-        <Button className="bg-primary text-white">
-          <Link to="/me">View Profile</Link>
-        </Button>
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-8">
         <motion.div
           className="text-gray-300 w-full lg:w-1/2"
@@ -124,15 +117,18 @@ const Profile = () => {
               <p>
                 <strong>KYC Status:</strong> {profileData.kycStatus}
               </p>
+              <p>
+                <strong>KYC Status:</strong>{" "}
+                {profileData.kycStatus === "Not Verified" ? (
+                  <CustomButton
+                    label="Verified now"
+                    onClick={() => navigate("/kyc")}
+                  />
+                ) : (
+                  profileData.kycStatus
+                )}
+              </p>
             </div>
-            {!kycStatus && (
-              <Link
-                to="/kyc"
-                className="bg-primary mt-4 inline-block px-4 py-2 rounded text-white text-sm md:text-base"
-              >
-                Verify Identity
-              </Link>
-            )}
           </motion.div>
 
           <motion.div
@@ -141,7 +137,10 @@ const Profile = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <h2 className="text-xl md:text-2xl mb-4">Referral</h2>
+            <h2 className="text-xl md:text-2xl mb-4">Referral Link</h2>
+            <p className="text-sm md:text-base mb-2">
+              {`${window.location.protocol}//${window.location.host}/signup?ref=${profileData.referralLink}`}
+            </p>
             <ul className="space-y-2 text-sm md:text-base">
               {profileData.referralSignUps.map((signup, index) => (
                 <li key={index} className="flex justify-between">
@@ -150,12 +149,20 @@ const Profile = () => {
                 </li>
               ))}
             </ul>
-            <Button
-              className="rounded-full mt-4 text-sm md:text-base"
-              onClick={handleCopyReferralLink}
-            >
-              Copy
-            </Button>
+            <div className="flex space-x-2 mt-4">
+              <Button
+                className="rounded-full text-sm md:text-base"
+                onClick={handleCopyReferralLink}
+              >
+                Copy
+              </Button>
+              <Button
+                className="rounded-full text-sm md:text-base bg-primary text-white"
+                onClick={handleNavigateToSwap}
+              >
+                Get $QMGT
+              </Button>
+            </div>
           </motion.div>
         </motion.div>
 

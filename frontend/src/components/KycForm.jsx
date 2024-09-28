@@ -1,8 +1,6 @@
-/* eslint-disable react/no-unescaped-entities */
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
-import Select from "react-select";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
@@ -17,9 +15,15 @@ import {
   nationalIdTypeOptions,
 } from "../constants/KYC";
 import { countryOptions, nationalityOptions } from "../data/countries";
-import { customStyles } from "../styles";
+import { Form } from "antd";
+import TextInput from "./ui/input";
+import CustomDatePicker from "./ui/datePicker";
+import TextareaInput from "./ui/textArea";
+import SelectInput from "./ui/select";
+import Loading from "./Loading";
 
 const KycForm = () => {
+  const [form] = Form.useForm();
   const [defaultValues, setDefaultValues] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isPersonalInfoLoading, setIsPersonalInfoLoading] = useState(false);
@@ -104,6 +108,7 @@ const KycForm = () => {
       console.log(personalInfoData);
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated!");
+      form.resetFields();
       setSelectedTab(1);
     } catch (error) {
       console.error("Error updating personal info:", error);
@@ -136,542 +141,482 @@ const KycForm = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center">Loading...</div>;
+    return <Loading />;
   }
 
   return (
-    <div className="w-full max-w-[1200px] bg-accent rounded-md p-4 md:p-8 text-white">
-      <h1 className="text-2xl md:text-3xl mt-6 md:mt-12 text-center mb-6">
-        KYC Form
-      </h1>
+    <div className="w-full px-4 md:px-10 pb-5 flex flex-col gap-5">
+      {isPersonalInfoLoading && <Loading />}
+      <div className="w-full relative z-20">
+        <div className="flex flex-col gap-4 mb-7">
+          <h1 className="text-5xl md:text-7xl text-white font-medium">
+            KYC Form
+          </h1>
+          <span className="text-xl md:text-2xl text-white font-semibold tracking-wide">
+            Complete Your Profile
+          </span>
+        </div>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-5 w-full">
+          <div className="w-full flex flex-col md:flex-row gap-14 md:gap-24">
+            <div className="w-full py-7 px-5 blur-bg border border-ash/20 rounded-md flex flex-col gap-4">
+              <TabGroup selectedIndex={selectedTab} onChange={setSelectedTab}>
+                <TabList className="flex mb-8">
+                  <Tab
+                    className={({ selected }) =>
+                      `flex-1 py-2 ${
+                        selected
+                          ? "bg-golden text-white"
+                          : "bg-gray-600 text-white"
+                      }`
+                    }
+                  >
+                    Personal Information
+                  </Tab>
+                  <Tab
+                    className={({ selected }) =>
+                      `flex-1 py-2 ${
+                        selected
+                          ? "bg-golden text-white"
+                          : "bg-gray-600 text-white"
+                      }`
+                    }
+                  >
+                    Upload Images
+                  </Tab>
+                </TabList>
 
-      <TabGroup selectedIndex={selectedTab} onChange={setSelectedTab}>
-        <TabList className="flex mb-4">
-          <Tab
-            className={({ selected }) =>
-              `flex-1 py-2 ${selected ? "bg-primary" : "bg-gray-600"}`
-            }
-          >
-            Personal Information
-          </Tab>
-          <Tab
-            className={({ selected }) =>
-              `flex-1 py-2 ${selected ? "bg-primary" : "bg-gray-600"}`
-            }
-          >
-            Upload Images
-          </Tab>
-        </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <Form
+                      form={form}
+                      initialValues={defaultValues}
+                      layout="vertical"
+                      onFinish={handlePersonalInfoSubmit}
+                      className="space-y-6 text-white"
+                    >
+                      {/* Name, Employee Name */}
+                      <div className="flex flex-col md:flex-row flex-wrap gap-3">
+                        <Form.Item
+                          rules={[
+                            {
+                              required: true,
+                              message: "First Name is required",
+                            },
+                          ]}
+                          className="flex-1 mb-1"
+                          label="First Name"
+                          name="firstName"
+                        >
+                          <TextInput />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Middle Name"
+                          name="middleName"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Middle Name is required",
+                            },
+                          ]}
+                        >
+                          <TextInput />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Last Name"
+                          name="lastName"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Last Name is required",
+                            },
+                          ]}
+                        >
+                          <TextInput />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Employee Name"
+                          name="employeeName"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Employee Name is required",
+                            },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter Employee Name" />
+                        </Form.Item>
+                      </div>
 
-        <TabPanels>
-          <TabPanel>
-            <form onSubmit={handlePersonalInfoSubmit} className="space-y-6">
-              {/* Name, Employee Name */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/3">
-                  <label className="block text-sm mb-2">First Name</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.firstName}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        firstName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter First Name"
-                    disabled
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/3">
-                  <label className="block text-sm mb-2">Middle Name</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.middleName}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        middleName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter middle Name"
-                    disabled
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/3">
-                  <label className="block text-sm mb-2">Last Name</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.lastName}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        lastName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Last Name"
-                    disabled
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Employee Name</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.employeeName}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        employeeName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Employee Name"
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Income, Date of Birth */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Income"
+                          name="income"
+                          rules={[
+                            { required: true, message: "Income is required" },
+                          ]}
+                        >
+                          <TextInput
+                            type="number"
+                            placeholder="Enter Annual Income"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Date of Birth"
+                          name="dateOfBirth"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Date of Birth is required",
+                            },
+                          ]}
+                        >
+                          <CustomDatePicker />
+                        </Form.Item>
+                      </div>
 
-              {/* Income, Date of Birth */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Income</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="number"
-                    value={defaultValues.income}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        income: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Annual Income"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Date of Birth</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="date"
-                    value={defaultValues.dateOfBirth}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        dateOfBirth: e.target.value,
-                      }))
-                    }
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Address, City, Postal Code */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Address"
+                          name="address"
+                          rules={[
+                            { required: true, message: "Address is required" },
+                          ]}
+                        >
+                          <TextareaInput
+                            rows={2}
+                            placeholder="Enter your Address"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="City"
+                          name="city"
+                          rules={[
+                            { required: true, message: "City is required" },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter your City" />
+                        </Form.Item>
+                      </div>
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="w-1/2 mb-1"
+                          label="Postal Code"
+                          name="zipCode"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Postal Code is required",
+                            },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter your Postal Code" />
+                        </Form.Item>
+                      </div>
 
-              {/* Address, City, Postal Code */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Address</label>
-                  <textarea
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    rows={2}
-                    value={defaultValues.address}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        address: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Your Address"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">City</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.city}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        city: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Your City"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Postal Code</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.zipCode}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        zipCode: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Postal Code"
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Mother Name, Income Tax Number */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Mother's Name"
+                          name="motherName"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Mother's Name is required",
+                            },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter Mother's Name" />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Income Tax Number"
+                          name="incomeTaxNo"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Income Tax Number is required",
+                            },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter Incom Tax Number" />
+                        </Form.Item>
+                      </div>
 
-              {/* Mother Name, Income Tax Number */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Mother's Name</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.motherName}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        motherName: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Mother's Name"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">
-                    Income Tax Number
-                  </label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.incomeTaxNo}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        incomeTaxNo: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Income Tax Number"
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Country, Nationality */}
+                      <div className="flex flex-col md:flex-row flex-nowrap gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          name="country"
+                          label="Country"
+                          rules={[
+                            { required: true, message: "Country is required" },
+                          ]}
+                        >
+                          <SelectInput options={countryOptions} />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          name="citizenship"
+                          label="Citizenship"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Citizenship is required",
+                            },
+                          ]}
+                        >
+                          <SelectInput options={nationalityOptions} />
+                        </Form.Item>
+                      </div>
 
-              {/* Country, Nationality */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Country</label>
-                  <Select
-                    options={countryOptions}
-                    value={countryOptions.find(
-                      (option) => option.value === defaultValues.country
-                    )}
-                    onChange={(selectedOption) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        country: selectedOption.value,
-                      }))
-                    }
-                    styles={customStyles}
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Citizenship</label>
-                  <Select
-                    options={nationalityOptions}
-                    value={nationalityOptions.find(
-                      (option) => option.value === defaultValues.citizenship
-                    )}
-                    onChange={(selectedOption) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        citizenship: selectedOption.value,
-                      }))
-                    }
-                    styles={customStyles}
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Currency, National ID Type */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Currency"
+                          name="currency"
+                          rules={[
+                            { required: true, message: "Currency is required" },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter Currency" />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="ID Type"
+                          name="idType"
+                          rules={[
+                            { required: true, message: "ID Type is required" },
+                          ]}
+                        >
+                          <SelectInput options={nationalIdTypeOptions} />
+                        </Form.Item>
+                      </div>
 
-              {/* Currency, National ID Type */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Currency</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.currency}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        currency: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Currency"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">ID Type</label>
-                  <Select
-                    options={nationalIdTypeOptions}
-                    value={nationalIdTypeOptions.find(
-                      (option) => option.value === defaultValues.idType
-                    )}
-                    onChange={(selectedOption) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        idType: selectedOption.value,
-                      }))
-                    }
-                    styles={customStyles}
-                    required
-                  />
-                </div>
-              </div>
+                      {/* ID Number, Industry */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="ID Number"
+                          name="idNumber"
+                          rules={[
+                            {
+                              required: true,
+                              message: "ID Number is required",
+                            },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter ID Number" />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Industry"
+                          name="industry"
+                          rules={[
+                            { required: true, message: "Industry is required" },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter Industry" />
+                        </Form.Item>
+                      </div>
 
-              {/* ID Number, Industry */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">ID Number</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.idNumber}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        idNumber: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter ID Number"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Industry</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.industry}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        industry: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Industry"
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Occupation, Source of Income */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Occupation"
+                          name="occupation"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Occupation is required",
+                            },
+                          ]}
+                        >
+                          <TextInput placeholder="Enter Occupation" />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Source of Income"
+                          name="sourceOfIncome"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Source of Income is required",
+                            },
+                          ]}
+                        >
+                          <TextInput
+                            type="number"
+                            placeholder="Enter Source of Income"
+                          />
+                        </Form.Item>
+                      </div>
 
-              {/* Occupation, Source of Income */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Occupation</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.occupation}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        occupation: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Occupation"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Source of Income</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.sourceOfIncome}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        sourceOfIncome: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Source of Income"
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Mobile Phone, Phone 2 */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Mobile Phone"
+                          name="mobilePhone"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Mobile Phone is required",
+                            },
+                          ]}
+                        >
+                          <TextInput
+                            type="number"
+                            placeholder="Enter Mobile Phone"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Phone 2"
+                          name="phone2"
+                          rules={[
+                            { required: true, message: "Phone 2 is required" },
+                          ]}
+                        >
+                          <TextInput
+                            type="number"
+                            placeholder="Enter Phone 2"
+                          />
+                        </Form.Item>
+                      </div>
 
-              {/* Mobile Phone, Phone 2 */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Mobile Phone</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.mobilePhone}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        mobilePhone: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Mobile Phone"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Phone 2</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.phone2}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        phone2: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Phone 2"
-                    required
-                  />
-                </div>
-              </div>
+                      {/* Fax Number, Marital Status */}
+                      <div className="flex flex-col md:flex-row gap-3">
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Fax Number"
+                          name="faxNumber"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Fax Number is required",
+                            },
+                          ]}
+                        >
+                          <TextInput
+                            type="number"
+                            placeholder="Enter Fax Number"
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          className="flex-1 mb-1"
+                          label="Marital Status"
+                          name="marital"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Marital Status is required",
+                            },
+                          ]}
+                        >
+                          <SelectInput options={maritalStatusOptions} />
+                        </Form.Item>
+                      </div>
+                      <Form.Item
+                        className="flex-1 mb-1"
+                        label="Gender"
+                        name="gender"
+                        rules={[
+                          { required: true, message: "Gender is required" },
+                        ]}
+                      >
+                        <SelectInput options={genderOptions} />
+                      </Form.Item>
 
-              {/* Fax Number, Marital Status */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Fax Number</label>
-                  <input
-                    className="w-full bg-background p-3 rounded border-0 outline-none text-primary"
-                    type="text"
-                    value={defaultValues.faxNumber}
-                    onChange={(e) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        faxNumber: e.target.value,
-                      }))
-                    }
-                    placeholder="Enter Fax Number"
-                    required
-                  />
-                </div>
-                <div className="w-full md:w-1/2">
-                  <label className="block text-sm mb-2">Marital Status</label>
-                  <Select
-                    options={maritalStatusOptions}
-                    value={maritalStatusOptions.find(
-                      (option) => option.value === defaultValues.marital
-                    )}
-                    onChange={(selectedOption) =>
-                      setDefaultValues((prev) => ({
-                        ...prev,
-                        marital: selectedOption.value,
-                      }))
-                    }
-                    styles={customStyles}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Gender */}
-              <div className="w-full">
-                <label className="block text-sm mb-2">Gender</label>
-                <Select
-                  options={genderOptions}
-                  value={genderOptions.find(
-                    (option) => option.value === defaultValues.gender
-                  )}
-                  onChange={(selectedOption) =>
-                    setDefaultValues((prev) => ({
-                      ...prev,
-                      gender: selectedOption.value,
-                    }))
-                  }
-                  styles={customStyles}
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="bg-primary text-white p-3 rounded mt-6 w-full"
-                disabled={isPersonalInfoLoading}
-              >
-                {isPersonalInfoLoading ? (
-                  <FaSpinner className="animate-spin mx-auto" />
-                ) : (
-                  "Save Personal Information"
-                )}
-              </button>
-            </form>
-          </TabPanel>
-          <TabPanel>
-            <form onSubmit={handleImageUploadSubmit} className="space-y-6">
-              <div className="w-full">
-                <label className="block text-sm mb-2">Profile Picture</label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setDefaultValues((prev) => ({
-                      ...prev,
-                      profilePic: e.target.files[0],
-                    }))
-                  }
-                  className="file-input"
-                />
-              </div>
-              <div className="w-full">
-                <label className="block text-sm mb-2">Personal ID</label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setDefaultValues((prev) => ({
-                      ...prev,
-                      personalId: e.target.files[0],
-                    }))
-                  }
-                  className="file-input"
-                />
-              </div>
-              <div className="w-full">
-                <label className="block text-sm mb-2">Proof of Address</label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setDefaultValues((prev) => ({
-                      ...prev,
-                      proofOfAddress: e.target.files[0],
-                    }))
-                  }
-                  className="file-input"
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-primary text-white p-3 rounded w-full"
-                disabled={isImageUploadLoading}
-              >
-                {isImageUploadLoading ? (
-                  <FaSpinner className="animate-spin mx-auto" />
-                ) : (
-                  "Upload Documents"
-                )}
-              </button>
-            </form>
-          </TabPanel>
-        </TabPanels>
-      </TabGroup>
+                      <button
+                        type="submit"
+                        className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
+                        disabled={isPersonalInfoLoading}
+                      >
+                        Save Personal Information
+                      </button>
+                    </Form>
+                  </TabPanel>
+                  <TabPanel>
+                    <form
+                      onSubmit={handleImageUploadSubmit}
+                      className="space-y-6"
+                    >
+                      <div className="w-full">
+                        <label className="block text-sm mb-2">
+                          Profile Picture
+                        </label>
+                        <input
+                          type="file"
+                          onChange={(e) =>
+                            setDefaultValues((prev) => ({
+                              ...prev,
+                              profilePic: e.target.files[0],
+                            }))
+                          }
+                          className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        />
+                      </div>
+                      <div className="w-full">
+                        <label className="block text-sm mb-2">
+                          Personal ID
+                        </label>
+                        <input
+                          type="file"
+                          onChange={(e) =>
+                            setDefaultValues((prev) => ({
+                              ...prev,
+                              personalId: e.target.files[0],
+                            }))
+                          }
+                          className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        />
+                      </div>
+                      <div className="w-full">
+                        <label className="block text-sm mb-2">
+                          Proof of Address
+                        </label>
+                        <input
+                          type="file"
+                          onChange={(e) =>
+                            setDefaultValues((prev) => ({
+                              ...prev,
+                              proofOfAddress: e.target.files[0],
+                            }))
+                          }
+                          className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="text-lg font-medium p-3 border w-full bg-golden text-white rounded-lg"
+                        disabled={isImageUploadLoading}
+                      >
+                        {isImageUploadLoading ? (
+                          <FaSpinner className="animate-spin mx-auto" />
+                        ) : (
+                          "Upload Documents"
+                        )}
+                      </button>
+                    </form>
+                  </TabPanel>
+                </TabPanels>
+              </TabGroup>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

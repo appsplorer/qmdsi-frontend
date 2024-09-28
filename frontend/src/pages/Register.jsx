@@ -4,7 +4,7 @@ import { authSignup } from "../services/auth.service";
 import { toast } from "react-toastify";
 import Loading from "../components/Loading";
 import { countryOptions } from "../data/countries";
-import { Input } from "antd";
+import InputWithError from "../components/forms/InputError";
 
 const Register = () => {
   const [searchParams] = useSearchParams();
@@ -155,30 +155,6 @@ const Register = () => {
       setIsLoading(false);
     }
   };
-
-  const InputWithError = ({
-    type,
-    name,
-    placeholder,
-    value,
-    onChange,
-    error,
-  }) => (
-    <div className="flex flex-col w-full">
-      <Input
-        type={type}
-        className={`text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke ${
-          error ? "border-red-500" : ""
-        }`}
-        placeholder={placeholder}
-        onChange={onChange}
-        name={name}
-        value={value}
-        required
-      />
-      {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
-    </div>
-  );
 
   return (
     <div className="w-full px-4 md:px-10 pb-5 flex flex-col gap-5">

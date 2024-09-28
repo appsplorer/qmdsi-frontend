@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import KycForm from "../components/KycForm";
 import Nominee from "../components/Nominee";
 
