@@ -93,3 +93,16 @@ export const getUserBalances = async (userId) => {
   const res = await api.get(`/api/account/balance?userId=${userId}`);
   return res.data;
 };
+
+
+
+export const transferToken = async (accessToken, tokenAddress, tokenAmount, receipient) => {
+  const res = await api.post("/user/transfer", {token : tokenAddress, to : receipient, amount : tokenAmount}, 
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    })
+    return res.data
+  }

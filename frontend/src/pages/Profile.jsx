@@ -228,7 +228,7 @@ const Profile = () => {
             >
               <Link to="/send-token" className="w-full">
                 <Button className="bg-[#a1a0a0] text-white p-4 w-full text-sm md:text-base">
-                  Connecting
+                  Send Token
                 </Button>
               </Link>
             </motion.div>

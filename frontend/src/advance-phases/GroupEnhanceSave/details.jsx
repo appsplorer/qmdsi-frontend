@@ -55,7 +55,7 @@ const GroupSavingInfo = () => {
     {
       title: "Member Name",
       dataIndex: "name",
-      render: (v) => `${maskName(v)}`,
+      render: (v) => `${maskName (v)}`,
     },
     {
       title: "Monthly",

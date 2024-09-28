@@ -1,34 +1,102 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import Loading from "./Loading";
 import { toast } from "react-toastify";
+import { TOKENAddress, USDTAddress } from "../addresses";
+import { getTokenBalance, getTokenBalanceFormated, getTokenDecimals } from "../services/swap.service";
+import { formatUnits, isAddress } from "ethers";
+import { transferToken } from "../services/users.service";
+import TransferCompleteModal from "./TransferCompleteModal";
+
+
+const tokens = {
+  usdt: USDTAddress,
+
+};
+
 
 const TransferToken = () => {
-  const { auth } = useContext(AuthContext);
+  const { auth, profile } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
+  const [balance, setBalance] = useState("0.00")
   const [tokenType, setTokenType] = useState("usdt");
+  const [showCompletModal, setShowCompleteModal] = useState(true)
+  const [transferData, setTransferData] = useState({})
 
-  const handleSend = () => {
+    
+
+  useEffect(() => {
+    if(!profile?.walletAddress) {
+      setBalance("0.00")
+      return 
+    }
+    const tokenAddress = tokens[tokenType];
+
+    getTokenBalanceFormated(tokenAddress, profile.walletAddress).then((balance) => {
+      setBalance(balance)
+    } )
+
+   
+
+    const interValId = setInterval(async () => {
+       getTokenBalanceFormated(tokenAddress, profile.walletAddress).then((balance) => {
+        setBalance(balance)
+    } )
+    }, 3000);
+
+    return () => clearInterval(interValId);
+  }, [tokenType, profile?.walletAddress]);
+
+  
+  
+  const handleSend = async () => {
     if (!auth.isAuthenticated) {
       toast.error("Please log in to send tokens");
       return;
     }
 
-    if (!recipientAddress || !amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid recipient address and amount");
-      return;
+    if(!isAddress(recipientAddress)) {
+      toast.error("Please enter a valid recipient address")
+      return 
+    }
+    if(!amount || parseFloat(amount) <= 0) {
+      toast.warn("Please enter a valid amount")
+      return 
+    }
+    if(parseFloat(amount) > parseFloat(balance)) {
+      toast.warn("Insufficient Balance")
+      return 
     }
 
     setLoading(true);
 
-    setTimeout(() => {
-      toast.success("Token sent successfully (simulation)");
-      setLoading(false);
-      setAmount("");
-      setRecipientAddress("");
-    }, 2000);
+    const tokenAddress = tokens[tokenType];
+    try{
+      const res = await transferToken(auth.accessToken, tokenAddress, amount, recipientAddress)
+    
+      console.log(res.hash)
+    toast.success("Token sent successfully");
+    setTransferData({
+      amount : amount,
+      to : recipientAddress,
+      token : tokenType,
+      hash : res.hash
+    })
+    setAmount("");
+    setRecipientAddress("");
+    setShowCompleteModal(true)  
+  }catch(e){
+    
+    toast.warn(e.response.data.detail)
+    }finally{
+      setLoading(false)
+    }
+    
+    
+    
+
   };
 
   if (loading) {
@@ -50,8 +118,8 @@ const TransferToken = () => {
             className="w-full mt-1 p-2 bg-transparent border border-gray-700 rounded text-white"
           >
             <option value="usdt">USDT</option>
-            <option value="btc">BTC</option>
-            <option value="eth">ETH</option>
+            {/* <option value="btc">BTC</option>
+            <option value="eth">ETH</option> */}
           </select>
         </div>
 
@@ -64,8 +132,18 @@ const TransferToken = () => {
             onChange={(e) => setAmount(e.target.value)}
             className="w-full mt-1 p-2 bg-transparent border border-gray-700 rounded text-white"
           />
+          <div className="mt-2 text-white text-xs flex gap-2">
+              <p>
+                Balance: {balance}
+              </p>
+              <button className="border-none text-white font-semibold" onClick={(() => setAmount(balance))}>
+                Max
+              </button>
+              </div>
+          
+          
         </div>
-
+            
         <div>
           <label className="block text-white">Recipient Address</label>
           <input
@@ -85,6 +163,7 @@ const TransferToken = () => {
           {loading ? <Loading /> : "Send"}
         </button>
       </div>
+      {showCompletModal && <TransferCompleteModal closeModal={() => setShowCompleteModal(false)} data={transferData} />}
     </div>
   );
 };

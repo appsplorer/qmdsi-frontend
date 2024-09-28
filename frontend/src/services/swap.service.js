@@ -36,3 +36,8 @@ export const getGoldPrice = async () => {
     const goldPrice = formatUnits(res[1] / 31n, 18);
     return parseFloat(goldPrice).toFixed(2)
 }
+
+export const getTokenBalanceFormated = async (tokenAddress, owner) => {
+    const [balance, decimals] = await Promise.all([getTokenBalance(tokenAddress, owner), getTokenDecimals(tokenAddress)])
+    return formatUnits(balance, decimals)
+}

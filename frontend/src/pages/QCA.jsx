@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { conversionTabs } from "../constants/conversionTabs";
+import { conversionTabs } from "../components/conversionTabs";
+// import { conversionTabs } from "../constants/conversionTabs";
 
 const QCA = () => {
   const [active, setActive] = useState(0);
