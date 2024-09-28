@@ -26,6 +26,7 @@ from schemas import (
     ResetUserPassword,
     DepositReq,
     TransferResponse,
+    UserTransferToken,
 )
 
 import core, db, w3
@@ -119,6 +120,15 @@ def get_a_user(user: DBUser = Depends(current_user)):
     raw_user["wallet_address"] = wallet_address
     raw_user["referral_sign_ups"] = db.user_refs(user.ref_link)
     return raw_user
+
+
+@app.post("/user/transfer")
+def user_transfer_tokens(
+    data: UserTransferToken,
+    user: DBUser = Depends(current_user),
+):
+    hash = core.transfer_user_token(data, user.id)
+    return {"hash": hash}
 
 
 @app.get("/refs")

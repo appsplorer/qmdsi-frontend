@@ -14,6 +14,7 @@ from schemas import (
     TransferResponse,
     TransferStatus,
     TransferData,
+    UserTransferToken,
 )
 import w3, db
 from constants import TOKEN
@@ -300,3 +301,20 @@ def process_deposit(deposit_id: str):
         updates = {"processed": True, "state": state}
         db.update_deposit(deposit_id, updates)
         return True
+
+
+def transfer_user_token(
+    data: UserTransferToken,
+    user_id: str,
+):
+
+    user_balance = w3.check_balance_raw(user_id, data.token)
+    decimals = w3.get_token_decimals(data.token)
+
+    amount_wei = int(data.amount * 10**decimals)
+    if amount_wei > user_balance:
+        raise BadRequestException("Insufficient Balance")
+
+    params = TransferParams(to=data.to, token=data.token, amount=amount_wei)
+    hash = w3.make_transfers(user_id, [params])
+    return f"0x{hash}"

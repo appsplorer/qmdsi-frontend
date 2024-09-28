@@ -1,4 +1,5 @@
 from web3 import Web3
+from eth_typing import ChecksumAddress
 from abis.qmdsi_admin import qmdsi_admin_abi
 from abis.token_abi import token_abi
 from abis.swap_abi import swap_abi
@@ -18,6 +19,12 @@ qmdsi_admin_address = w3.to_checksum_address(
 )
 qmdsi_admin_contract = w3.eth.contract(address=qmdsi_admin_address, abi=qmdsi_admin_abi)
 swap_contract = w3.eth.contract(address=swap_address, abi=swap_abi)
+
+
+def get_token_decimals(token_address: ChecksumAddress) -> int:
+    token_contract = w3.eth.contract(address=token_address, abi=token_abi)
+    decimals = token_contract.functions.decimals().call()
+    return decimals
 
 
 def convert_usd_to_qmdt(usdt_amount: float):

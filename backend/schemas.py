@@ -1,9 +1,10 @@
-from pydantic import BaseModel, EmailStr, Field, AliasChoices
+from pydantic import BaseModel, EmailStr, Field, AliasChoices, field_validator
 from enum import Enum
 import shortuuid
-from io import BytesIO
 from datetime import datetime
 from eth_typing import ChecksumAddress
+from utils import to_checkum
+from typing import Any
 
 
 class Tokens(str, Enum):
@@ -243,3 +244,27 @@ class Transfer(BaseModel):
     usdtAmount: float
     qmgtAmount: float
     hash: str
+
+
+class UserTransferToken(BaseModel):
+    token: ChecksumAddress
+    to: ChecksumAddress
+    amount: float = Field(..., gt=0)
+
+    @field_validator("token")
+    @classmethod
+    def validate_token(cls, v: Any):
+        try:
+            tk = to_checkum(v)
+            return tk
+        except Exception:
+            raise ValueError("Invalid token address")
+
+    @field_validator("to")
+    @classmethod
+    def validate_to_address(cls, v: Any):
+        try:
+            to_ = to_checkum(v)
+            return to_
+        except Exception:
+            raise ValueError("Invalid reciepient address")
