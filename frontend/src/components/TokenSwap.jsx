@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import TransactionModal from "./TransactionModal";
 import Select from "react-select";
 import TransactionCompleteModal from "./TransactionCompleteModal";
@@ -17,6 +17,7 @@ import {
 } from "../services/swap.service";
 
 import { getUserBalances } from "../services/users.service";
+import customStyles from "../styles/Token";
 
 const tokens = {
   USDT: USDTAddress,
@@ -62,58 +63,6 @@ const TokenSwap = ({ fee, setFee }) => {
     },
     { value: "QMGT", label: "QMGT", image: "../../aurun_favi.png" },
   ];
-
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      backgroundColor: "#2d2d2d",
-      border: "none",
-      minHeight: "40px",
-      height: "max-content",
-      outline: "none",
-      borderRadius: "12px",
-      cursor: "pointer",
-      width: "150px",
-    }),
-    valueContainer: (provided) => ({
-      ...provided,
-      height: "40px",
-      display: "flex",
-      alignItems: "center",
-    }),
-    input: (provided) => ({
-      ...provided,
-      margin: "0px",
-    }),
-    indicatorsContainer: (provided) => ({
-      ...provided,
-      height: "50px",
-      borderColor: "#1E1E20",
-    }),
-    indicatorSeparator: (provided) => ({
-      display: "none", // Removes the left border line
-    }),
-    menu: (provided) => ({
-      ...provided,
-      backgroundColor: "#1E1E20", // Background color of the menu
-      borderRadius: "5px",
-      marginTop: "0px",
-      padding: "5px",
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected
-        ? "blue"
-        : state.isFocused
-        ? "lightblue"
-        : "white", // Background color on hover and selection
-      color: state.isSelected ? "white" : "black", // Text color
-      padding: "10px",
-      display: "flex",
-      alignItems: "center",
-      gap: "5px",
-    }),
-  };
 
   const [transactionModal, setTransactionModal] = useState(false);
   const [transactionCompleteModal, setTransactionCompleteModal] =
@@ -314,13 +263,8 @@ const TokenSwap = ({ fee, setFee }) => {
       getAmountOut("usdt", String(usdtAfterFee)).then((res) => {
         setAmtReceived(parseFloat(res));
       });
-      // console.log("cjecking")
     }
   }, [feeAmount]);
-
-  const handleLogin = () => {
-    navigate("/signin");
-  };
 
   return (
     <div className="mt-4">
@@ -445,19 +389,38 @@ const TokenSwap = ({ fee, setFee }) => {
         </p>
       </div>
       <div className="mt-4">
-        <button
-          className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
-          disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
-          onClick={() => {
-            !auth?.isAuthenticated ? handleLogin() : setTransactionModal(true);
-          }}
-        >
-          {!auth?.isAuthenticated
-            ? "Login"
-            : insufficientBalance
-            ? "Insufficient Balance"
-            : "Convert"}
-        </button>
+        {!auth?.isAuthenticated ? (
+          <Link to="/signin" className="w-full block">
+            <button className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer">
+              Login
+            </button>
+          </Link>
+        ) : (
+          <button
+            className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
+            disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
+            onClick={() => {
+              if (!insufficientBalance && parseFloat(amountIn) && tokenIn) {
+                setTransactionModal(true);
+              }
+            }}
+          >
+            {insufficientBalance ? "Insufficient Balance" : "Convert"}
+          </button>
+        )}
+
+        {!auth?.isAuthenticated && (
+          <div className="flex flex-col gap-2 mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-white text-sm tracking-wider">
+                Don&rsquo;t have an Account?{" "}
+              </span>{" "}
+              <Link to="/signup" className="text-primary tracking-wider">
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
 
       {transactionModal && (

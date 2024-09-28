@@ -65,8 +65,8 @@ const Profile = () => {
     );
   }
 
-  const handleNavigateToSwap = () => {
-    navigate("/");
+  const handleNavigateToInvites = () => {
+    navigate("/invites");
   };
 
   return (
@@ -158,9 +158,9 @@ const Profile = () => {
               </Button>
               <Button
                 className="rounded-full text-sm md:text-base bg-primary text-white"
-                onClick={handleNavigateToSwap}
+                onClick={handleNavigateToInvites}
               >
-                Get $QMGT
+                My Invites
               </Button>
             </div>
           </motion.div>

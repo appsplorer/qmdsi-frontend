@@ -28,6 +28,7 @@ const Verification = lazy(() => import("./components/verification.jsx"));
 const Deposit = lazy(() => import("./pages/Deposit.jsx"));
 const Deposits = lazy(() => import("./pages/Deposits.jsx"));
 const UserProfile = lazy(() => import("./pages/UserProfile.jsx"));
+const MyInvites = lazy(() => import("./pages/MyInvites.jsx"));
 
 // advance
 const Advance = lazy(() => import("./advance-phases/index.jsx"));
@@ -216,6 +217,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<Loading />}>
                 <UserProfile />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/invites",
+            element: (
+              <Suspense fallback={<Loading />}>
+                <MyInvites />
               </Suspense>
             ),
           },

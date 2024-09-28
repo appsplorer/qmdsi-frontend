@@ -8,9 +8,6 @@ import LoginModal from "./LoginModal";
 import Balance from "./Balance";
 import LogoutConfirmation from "./LogoutConfirmation";
 
-const shortenAddress = (address) =>
-  `${address.slice(0, 4)}...${address.slice(-4)}`;
-
 const Navigation = () => {
   const [showModal, setShowModal] = useState(false);
   const [navShow, setNavShow] = useState(false);
@@ -81,16 +78,24 @@ const Navigation = () => {
     <header className="blur-bg w-full fixed top-0 left-0 z-50 h-20 flex items-center justify-center">
       <div className="container mx-auto px-4 md:px-10 text-white w-full">
         <div className="flex items-center justify-between w-full relative">
-          <Link to="/" className="z-20">
-            <h1 className="flex items-center text-2xl text-yellow-400 font-thin tracking-wider">
-              <img
-                src="/aurun_favi.png"
-                className="w-10 mr-2"
-                alt="Aurum Logo"
-              />
-              au<span className="text-gray-400">rum</span>
-            </h1>
-          </Link>
+          <div className="flex items-center gap-4 z-20">
+            <Link to="/" className="z-20">
+              <h1 className="flex items-center text-2xl text-yellow-400 font-thin tracking-wider">
+                <img
+                  src="/aurun_favi.png"
+                  className="w-10 mr-2"
+                  alt="Aurum Logo"
+                />
+                au<span className="text-gray-400">rum</span>
+              </h1>
+            </Link>
+            <Link
+              to="/"
+              className="bg-golden text-primary hover:bg-primary hover:text-white border border-golden px-4 py-2 rounded-md text-sm font-medium transition duration-300"
+            >
+              Get $QMGT
+            </Link>
+          </div>
 
           <div className="flex items-center gap-4 md:hidden z-20">
             {!auth.isAuthenticated && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { ArrowDown } from "lucide-react";
 import QMLogo from "../assets/token.png";
 import PHPLogo from "../assets/php.png";
@@ -6,12 +6,15 @@ import { toast } from "react-toastify";
 import Loading from "./Loading";
 import { depositFiat, getRate } from "../services/deposit.service";
 import { getAmountOut } from "../services/swap.service";
+import { AuthContext } from "../contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const CreditSwap = () => {
   const [phpAmount, setPhpAmount] = useState("");
   const [qmgtAmount, setQmgtAmount] = useState("0.00");
   const [loading, setLoading] = useState(false);
   const [rate, setRate] = useState(0);
+  const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     fetchRate();
@@ -50,6 +53,11 @@ const CreditSwap = () => {
   };
 
   const handlePurchase = async () => {
+    if (!auth.isAuthenticated) {
+      toast.error("Please log in to make a purchase");
+      return;
+    }
+
     if (!phpAmount || parseFloat(phpAmount) <= 0) {
       toast.error("Please enter a valid PHP amount");
       return;
@@ -149,13 +157,34 @@ const CreditSwap = () => {
         </p>
       </div>
       <div className="mt-4">
-        <button
-          onClick={handlePurchase}
-          disabled={loading}
-          className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
-        >
-          {loading ? <Loading /> : "Purchase"}
-        </button>
+        {!auth.isAuthenticated ? (
+          <Link to="/signin" className="w-full block">
+            <button className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer">
+              Login to Purchase
+            </button>
+          </Link>
+        ) : (
+          <button
+            onClick={handlePurchase}
+            disabled={loading}
+            className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
+          >
+            {loading ? <Loading /> : "Purchase"}
+          </button>
+        )}
+
+        {!auth.isAuthenticated && (
+          <div className="flex flex-col gap-2 mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-white text-sm tracking-wider">
+                Don&rsquo;t have an Account?{" "}
+              </span>{" "}
+              <Link to="/signup" className="text-primary tracking-wider">
+                Sign Up
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
