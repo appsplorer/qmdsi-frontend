@@ -9,7 +9,7 @@ import QMLogo from "../assets/au-logo.png";
 const Swap = () => {
   const [swapType, setSwapType] = useState("token");
   const [showImport, setShowImport] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [fee, setFee] = useState("0.1");
 
   const containerVariants = {
@@ -35,14 +35,6 @@ const Swap = () => {
     setShowImport(true);
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loading />
-      </div>
-    );
-  }
-
   return (
     <motion.div
       className="w-full h-full flex flex-wrap flex-col gap-12 sm:flex-col md:flex-row px-4 md:px-10 z-50"
@@ -50,6 +42,11 @@ const Swap = () => {
       initial="hidden"
       animate="visible"
     >
+      {isLoading && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+          <Loading />
+        </div>
+      )}
       <motion.div
         className="font-bold w-full md:flex-1 flex flex-col gap-8"
         variants={itemVariants}
@@ -184,7 +181,7 @@ const Swap = () => {
             {swapType === "token" ? (
               <TokenSwap fee={fee} setFee={setFee} />
             ) : (
-              <CreditSwap />
+              <CreditSwap setLoading={setIsLoading} />
             )}
           </motion.div>
           <motion.div className="mt-4" variants={itemVariants}>

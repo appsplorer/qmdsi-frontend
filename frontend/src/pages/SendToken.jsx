@@ -2,10 +2,15 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import TransferToken from "../components/TransferToken";
 import { Divider } from "antd";
+import Loading from "../components/Loading";
 import QMLogo from "../assets/au-logo.png";
+import TransferCompleteModal from "../components/TransferCompleteModal";
 
 const SendToken = () => {
   const [transferType, setTransferType] = useState("token");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transferData, setTransferData] = useState({});
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -25,6 +30,11 @@ const SendToken = () => {
     },
   };
 
+  const handleTransferComplete = (data) => {
+    setTransferData(data);
+    setIsModalOpen(true);
+  };
+
   return (
     <motion.div
       className="w-full h-full flex flex-wrap flex-col gap-12 sm:flex-col md:flex-row px-4 md:px-10 z-50"
@@ -32,6 +42,11 @@ const SendToken = () => {
       initial="hidden"
       animate="visible"
     >
+      {isLoading && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50">
+          <Loading />
+        </div>
+      )}
       <motion.div
         className="font-bold w-full md:flex-1 flex flex-col gap-8"
         variants={itemVariants}
@@ -146,7 +161,12 @@ const SendToken = () => {
             </motion.div>
           </motion.div>
           <motion.div className="relative" variants={itemVariants}>
-            {transferType === "token" && <TransferToken />}
+            {transferType === "token" && (
+              <TransferToken
+                setLoading={setIsLoading}
+                onTransferComplete={handleTransferComplete}
+              />
+            )}
           </motion.div>
           <motion.div className="mt-4" variants={itemVariants}>
             <Divider className="bg-gray-400 mb-1" />
@@ -156,6 +176,12 @@ const SendToken = () => {
           </motion.div>
         </motion.div>
       </motion.div>
+
+      <TransferCompleteModal
+        isOpen={isModalOpen}
+        closeModal={() => setIsModalOpen(false)}
+        data={transferData}
+      />
     </motion.div>
   );
 };

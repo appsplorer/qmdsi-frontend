@@ -10,7 +10,7 @@ import {
 import React, { useState, useEffect } from "react";
 import CustomTable from "../../components/ui/table";
 import { useParams } from "react-router-dom";
-import { maskName } from "../../utils/index";
+import { maskName } from "../../utils/maskName";
 import TextInput from "../../components/ui/input";
 
 let rawData = [
@@ -55,7 +55,7 @@ const GroupSavingInfo = () => {
     {
       title: "Member Name",
       dataIndex: "name",
-      render: (v) => `${maskName (v)}`,
+      render: (v) => `${maskName(v)}`,
     },
     {
       title: "Monthly",

@@ -3,16 +3,14 @@ import { ArrowDown } from "lucide-react";
 import QMLogo from "../assets/token.png";
 import PHPLogo from "../assets/php.png";
 import { toast } from "react-toastify";
-import Loading from "./Loading";
 import { depositFiat, getRate } from "../services/deposit.service";
 import { getAmountOut } from "../services/swap.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 
-const CreditSwap = () => {
+const CreditSwap = ({ setLoading }) => {
   const [phpAmount, setPhpAmount] = useState("");
   const [qmgtAmount, setQmgtAmount] = useState("0.00");
-  const [loading, setLoading] = useState(false);
   const [rate, setRate] = useState(0);
   const { auth } = useContext(AuthContext);
 
@@ -166,10 +164,9 @@ const CreditSwap = () => {
         ) : (
           <button
             onClick={handlePurchase}
-            disabled={loading}
             className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
           >
-            {loading ? <Loading /> : "Purchase"}
+            Purchase
           </button>
         )}
 
