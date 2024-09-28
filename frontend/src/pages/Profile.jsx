@@ -186,7 +186,7 @@ const Profile = () => {
                 <p className="text-lg md:text-xl">{qmgtBalance} QMGT</p>
                 <div className="flex justify-between">
                   <Button className="text-sm md:text-base">
-                    <Link to="/deposits">Deposits</Link>
+                    <Link to="/deposits">Fiat Transactions</Link>
                   </Button>
                   <Button className="text-sm md:text-base">Transactions</Button>
                 </div>

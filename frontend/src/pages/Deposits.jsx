@@ -33,7 +33,7 @@ const Deposits = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-white mb-6">Your Deposits</h1>
+      <h1 className="text-3xl font-bold text-white mb-6">Fiat Transactions</h1>
       <div className="space-y-4">
         {deposits.map((deposit) => (
           <Link

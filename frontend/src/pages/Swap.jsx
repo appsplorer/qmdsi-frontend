@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import TokenSwap from "../components/TokenSwap";
 import CreditSwap from "../components/CreditSwap";
 import { Divider } from "antd";
 import Loading from "../components/Loading";
 import QMLogo from "../assets/au-logo.png";
+import TransactionModal from "../components/TransactionModal";
+import TransactionCompleteModal from "../components/TransactionCompleteModal";
+import { AuthContext } from "../contexts/AuthContext";
+import { swapToken } from "../services/users.service";
 
 const Swap = () => {
   const [swapType, setSwapType] = useState("token");
   const [showImport, setShowImport] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fee, setFee] = useState("0.1");
+  const [transactionModal, setTransactionModal] = useState(false);
+  const [transactionCompleteModal, setTransactionCompleteModal] =
+    useState(false);
+  const [transactionData, setTransactionData] = useState({});
+  const [resetTokenSwap, setResetTokenSwap] = useState(false);
+
+  const { auth } = useContext(AuthContext);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -33,6 +44,43 @@ const Swap = () => {
   const handleBuyWithFiat = () => {
     setSwapType("credit");
     setShowImport(true);
+  };
+
+  const closeModal = () => {
+    setTransactionModal(false);
+  };
+
+  const closeTransactionCompleteModal = () => {
+    setTransactionCompleteModal(false);
+  };
+
+  const handleConfirmSwap = async () => {
+    if (!auth) return;
+
+    setIsLoading(true);
+    try {
+      const res = await swapToken(
+        auth.accessToken,
+        transactionData.tokenIn.toLowerCase(),
+        transactionData.amountIn
+      );
+      const updatedTransactionData = {
+        ...res,
+        ...transactionData,
+      };
+      setTransactionData(updatedTransactionData);
+      setTransactionModal(false);
+      setTransactionCompleteModal(true);
+      setResetTokenSwap(true);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetComplete = () => {
+    setResetTokenSwap(false);
   };
 
   return (
@@ -179,7 +227,14 @@ const Swap = () => {
           </motion.div>
           <motion.div className="relative" variants={itemVariants}>
             {swapType === "token" ? (
-              <TokenSwap fee={fee} setFee={setFee} />
+              <TokenSwap
+                fee={fee}
+                setFee={setFee}
+                setTransactionModal={setTransactionModal}
+                setTransactionData={setTransactionData}
+                resetForm={resetTokenSwap}
+                onResetComplete={handleResetComplete}
+              />
             ) : (
               <CreditSwap setLoading={setIsLoading} />
             )}
@@ -192,6 +247,26 @@ const Swap = () => {
           </motion.div>
         </motion.div>
       </motion.div>
+      {transactionModal && (
+        <TransactionModal
+          fee={fee}
+          closeModal={closeModal}
+          confirmSwap={handleConfirmSwap}
+          tokenIn={transactionData.tokenIn}
+          amountIn={transactionData.amountIn}
+          tokenOut={transactionData.tokenOut}
+          amountOut={transactionData.amountOut}
+          setTransactionData={setTransactionData}
+          setTransactionCompleteModal={setTransactionCompleteModal}
+          isLoading={isLoading}
+        />
+      )}
+      {transactionCompleteModal && (
+        <TransactionCompleteModal
+          closeModal={closeTransactionCompleteModal}
+          data={transactionData}
+        />
+      )}
     </motion.div>
   );
 };

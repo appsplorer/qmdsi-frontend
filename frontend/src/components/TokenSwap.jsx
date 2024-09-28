@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import TransactionModal from "./TransactionModal";
 import Select from "react-select";
-import TransactionCompleteModal from "./TransactionCompleteModal";
 import { parseEther } from "ethers";
 
 import { TOKENAddress, USDTAddress } from "../addresses";
@@ -39,7 +37,14 @@ const CustomSingleValue = (props) => {
   );
 };
 
-const TokenSwap = ({ fee, setFee }) => {
+const TokenSwap = ({
+  fee,
+  setFee,
+  setTransactionModal,
+  setTransactionData,
+  resetForm,
+  onResetComplete,
+}) => {
   const CustomOption = (props) => {
     const { innerRef, innerProps, data } = props;
     return (
@@ -63,15 +68,10 @@ const TokenSwap = ({ fee, setFee }) => {
     },
     { value: "QMGT", label: "QMGT", image: "../../aurun_favi.png" },
   ];
-
-  const [transactionModal, setTransactionModal] = useState(false);
-  const [transactionCompleteModal, setTransactionCompleteModal] =
-    useState(false);
-  const [transactionData, setTransactionData] = useState({});
   const [tokenIn, setTokenIn] = useState("USDT");
   const [tokenOut, setTokenOut] = useState("QMGT");
-  const [amountIn, setAmountIn] = useState(0);
-  const [amountOut, setAmountOut] = useState(0);
+  const [amountIn, setAmountIn] = useState("");
+  const [amountOut, setAmountOut] = useState("");
   const [changeData, setChangeData] = useState("");
   const [tokenInBal, setTokenInBal] = useState("0");
   const [tokenOutBal, setTokenOutBal] = useState("0");
@@ -80,23 +80,9 @@ const TokenSwap = ({ fee, setFee }) => {
   const [amtReceived, setAmtReceived] = useState(0);
   const [userBalances, setUserBalances] = useState({ qmgt: 0, usdt: 0 });
   const [insufficientBalance, setInsufficientBalance] = useState(false);
+
   const { profile, auth } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const closeModal = () => {
-    setTransactionModal(false);
-  };
-
-  const closeTransactionCompleteModal = () => {
-    setTransactionCompleteModal(false);
-  };
-
-  const transactionSubmit = () => {
-    setTransactionModal(false);
-    // transaction Completion Code Here
-
-    setTransactionCompleteModal(true);
-  };
 
   useEffect(() => {
     getGoldPrice().then((goldPrice) => {
@@ -104,12 +90,30 @@ const TokenSwap = ({ fee, setFee }) => {
     });
   }, []);
 
+  useEffect(() => {
+    if (resetForm) {
+      setTokenIn("USDT");
+      setTokenOut("QMGT");
+      setAmountIn("");
+      setAmountOut("");
+      setChangeData("");
+      setFeeAmount("0");
+      setAmtReceived(0);
+      setInsufficientBalance(false);
+      onResetComplete();
+    }
+  }, [resetForm, onResetComplete]);
+
   const handleSwap = () => {
-    setTokenIn(tokenOut);
-    setTokenOut(tokenIn);
-    setAmountIn(amountOut);
-    setAmountOut(amountIn);
-    setChangeData("input");
+    if (!insufficientBalance && parseFloat(amountIn) && tokenIn) {
+      setTransactionData({
+        tokenIn,
+        amountIn,
+        tokenOut,
+        amountOut,
+      });
+      setTransactionModal(true);
+    }
   };
 
   const fetchBalances = async (userId) => {
@@ -399,11 +403,7 @@ const TokenSwap = ({ fee, setFee }) => {
           <button
             className="w-full h-[50px] text-lg hover:bg-primary rounded-lg mt-4 bg-golden text-white border-2 border-gray-700 cursor-pointer"
             disabled={insufficientBalance || !parseFloat(amountIn) || !tokenIn}
-            onClick={() => {
-              if (!insufficientBalance && parseFloat(amountIn) && tokenIn) {
-                setTransactionModal(true);
-              }
-            }}
+            onClick={handleSwap}
           >
             {insufficientBalance ? "Insufficient Balance" : "Convert"}
           </button>
@@ -422,26 +422,6 @@ const TokenSwap = ({ fee, setFee }) => {
           </div>
         )}
       </div>
-
-      {transactionModal && (
-        <TransactionModal
-          fee={fee}
-          closeModal={closeModal}
-          transactionComplete={transactionSubmit}
-          tokenIn={tokenIn}
-          amountIn={amountIn}
-          tokenOut={tokenOut}
-          amountOut={amountOut}
-          setTransactionData={setTransactionData}
-          setTransactionCompleteModal={setTransactionCompleteModal}
-        />
-      )}
-      {transactionCompleteModal && (
-        <TransactionCompleteModal
-          closeModal={closeTransactionCompleteModal}
-          data={transactionData}
-        />
-      )}
     </div>
     // END*
   );

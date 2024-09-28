@@ -59,7 +59,7 @@ const Login = () => {
               <Input
                 type="text"
                 className="text-slate-800 text-lg p-3 rounded-lg w-full bg-smoke"
-                placeholder="Username"
+                placeholder="Email Address"
                 onChange={handleChange}
                 name="username"
               />
