@@ -1,16 +1,11 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import TokenSwap from "../components/TokenSwap";
-import CreditSwap from "../components/CreditSwap";
+import TransferToken from "../components/TransferToken";
 import { Divider } from "antd";
-import Loading from "../components/Loading";
 import QMLogo from "../assets/au-logo.png";
 
-const Swap = () => {
-  const [swapType, setSwapType] = useState("token");
-  const [showImport, setShowImport] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
-  const [fee, setFee] = useState("0.1");
+const SendToken = () => {
+  const [transferType, setTransferType] = useState("token");
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -30,19 +25,6 @@ const Swap = () => {
     },
   };
 
-  const handleBuyWithFiat = () => {
-    setSwapType("credit");
-    setShowImport(true);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loading />
-      </div>
-    );
-  }
-
   return (
     <motion.div
       className="w-full h-full flex flex-wrap flex-col gap-12 sm:flex-col md:flex-row px-4 md:px-10 z-50"
@@ -59,21 +41,21 @@ const Swap = () => {
           variants={itemVariants}
         >
           <motion.h1
-            className="text-5xl whitespace-nowrap md:text-8xl font-normal font tracking-wide mb-6"
+            className="text-5xl whitespace-nowrap md:text-8xl font-normal tracking-wide mb-6"
             variants={itemVariants}
           >
-            Buy & Sell
+            Transfer Tokens
           </motion.h1>
           <motion.p
             className="text-2xl font-normal text-white mb-6"
             variants={itemVariants}
           >
-            The Ultimate currency.
+            Seamlessly transfer your assets.
           </motion.p>
         </motion.div>
 
         <motion.p
-          className="text-5xl md:text-8xl font-normal text-white font tracking-wide"
+          className="text-5xl md:text-8xl font-normal text-white tracking-wide"
           variants={itemVariants}
         >
           QMGT
@@ -83,13 +65,13 @@ const Swap = () => {
             className="text-2xl font-normal text-white"
             variants={itemVariants}
           >
-            Quantum Metal makes trading gold easy and efficient
+            Quantum Metal makes transferring tokens fast and secure.
           </motion.p>
           <motion.p
             className="text-2xl font-normal text-white"
             variants={itemVariants}
           >
-            via trustworthy processes and tools
+            Experience a reliable token transfer process.
           </motion.p>
         </motion.div>
 
@@ -116,7 +98,7 @@ const Swap = () => {
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            BUY
+            SEND
           </motion.button>
           <motion.button
             className="blur-bg border-white text-white font-normal p-4 w-full text-lg md:w-44 border-2 rounded-full"
@@ -124,7 +106,7 @@ const Swap = () => {
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            SELL
+            RECEIVE
           </motion.button>
         </motion.div>
       </motion.div>
@@ -145,47 +127,26 @@ const Swap = () => {
             variants={itemVariants}
           >
             <motion.h1 className="text-xl text-white" variants={itemVariants}>
-              Trade QMGT
+              Select Token to Transfer
             </motion.h1>
             <motion.div
               className="flex gap-2 text-gray-600"
               variants={itemVariants}
             >
               <motion.button
-                className="w-20 md:w-24 text-xs rounded-full p-1 py-2 bg-charcoalBlue text-white"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {fee}%
-              </motion.button>
-              <motion.button
                 className={`w-20 md:w-24 text-xs rounded-full p-1 py-2 ${
-                  swapType === "token" ? "bg-blue-600" : "bg-charcoalBlue"
+                  transferType === "token" ? "bg-blue-600" : "bg-charcoalBlue"
                 } text-white`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setSwapType("token")}
+                onClick={() => setTransferType("token")}
               >
                 Token
-              </motion.button>
-              <motion.button
-                className={`w-20 md:w-24 text-xs rounded-full p-1 py-2 ${
-                  swapType === "credit" ? "bg-blue-600" : "bg-charcoalBlue"
-                } text-white`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleBuyWithFiat}
-              >
-                Buy with Fiat
               </motion.button>
             </motion.div>
           </motion.div>
           <motion.div className="relative" variants={itemVariants}>
-            {swapType === "token" ? (
-              <TokenSwap fee={fee} setFee={setFee} />
-            ) : (
-              <CreditSwap />
-            )}
+            {transferType === "token" && <TransferToken />}
           </motion.div>
           <motion.div className="mt-4" variants={itemVariants}>
             <Divider className="bg-gray-400 mb-1" />
@@ -199,4 +160,4 @@ const Swap = () => {
   );
 };
 
-export default Swap;
+export default SendToken;

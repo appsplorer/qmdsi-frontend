@@ -2,10 +2,10 @@ import { useState, useEffect, useContext } from "react";
 import { getUserBalances } from "../services/users.service";
 import { AuthContext } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSpinner } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { Button } from "antd";
+import Loading from "../components/Loading";
 import CustomButton from "../components/ui/button";
 import { getGoldPrice } from "../services/swap.service";
 
@@ -60,7 +60,7 @@ const Profile = () => {
   if (!profileData) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <FaSpinner className="animate-spin text-primary text-4xl" />
+        <Loading />
       </div>
     );
   }
@@ -226,9 +226,11 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 1 }}
             >
-              <Button className="bg-[#a1a0a0] text-white p-4 w-full text-sm md:text-base">
-                Connecting
-              </Button>
+              <Link to="/send-token" className="w-full">
+                <Button className="bg-[#a1a0a0] text-white p-4 w-full text-sm md:text-base">
+                  Connecting
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </motion.div>

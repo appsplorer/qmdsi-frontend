@@ -29,6 +29,7 @@ const Deposit = lazy(() => import("./pages/Deposit.jsx"));
 const Deposits = lazy(() => import("./pages/Deposits.jsx"));
 const UserProfile = lazy(() => import("./pages/UserProfile.jsx"));
 const MyInvites = lazy(() => import("./pages/MyInvites.jsx"));
+const SendToken = lazy(() => import("./pages/SendToken.jsx"));
 
 // advance
 const Advance = lazy(() => import("./advance-phases/index.jsx"));
@@ -225,6 +226,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<Loading />}>
                 <MyInvites />
+              </Suspense>
+            ),
+          },
+          {
+            path: "/send-token",
+            element: (
+              <Suspense fallback={<Loading />}>
+                <SendToken />
               </Suspense>
             ),
           },
