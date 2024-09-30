@@ -115,13 +115,10 @@ const Profile = () => {
                 <strong>Email:</strong> {profileData.email}
               </p>
               <p>
-                <strong>KYC Status:</strong> {profileData.kycStatus}
-              </p>
-              <p>
                 <strong>KYC Status:</strong>{" "}
                 {profileData.kycStatus === "Not Verified" ? (
                   <CustomButton
-                    label="Verified now"
+                    label="Get Verified"
                     onClick={() => navigate("/kyc")}
                   />
                 ) : (

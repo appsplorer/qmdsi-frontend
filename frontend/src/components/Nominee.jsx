@@ -1,17 +1,19 @@
 import { useState, useContext, useEffect } from "react";
 import Select from "react-select";
 import { toast } from "react-toastify";
-import { FaSpinner } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
-import {updateImages, updateNomineeInfo, getUserNominee } from "../services/nominee.service";
+import {
+  updateImages,
+  updateNomineeInfo,
+  getUserNominee,
+} from "../services/nominee.service";
 import { countryOptions } from "../data/countries";
 import { nationalIdTypeOptions } from "../constants/KYC";
 import { customStyles } from "../styles";
 import { useNavigate } from "react-router-dom";
 
-const Nominee = () => {
+const Nominee = ({ setLoading }) => {
   const [activeTab, setActiveTab] = useState("info");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [formValues, setFormValues] = useState({
     firstName: null,
@@ -74,7 +76,7 @@ const Nominee = () => {
 
   const onSubmitInfo = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     try {
       const nomineeData = {
         firstName: formValues.firstName || "",
@@ -88,41 +90,44 @@ const Nominee = () => {
         relationshipToTestator: formValues.relation || "",
         contactInfo: formValues.contactInfo || "",
         idType: formValues.idType || "",
-        idNumber: formValues.idNumber
+        idNumber: formValues.idNumber,
       };
       await updateNomineeInfo(auth.accessToken, nomineeData);
       toast.success("Nominee information submitted!");
       setActiveTab("image");
     } catch (error) {
       console.error("Error updating nominee information:", error);
-      toast.error(error.response.data.detail || "Failed to update nominee information");
+      toast.error(
+        error.response.data.detail || "Failed to update nominee information"
+      );
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const onSubmitImage = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     try {
       if (formValues.idFile) {
         // Assume some upload logic here
-        await updateImages(auth.accessToken, 
-          formValues.idFile
-        )
+        await updateImages(auth.accessToken, formValues.idFile);
         setTimeout(() => {
           toast.success("Nominee ID image uploaded successfully!");
-          setIsLoading(false);
+          setLoading(false);
         }, 2000);
         navigate("/profile");
       } else {
         toast.error("Please select an image file to upload.");
-        setIsLoading(false);
+        setLoading(false);
       }
     } catch (error) {
-      console.error("Error uploading nominee ID image:", error.response.data.detail);
+      console.error(
+        "Error uploading nominee ID image:",
+        error.response.data.detail
+      );
       toast.error(error.response.data.detail);
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -352,9 +357,8 @@ const Nominee = () => {
             <button
               type="submit"
               className="px-8 py-2 bg-primary text-white rounded"
-              disabled={isLoading}
             >
-              {isLoading ? <FaSpinner className="animate-spin" /> : "Save"}
+              Save
             </button>
           </div>
         </form>
@@ -379,9 +383,8 @@ const Nominee = () => {
             <button
               type="submit"
               className="px-8 py-2 bg-primary text-white rounded"
-              disabled={isLoading}
             >
-              {isLoading ? <FaSpinner className="animate-spin" /> : "Upload"}
+              Upload
             </button>
           </div>
         </form>
