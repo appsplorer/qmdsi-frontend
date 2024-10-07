@@ -62,7 +62,7 @@ class DBUser(RegUser):
     created_at: str | None = None
 
 
-class PersonalInformation(BaseModel):
+class PersonalInfoRequest(BaseModel):
     first_name: str = Field(
         ..., validation_alias=AliasChoices("firstName", "first_name")
     )
@@ -94,7 +94,6 @@ class PersonalInformation(BaseModel):
         ..., validation_alias=AliasChoices("incomeTaxNo", "income_tax_no")
     )
     id_type: str = Field(..., validation_alias=AliasChoices("idType", "id_type"))
-    id_number: str = Field(..., validation_alias=AliasChoices("idNumber", "id_number"))
     industry: str
     occupation: str
     source_of_income: str = Field(
@@ -109,6 +108,12 @@ class PersonalInformation(BaseModel):
         ..., validation_alias=AliasChoices("maritalStatus", "marital_status")
     )
     gender: str
+
+
+class PersonalInformation(PersonalInfoRequest):
+    id_number: str | None = Field(
+        ..., validation_alias=AliasChoices("idNumber", "id_number")
+    )
 
 
 class Refs(BaseModel):
@@ -152,7 +157,7 @@ class SwapParams(BaseModel):
 
 
 class BindResult(BaseModel):
-    status: str
+    status: str = Field(examples=["success", "failed"])
     walletAddress: str
 
 
@@ -201,12 +206,14 @@ class IdDocumentInfo(BaseModel):
     last_name: str | None = None
     date_of_birth: datetime | None = None
     front_image: bytes | None = None
+    document_number: str | None = None
 
 
 class VerficationData(BaseModel):
     id: str
     user_id: str
     credentials_verified: bool
+    document_number: str
     completed: bool
 
 
@@ -268,3 +275,16 @@ class UserTransferToken(BaseModel):
             return to_
         except Exception:
             raise ValueError("Invalid reciepient address")
+
+
+class BindResponse(BaseModel):
+    user_id: str = Field(serialization_alias="userId")
+    identification_number: str = Field(serialization_alias="identificationNumber")
+    kyc_verified: bool = Field(serialization_alias="kycVerified")
+    created_at: str | None = Field(serialization_alias="createdAt")
+    is_binded: bool = Field(serialization_alias="isBinded")
+
+
+class BuyGoldResponse(BaseModel):
+    status: str = Field(default="success", description="Transaction status")
+    transactionRef: str

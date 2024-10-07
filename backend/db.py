@@ -7,6 +7,7 @@ from schemas import (
     VerficationData,
     Deposit,
     Transfer,
+    PersonalInfoRequest,
 )
 
 
@@ -32,6 +33,7 @@ def create_tables():
         )
     """
     )
+
     cur.execute(
         """ CREATE TABLE IF NOT EXISTS bind_users (
         id TEXT PRIMARY KEY,
@@ -41,7 +43,7 @@ def create_tables():
     )
 
     cur.execute(
-        """ CREATE TABLE IF NOT EXISTS personal_information (
+        """CREATE TABLE IF NOT EXISTS personal_information (
                 id TEXT PRIMARY KEY,
                 first_name TEXT NOT NULL,
                 middle_name TEXT NOT NULL,
@@ -58,7 +60,7 @@ def create_tables():
                 mother_name TEXT NOT NULL,
                 income_tax_no TEXT NOT NULL,
                 id_type TEXT NOT NULL,
-                id_number TEXT NOT NULL,
+                id_number TEXT,
                 industry TEXT NOT NULL,
                 occupation TEXT NOT NULL,
                 source_of_income TEXT NOT NULL,
@@ -94,6 +96,7 @@ def create_tables():
         """CREATE TABLE IF NOT EXISTS verifications (
                 id TEXT PRIMARY KEY,
                 user_id TEXT NOT NULL,
+                document_id TEXT,
                 credentials_verified BOOLEAN DEFAULT FALSE,
                 completed BOOLEAN DEFAULT FALSE
                 )
@@ -126,11 +129,12 @@ def create_tables():
         )
     """
     )
+
     conn.commit()
     conn.close()
 
 
-def create_personal_info(_id: str, info: PersonalInformation):
+def create_personal_info(_id: str, info: PersonalInfoRequest):
     conn = sqlite3.connect("my_database.db")
 
     cursor = conn.cursor()
@@ -148,7 +152,7 @@ def create_personal_info(_id: str, info: PersonalInformation):
     return cursor.lastrowid
 
 
-def update_personal_info(_id: str, info: PersonalInformation):
+def update_personal_info(_id: str, info: PersonalInfoRequest):
     conn = sqlite3.connect("my_database.db")
     cursor = conn.cursor()
 
@@ -179,6 +183,24 @@ def get_personal_information(_id: str) -> PersonalInformation | None:
     info = dict(zip(columns, info))
     parsed = PersonalInformation.model_validate(info)
     return parsed
+
+
+def get_user_by_id_number(id_number: str) -> DBUser | None:
+    conn = sqlite3.connect("my_database.db")
+
+    cur = conn.cursor()
+
+    user_id = cur.execute(
+        "SELECT id from  personal_information where id_number = ?",
+        (id_number,),
+    ).fetchone()
+    conn.close()
+
+    if not user_id:
+        return None
+
+    user = get_user(user_id[0])
+    return user
 
 
 def update_personal_information(_id: str, info: PersonalInformation):
@@ -375,8 +397,9 @@ def get_user_verification(
     return VerficationData(
         id=verification[0],
         user_id=verification[1],
-        credentials_verified=bool(verification[2]),
-        completed=bool(verification[3]),
+        document_number=verification[2],
+        credentials_verified=bool(verification[3]),
+        completed=bool(verification[4]),
     )
 
 
@@ -558,7 +581,6 @@ def get_transfers(
         print(e)
         conn.close()
         return []
-
 
 
 create_tables()

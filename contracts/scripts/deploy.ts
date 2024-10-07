@@ -4,7 +4,7 @@ import hre, { viem } from "hardhat";
 const bscScanOracle = "0x4E08A779a85d28Cc96515379903A6029487CEbA0"
 const tokenAddress = "0x1359899ab37623c8ddf07dcd2295a50cd6db549a"
 const usdtAddress = "0xbf5564f8799566784d4031839613aeeb5b7bba5a"
-const sendTo = '0xa95fDA6ad20Ea0793AD5f54958eE53a2054Bc326'
+const sendTo = '0xCaeD270eCD13335cA992406b371790cC0058ee5d'
 
 const main = async () => {
     const [signer] = await viem.getWalletClients()

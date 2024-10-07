@@ -70,9 +70,9 @@ const KycForm = ({ setLoading }) => {
     setLoading(true);
     try {
       const personalInfoData = {
-        firstName: profile.firstName,
-        middleName: profile.middleName,
-        lastName: profile.lastName,
+        firstName: defaultValues.firstName,
+        middleName: defaultValues.middleName,
+        lastName: defaultValues.lastName,
 
         employeeName: defaultValues.employeeName,
         incomePerAnnum: parseFloat(defaultValues.income),
@@ -86,7 +86,6 @@ const KycForm = ({ setLoading }) => {
         idType: defaultValues.idType,
         motherName: defaultValues.motherName,
         incomeTaxNo: defaultValues.incomeTaxNo,
-        idNumber: defaultValues.idNumber,
         industry: defaultValues.industry,
         occupation: defaultValues.occupation,
         sourceOfIncome: defaultValues.sourceOfIncome,
@@ -96,9 +95,11 @@ const KycForm = ({ setLoading }) => {
         maritalStatus: defaultValues.marital,
         gender: defaultValues.gender,
       };
+      console.log(personalInfoData)
       await updatePersonalInfo(auth.accessToken, personalInfoData);
       toast.success("Personal information updated!");
       setSelectedTab(1);
+
     } catch (error) {
       console.error("Error updating personal info:", error);
       toast.error(

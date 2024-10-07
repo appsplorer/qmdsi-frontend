@@ -122,10 +122,10 @@ def extract_info(document_info: dict) -> IdDocumentInfo:
     last_name_obj = document_info.get("lastName")
     date_of_birth_obj = document_info.get("dateOfBirth")
     face_image_base64_string = document_info.get("faceImageBase64")
+    document_number = document_info.get("documentNumber")
     result = IdDocumentInfo()
 
     if full_name:
-
         first_name, *middle_name, last_name = full_name["latin"].split(" ")
         middle_name = " ".join(middle_name)
         if first_name.endswith(","):
@@ -159,6 +159,10 @@ def extract_info(document_info: dict) -> IdDocumentInfo:
     if face_image_base64_string:
         image_data = base64.b64decode(face_image_base64_string)
         result.front_image = image_data
+
+    if document_number:
+        no_ = document_number.get("latin", None)
+        result.document_number = no_.strip() if no_ else no_
     return result
 
 
@@ -170,17 +174,18 @@ def verify_user_document(
     id_file_path = save_user_document(document_image, filename, user_id)
     verification_id = init_verification(user_id)
     document_info = verify_document(verification_id, id_file_path)
-    print(f"Document first name {document_info.first_name}")
-    print(f"Document middle name {document_info.middle_name}")
-    print(f"Document last name {document_info.last_name}")
     _check_document_fields(document_info)
     personal_info = db.get_personal_information(user_id)
     if not personal_info:
         raise Exception("Personal Info Doesn't exist")
     _verify_document_data(document_info, personal_info)
     assert document_info.front_image
+
     save_front_image(BytesIO(document_info.front_image), user_id)
-    new_info = {"credentials_verified": True}
+    new_info = {
+        "credentials_verified": True,
+        "document_id": document_info.document_number,
+    }
     db.update_verification_info(verification_id, new_info)
     return True
 
@@ -222,7 +227,9 @@ def save_front_image(
     img.save(path)
 
 
-def get_user_id_front_image_path(user_id: str) -> str | None:
+def get_user_id_front_image_path(
+    user_id: str,
+) -> str | None:
     user_uploads_dir = f"{upload_dir}/{user_id}"
     files = os.listdir(user_uploads_dir)
     for file in files:
@@ -244,6 +251,8 @@ def _check_document_fields(
     #     raise Exception("Unable to extract date of birth")
     elif not data.front_image:
         raise Exception("Unable to extract front image")
+    elif not data.document_number:
+        raise Exception("Unable to extract document id number")
 
 
 def _verify_document_data(
@@ -253,8 +262,11 @@ def _verify_document_data(
     assert document_info.first_name
     assert document_info.last_name
     assert document_info.middle_name
+    assert document_info.document_number
+
     year, month, day = personal_info.date_of_birth.split("-")
     date_of_birth = datetime(year=int(year), month=int(month), day=int(day))
+    usr_doc = db.get_user_by_id_number(document_info.document_number)
 
     if document_info.first_name.lower() != personal_info.first_name.lower():
         raise Exception("User first name doesn't match id first name")
@@ -264,6 +276,8 @@ def _verify_document_data(
         raise Exception("User middle name doesn't match id middle name")
     elif document_info.date_of_birth and document_info.date_of_birth != date_of_birth:
         raise Exception("User date of birth doesn't match id date of birth")
+    elif usr_doc and usr_doc.kyc_verified:
+        raise Exception("Document already in use")
 
 
 def verify_user_face(
@@ -287,7 +301,7 @@ def verify_user_face(
 
     if score < face_comparison_threshold:
         raise Exception("Face mismatch")
-    print(score)
+
     complete_verification(verification.id)
     db.update_user(user_email, {"kyc_verified": True})
 
@@ -308,11 +322,3 @@ def save_user_face(image: BinaryIO, user_id):
     return path
 
 
-# verification_id = init_verification("ddssdme")
-# print(verification_id)
-# res = verify_document("b136e75b-65a1-40b2-898c-89e8605ac442", "7.jpg")
-# print(res)
-# with open("8.json", "w") as f:
-#     json.dump(res, f, indent=4)
-# with open("uploads/8w6A833Lb3aiVP2wj8j78G/id.jpg", "rb") as file:
-#     verify_user_face(file, "8w6A833Lb3aiVP2wj8j78G", "ejemplo@ejemplo.mx")

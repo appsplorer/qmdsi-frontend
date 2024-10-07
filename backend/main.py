@@ -27,6 +27,10 @@ from schemas import (
     DepositReq,
     TransferResponse,
     UserTransferToken,
+    PersonalInfoRequest,
+    BindResponse,
+    BindResult,
+    BuyGoldResponse,
 )
 
 import core, db, w3
@@ -185,7 +189,7 @@ async def get_notification(request: Request):
 
 @app.post("/personal_information")
 def post_personal_information(
-    personal_info: PersonalInformation,
+    personal_info: PersonalInfoRequest,
     user: DBUser = Depends(current_user),
 ):
     try:
@@ -267,15 +271,31 @@ def get_user_nominee(user: DBUser = Depends(current_user)):
     return db.get_nominee(user.id)
 
 
-@app.get("/api/account/bind")
+@app.get(
+    "/api/account/bind",
+    responses={
+        400: {
+            "description": "Possible reasons: \n - No user found with the given identificationNumber. \n - User with given identificationNumber not verified."
+        },
+    },
+    response_model=BindResponse,
+)
 def get_bind_status(
-    user_id: str,
+    identificationNumber: str,
     x_token: str = Depends(current_org),
 ):
-    return bool(db.get_binded_user(user_id))
+    return core.get_user_bind(identificationNumber)
 
 
-@app.post("/api/account/binding")
+@app.post(
+    "/api/account/binding",
+    responses={
+        400: {
+            "description": "Possible reasons: \n - No user found with the given identificationNumber. \n - User with given identificationNumber not verified."
+        },
+    },
+    response_model=BindResult,
+)
 def bind_account(
     data: BindRequestSchema,
     x_token: str = Depends(current_org),
@@ -346,7 +366,15 @@ def get_user_transfers(
     return db.get_transfers("user_account", user_account)
 
 
-@app.post("/api/gold/buy")
+@app.post(
+    "/api/gold/buy",
+    responses={
+        400: {
+            "description": "Possible reasons: \n - Invalid client secret. \n - Unsupported token: {info.token} \n - Insufficient User Balance"
+        },
+    },
+    response_model=BuyGoldResponse,
+)
 def buy_gold(
     data: BuyGoldSchema,
     x_token: str = Depends(current_org),
@@ -354,7 +382,15 @@ def buy_gold(
     return core.buy_gold(data, x_token)
 
 
-@app.post("/api/gold/sell")
+@app.post(
+    "/api/gold/sell",
+    responses={
+        400: {
+            "description": "Possible reasons: \n - Invalid client secret. \n - Unsupported token: {info.token} \n - Transaction failed due to insufficient funds in Master Wallet"
+        },
+    },
+    response_model=BuyGoldResponse,
+)
 def sell_gold(
     data: SellGoldSchema,
     x_token: str = Depends(current_org),

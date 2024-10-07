@@ -15,6 +15,9 @@ from schemas import (
     TransferStatus,
     TransferData,
     UserTransferToken,
+    PersonalInfoRequest,
+    BindResponse,
+    BuyGoldResponse,
 )
 import w3, db
 from constants import TOKEN
@@ -30,7 +33,7 @@ def get_personal_info(_id: str):
     return res
 
 
-def create_kyc_information(id_: str, information: PersonalInformation):
+def create_kyc_information(id_: str, information: PersonalInfoRequest):
     info = db.get_personal_information(id_)
 
     if info:
@@ -41,7 +44,7 @@ def create_kyc_information(id_: str, information: PersonalInformation):
     return bool(res)
 
 
-def update_kyc_information(id_: str, information: PersonalInformation):
+def update_kyc_information(id_: str, information: PersonalInfoRequest):
     try:
         res = db.update_personal_info(id_, information)
         return bool(res)
@@ -78,23 +81,6 @@ def update_user_kyc_verify_column(_id: str) -> bool:
         return False
 
 
-def bind_user_account(_id: str):
-
-    binded_user = db.get_binded_user(_id)
-
-    if binded_user:
-        return BindResult(
-            status="success",
-            walletAddress=w3.get_user_account(_id),
-        )
-    db.bind_user(_id)
-
-    return BindResult(
-        status="success",
-        walletAddress=w3.get_user_account(_id),
-    )
-
-
 def debit_user(client_secret: str, info: DebitSchema, convert_to_wei: bool = True):
     org_id = org_ids.get_ord_id(client_secret)
 
@@ -102,9 +88,6 @@ def debit_user(client_secret: str, info: DebitSchema, convert_to_wei: bool = Tru
         raise BadRequestException("Invalid client secret")
 
     tokenAddress = TOKEN.get(info.token)
-
-    if not tokenAddress:
-        raise BadRequestException(f"Unsupported token: {info.token}")
 
     if not tokenAddress:
         raise BadRequestException(f"Unsupported token: {info.token}")
@@ -234,9 +217,11 @@ def transfer(
 def buy_gold(data: BuyGoldSchema, x_token: str):
 
     qmdt_amount = w3.convert_usd_to_qmdt(data.amountUSD)
+    print(qmdt_amount)
     info = DebitSchema(token=Tokens.qmgt, id=data.userId, amount=qmdt_amount)
-    hash = debit_user(x_token, info)
-    return {"status": "success", "transactionRef": hash}
+    hash = debit_user(x_token, info, False)
+    return BuyGoldResponse(transactionRef=hash)
+    # return {"status": "success", "transactionRef": hash}
 
 
 def sell_gold(data: SellGoldSchema, x_token: str):
@@ -318,3 +303,37 @@ def transfer_user_token(
     params = TransferParams(to=data.to, token=data.token, amount=amount_wei)
     hash = w3.make_transfers(user_id, [params])
     return f"0x{hash}"
+
+
+def get_user_bind(identification_number: str):
+    user = db.get_user_by_id_number(identification_number)
+    if not user:
+        raise BadRequestException("No user found with the given identificationNumber")
+    if not user.kyc_verified:
+        raise BadRequestException("User with given identificationNumber not verified")
+    user_binded = db.get_binded_user(user.id)
+
+    return BindResponse(
+        user_id=user.id,
+        identification_number=identification_number,
+        kyc_verified=user.kyc_verified,
+        created_at=user.created_at,
+        is_binded=True if user_binded else False,
+    )
+
+
+def bind_user_account(identification_number: str):
+    user = get_user_bind(identification_number)
+    binded_user = db.get_binded_user(user.user_id)
+
+    if binded_user:
+        return BindResult(
+            status="success",
+            walletAddress=w3.get_user_account(user.user_id),
+        )
+    db.bind_user(user.user_id)
+
+    return BindResult(
+        status="success",
+        walletAddress=w3.get_user_account(user.user_id),
+    )
